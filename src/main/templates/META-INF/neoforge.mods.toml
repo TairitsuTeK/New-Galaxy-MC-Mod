@@ -4,7 +4,7 @@ license = "MIT"
 
 [[mods]]
 modId = "newgc"
-version = "26.6.2"
+version = "1.0.1"
 displayName = "Galaxy NEW"
 description = '''NEW Galaxy and Planets mod supported on new mc version.'''
 
