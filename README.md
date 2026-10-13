@@ -85,8 +85,7 @@
 1. **克隆仓库**
 
    ```bash
-   git clone https://github.com/你的用户名/NewGalaxy.git
-   cd NewGalaxy
+   git clone https://github.com/TairitsuTeK/New-Galaxy-MC-Mod
    ```
 
 2. **导入项目**
@@ -122,7 +121,7 @@
    构建完成后，产物位于：
 
    ```
-   build/libs/NewGalaxy-<版本号>.jar
+   build/libs/newgc-1.0.0.jar
    ```
 
    `build/libs` 目录下通常会有两个文件，**带 `-sources` 后缀的是源码包，不带后缀的才是可发布的模组 Jar**。
