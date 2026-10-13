@@ -1,5 +1,5 @@
 {
-  "aquifers_enabled": true,
+  "aquifers_enabled": false,
   "default_block": {
     "Name": "newgc:moon_stone"
   },
@@ -11,8 +11,8 @@
   "noise": {
     "height": 384,
     "min_y": -64,
-    "size_horizontal": 2,
-    "size_vertical": 1
+    "size_horizontal": 1,
+    "size_vertical": 2
   },
   "noise_router": {
     "barrier": {
@@ -30,14 +30,14 @@
         "type": "minecraft:squeeze",
         "argument": {
           "type": "minecraft:mul",
-          "argument1": 0.55,
+          "argument1": 0.64,
           "argument2": {
             "type": "minecraft:interpolated",
             "argument": {
               "type": "minecraft:blend_density",
               "argument": {
                 "type": "minecraft:add",
-                "argument1": 0.09,
+                "argument1": 0.1171875,
                 "argument2": {
                   "type": "minecraft:mul",
                   "argument1": {
@@ -45,26 +45,26 @@
                     "from_value": 0.0,
                     "from_y": -64,
                     "to_value": 1.0,
-                    "to_y": -48
+                    "to_y": -40
                   },
                   "argument2": {
                     "type": "minecraft:add",
-                    "argument1": -0.09,
+                    "argument1": -0.1171875,
                     "argument2": {
                       "type": "minecraft:add",
-                      "argument1": -0.05,
+                      "argument1": -0.078125,
                       "argument2": {
                         "type": "minecraft:mul",
                         "argument1": {
                           "type": "minecraft:y_clamped_gradient",
                           "from_value": 1.0,
-                          "from_y": 180,
+                          "from_y": 240,
                           "to_value": 0.0,
-                          "to_y": 220
+                          "to_y": 256
                         },
                         "argument2": {
                           "type": "minecraft:add",
-                          "argument1": 0.05,
+                          "argument1": 0.078125,
                           "argument2": {
                             "type": "minecraft:range_choice",
                             "input": "minecraft:overworld/sloped_cheese",
@@ -177,7 +177,7 @@
     },
     "initial_density_without_jaggedness": {
       "type": "minecraft:add",
-      "argument1": 0.09,
+      "argument1": 0.1171875,
       "argument2": {
         "type": "minecraft:mul",
         "argument1": {
@@ -185,26 +185,26 @@
           "from_value": 0.0,
           "from_y": -64,
           "to_value": 1.0,
-          "to_y": -48
+          "to_y": -40
         },
         "argument2": {
           "type": "minecraft:add",
-          "argument1": -0.09,
+          "argument1": -0.1171875,
           "argument2": {
             "type": "minecraft:add",
-            "argument1": -0.05,
+            "argument1": -0.078125,
             "argument2": {
               "type": "minecraft:mul",
               "argument1": {
                 "type": "minecraft:y_clamped_gradient",
                 "from_value": 1.0,
-                "from_y": 180,
+                "from_y": 240,
                 "to_value": 0.0,
-                "to_y": 220
+                "to_y": 256
               },
               "argument2": {
                 "type": "minecraft:add",
-                "argument1": 0.05,
+                "argument1": 0.078125,
                 "argument2": {
                   "type": "minecraft:clamp",
                   "input": {
