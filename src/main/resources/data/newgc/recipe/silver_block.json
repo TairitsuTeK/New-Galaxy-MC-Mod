@@ -1,0 +1,37 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "newgc:silver_ingot"
+    },
+    {
+      "item": "newgc:silver_ingot"
+    },
+    {
+      "item": "newgc:silver_ingot"
+    },
+    {
+      "item": "newgc:silver_ingot"
+    },
+    {
+      "item": "newgc:silver_ingot"
+    },
+    {
+      "item": "newgc:silver_ingot"
+    },
+    {
+      "item": "newgc:silver_ingot"
+    },
+    {
+      "item": "newgc:silver_ingot"
+    },
+    {
+      "item": "newgc:silver_ingot"
+    }
+  ],
+  "result": {
+    "id": "newgc:silver_block",
+    "count": 1
+  }
+}

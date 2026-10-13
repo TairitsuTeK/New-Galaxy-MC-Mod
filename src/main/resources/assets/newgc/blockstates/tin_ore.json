@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "newgc:block/ore_overworld/tin_ore"
+    }
+  }
+}

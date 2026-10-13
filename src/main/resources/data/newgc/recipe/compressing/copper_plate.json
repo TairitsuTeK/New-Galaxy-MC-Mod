@@ -1,0 +1,6 @@
+{
+  "type": "newgc:compressing",
+  "ingredient": { "item": "minecraft:copper_ingot" },
+  "inputCount": 2,
+  "result": { "id": "newgc:copper_plate", "count": 1 }
+}

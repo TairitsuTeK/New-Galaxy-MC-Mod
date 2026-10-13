@@ -1,0 +1,11 @@
+{
+  "type": "newgc:mars_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:mars_plains"
+    },
+    "settings": "newgc:mars_overworld"
+  }
+}

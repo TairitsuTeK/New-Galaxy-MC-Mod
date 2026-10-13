@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RRR",
+    "IMI",
+    "ICI"
+  ],
+  "key": {
+    "M": {
+      "item": "newgc:mechanical_casing"
+    },
+    "I": {
+      "item": "newgc:tin_plate"
+    },
+    "C": {
+      "item": "minecraft:coal"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "newgc:solid_fuel_generator",
+    "count": 1
+  }
+}

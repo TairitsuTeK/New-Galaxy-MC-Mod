@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "UUU",
+    "DDD"
+  ],
+  "key": {
+    "U": {
+      "item": "newgc:oxygen_tank_ultimate"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "W": {
+      "tag": "minecraft:wool"
+    }
+  },
+  "result": {
+    "id": "newgc:oxygen_tank_supreme",
+    "count": 1
+  }
+}

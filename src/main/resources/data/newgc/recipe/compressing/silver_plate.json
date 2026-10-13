@@ -1,0 +1,6 @@
+{
+  "type": "newgc:compressing",
+  "ingredient": { "item": "newgc:silver_ingot" },
+  "inputCount": 2,
+  "result": { "id": "newgc:silver_plate", "count": 1 }
+}

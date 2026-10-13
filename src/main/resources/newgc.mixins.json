@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.tairitsutek.newgc.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MixinEntityGravity",
+    "MixinLivingEntityGravity"
+  ],
+  "client": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

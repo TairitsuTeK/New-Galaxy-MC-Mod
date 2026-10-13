@@ -1,0 +1,6 @@
+{
+  "type": "newgc:compressing",
+  "ingredient": { "item": "newgc:aluminum_ingot" },
+  "inputCount": 2,
+  "result": { "id": "newgc:aluminum_plate", "count": 1 }
+}

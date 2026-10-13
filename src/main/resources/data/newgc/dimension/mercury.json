@@ -1,0 +1,11 @@
+{
+  "type": "newgc:mercury_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:mercury_plains"
+    },
+    "settings": "newgc:mercury_overworld"
+  }
+}

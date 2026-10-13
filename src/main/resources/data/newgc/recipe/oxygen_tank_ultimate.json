@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "AAA",
+    "OOO"
+  ],
+  "key": {
+    "A": {
+      "item": "newgc:oxygen_tank_advanced"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    },
+    "W": {
+      "tag": "minecraft:wool"
+    }
+  },
+  "result": {
+    "id": "newgc:oxygen_tank_ultimate",
+    "count": 1
+  }
+}

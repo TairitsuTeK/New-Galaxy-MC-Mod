@@ -1,0 +1,11 @@
+{
+  "type": "newgc:venus_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:venus_plains"
+    },
+    "settings": "newgc:venus_overworld"
+  }
+}

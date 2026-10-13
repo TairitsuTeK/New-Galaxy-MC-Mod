@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "newgc:iron_hammer"
+    },
+    {
+      "item": "newgc:tin_ingot"
+    },
+    {
+      "item": "newgc:tin_ingot"
+    }
+  ],
+  "result": {
+    "id": "newgc:tin_plate",
+    "count": 1
+  }
+}

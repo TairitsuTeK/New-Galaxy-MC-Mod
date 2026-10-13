@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "WWW",
+    "BBB",
+    "TTT"
+  ],
+  "key": {
+    "B": {
+      "item": "minecraft:bucket"
+    },
+    "T": {
+      "item": "minecraft:iron_ingot"
+    },
+    "W": {
+      "tag": "minecraft:wool"
+    }
+  },
+  "result": {
+    "id": "newgc:oxygen_tank_advanced",
+    "count": 1
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:ore",
+  "config": {
+    "size": 10,
+    "discard_chance_on_air_exposure": 0.0,
+    "targets": [
+      {
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "newgc:deimos_stone"
+        },
+        "state": {
+          "Name": "newgc:deimos_ore_copper"
+        }
+      },
+      {
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "newgc:deimos_sub_surface"
+        },
+        "state": {
+          "Name": "newgc:deimos_ore_copper"
+        }
+      },
+      {
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "newgc:deimos_surface"
+        },
+        "state": {
+          "Name": "newgc:deimos_ore_copper"
+        }
+      }
+    ]
+  }
+}

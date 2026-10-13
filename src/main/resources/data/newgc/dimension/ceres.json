@@ -1,0 +1,11 @@
+{
+  "type": "newgc:ceres_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:ceres_plains"
+    },
+    "settings": "newgc:ceres_overworld"
+  }
+}

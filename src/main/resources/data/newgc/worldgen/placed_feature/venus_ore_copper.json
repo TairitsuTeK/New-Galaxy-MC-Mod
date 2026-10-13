@@ -1,0 +1,23 @@
+{
+  "feature": "newgc:venus_ore_copper",
+  "placement": [
+    {
+      "type": "minecraft:count",
+      "count": 14
+    },
+    {
+      "type": "minecraft:in_square"
+    },
+    {
+      "type": "minecraft:height_range",
+      "height": {
+        "type": "minecraft:uniform",
+        "min_inclusive": { "absolute": -40 },
+        "max_inclusive": { "absolute": 200 }
+      }
+    },
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:ore",
+  "config": {
+    "size": 9,
+    "discard_chance_on_air_exposure": 0.0,
+    "targets": [
+      {
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "newgc:mercury_stone"
+        },
+        "state": {
+          "Name": "newgc:mercury_ore_iron"
+        }
+      },
+      {
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "newgc:mercury_sub_surface"
+        },
+        "state": {
+          "Name": "newgc:mercury_ore_iron"
+        }
+      },
+      {
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "newgc:mercury_surface"
+        },
+        "state": {
+          "Name": "newgc:mercury_ore_iron"
+        }
+      }
+    ]
+  }
+}

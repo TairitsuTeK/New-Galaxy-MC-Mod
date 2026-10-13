@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "III",
+    "IHI",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "newgc:iron_plate"
+    },
+    "H": {
+      "item": "newgc:tin_hammer"
+    }
+  },
+  "result": {
+    "id": "newgc:mechanical_casing",
+    "count": 1
+  }
+}

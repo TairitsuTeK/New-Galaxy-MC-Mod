@@ -1,0 +1,6 @@
+{
+  "type": "newgc:compressing",
+  "ingredient": { "item": "newgc:tin_ingot" },
+  "inputCount": 2,
+  "result": { "id": "newgc:tin_plate", "count": 1 }
+}

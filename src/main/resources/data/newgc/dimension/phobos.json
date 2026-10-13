@@ -1,0 +1,11 @@
+{
+  "type": "newgc:ceres_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:phobos_plains"
+    },
+    "settings": "newgc:phobos_overworld"
+  }
+}
