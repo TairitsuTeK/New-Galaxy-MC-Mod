@@ -10,6 +10,7 @@
   "piglin_safe": true,
   "bed_works": false,
   "respawn_anchor_works": false,
+  "cloud_height": null,
   "has_raids": false,
   "logical_height": 384,
   "min_y": -64,

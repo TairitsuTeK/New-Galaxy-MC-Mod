@@ -11,6 +11,7 @@
   "bed_works": false,
   "respawn_anchor_works": false,
   "has_raids": false,
+  "cloud_height": null,
   "logical_height": 384,
   "min_y": -64,
   "height": 384,
