@@ -17,7 +17,6 @@ public class VenusFogHandler {
         if (mc.level == null) return;
         if (!mc.level.dimension().equals(ModDimensions.VENUS_LEVEL_KEY)) return;
 
-        // 金星：浓雾，近处就起雾
         event.setNearPlaneDistance(6f);
         event.setFarPlaneDistance(64f);
         event.setCanceled(true);
