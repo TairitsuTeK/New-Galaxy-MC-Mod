@@ -3,6 +3,7 @@ package com.tairitsutek.newgc.Planets.venus.client;
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.Planets.ModDimensions;
 import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ArmorItem;
@@ -16,9 +17,16 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 @EventBusSubscriber(modid = NewGalaxyMain.MODID)
 public class VenusEnvironmentHandler {
 
+
     private static final int DAMAGE_INTERVAL = 40;
+
     private static final float DAMAGE_AMOUNT = 1.0f;
-    private static final int DURABILITY_LOSS = 1;
+
+    private static final int MESSAGE_INTERVAL = 30;
+
+    private static final int ARMOR_DAMAGE_INTERVAL = 600;
+
+    private static final int ARMOR_DAMAGE_AMOUNT = 2;
 
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
@@ -29,13 +37,21 @@ public class VenusEnvironmentHandler {
         boolean protectedByArmor = hasFullProtectiveArmor(player);
 
         if (!protectedByArmor) {
+
             if (player.tickCount % DAMAGE_INTERVAL == 0) {
                 player.hurt(player.damageSources().generic(), DAMAGE_AMOUNT);
             }
+            if (player.tickCount % MESSAGE_INTERVAL == 0) {
+                player.displayClientMessage(
+                        Component.translatable("message.newgc.venus.no_armor"),
+                        true
+                );
+            }
         } else {
-            if (player.tickCount % DAMAGE_INTERVAL == 0) {
-                damageArmorPiece(player, EquipmentSlot.HEAD);
-                damageArmorPiece(player, EquipmentSlot.CHEST);
+
+            if (player.tickCount % ARMOR_DAMAGE_INTERVAL == 0) {
+                damageArmorPiece(player, EquipmentSlot.HEAD, ARMOR_DAMAGE_AMOUNT);
+                damageArmorPiece(player, EquipmentSlot.CHEST, ARMOR_DAMAGE_AMOUNT);
             }
         }
     }
@@ -66,12 +82,12 @@ public class VenusEnvironmentHandler {
                 || mat.is(ArmorMaterials.NETHERITE);
     }
 
-    private static void damageArmorPiece(ServerPlayer player, EquipmentSlot slot) {
+    private static void damageArmorPiece(ServerPlayer player, EquipmentSlot slot, int amount) {
         ItemStack stack = player.getItemBySlot(slot);
         if (stack.isEmpty()) return;
         if (!(stack.getItem() instanceof ArmorItem)) return;
         if (!stack.isDamageableItem()) return;
 
-        stack.hurtAndBreak(DURABILITY_LOSS, player, slot);
+        stack.hurtAndBreak(amount, player, slot);
     }
 }

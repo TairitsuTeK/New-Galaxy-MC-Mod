@@ -125,5 +125,7 @@
   "tooltip.newgc.oxygen_tank.per_use": "Per use: %1$s",
   "tooltip.newgc.oxygen_tank.refill": "Refill in Oxygen Generator when empty",
   "tooltip.newgc.oxygen_tank.remaining": "Oxygen: %1$s / %2$s",
-  "tooltip.newgc.oxygen_tank.usage": "Right-click to fill your oxygen"
+  "tooltip.newgc.oxygen_tank.usage": "Right-click to fill your oxygen",
+  "message.newgc.venus.no_armor": "Venus's atmosphere is corroding you! Wear a full set of iron or better armor (loses 2 durability every 30 seconds)",
+  "message.newgc.venus.armor_wear": "Your armor is being corroded by Venus's atmosphere"
 }
