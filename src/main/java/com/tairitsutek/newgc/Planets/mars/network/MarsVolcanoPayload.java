@@ -11,10 +11,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 public record MarsVolcanoPayload(
-        BlockPos volcanoPos,       // 喷发点，null 表示无喷发
-        int eruptionTicks,         // 剩余喷发刻
-        int eruptionTotalTicks,    // 本次喷发总刻
-        int cooldownTimer          // 剩余冷却刻（未喷发时有效）
+        boolean erupting,
+        BlockPos volcanoPos,
+        int eruptionTicks,
+        int eruptionTotalTicks,
+        int cooldownTimer
 ) implements CustomPacketPayload {
 
     public static final CustomPacketPayload.Type<MarsVolcanoPayload> TYPE =
@@ -23,6 +24,7 @@ public record MarsVolcanoPayload(
 
     public static final StreamCodec<ByteBuf, MarsVolcanoPayload> STREAM_CODEC =
             StreamCodec.composite(
+                    ByteBufCodecs.BOOL,     MarsVolcanoPayload::erupting,
                     BlockPos.STREAM_CODEC,  MarsVolcanoPayload::volcanoPos,
                     ByteBufCodecs.VAR_INT,  MarsVolcanoPayload::eruptionTicks,
                     ByteBufCodecs.VAR_INT,  MarsVolcanoPayload::eruptionTotalTicks,
@@ -36,13 +38,14 @@ public record MarsVolcanoPayload(
     }
 
     public static void handle(MarsVolcanoPayload payload, IPayloadContext context) {
-        context.enqueueWork(() ->
-                MarsVolcanoClientCache.set(
-                        payload.volcanoPos(),
-                        payload.eruptionTicks(),
-                        payload.eruptionTotalTicks(),
-                        payload.cooldownTimer()
-                )
-        );
+        context.enqueueWork(() -> {
+            BlockPos pos = payload.erupting() ? payload.volcanoPos() : null;
+            MarsVolcanoClientCache.set(
+                    pos,
+                    payload.eruptionTicks(),
+                    payload.eruptionTotalTicks(),
+                    payload.cooldownTimer()
+            );
+        });
     }
 }

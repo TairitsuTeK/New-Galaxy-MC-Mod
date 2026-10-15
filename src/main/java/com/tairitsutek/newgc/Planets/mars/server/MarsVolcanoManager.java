@@ -30,7 +30,7 @@ public class MarsVolcanoManager {
     private static int cooldownTimer = 0;
     private static int eruptionTicks = 0;
     private static int eruptionTotalTicks = 0;
-    private static BlockPos volcanoPos = null;
+    private static BlockPos volcanoPos = null;   // 服务端内部仍用 null 表示无喷发
     private static int syncCounter = 0;
 
     // ===== 供伤害处理器读取 =====
@@ -86,8 +86,10 @@ public class MarsVolcanoManager {
     }
 
     private static void broadcastState(ServerLevel marsLevel) {
+        boolean erupting = volcanoPos != null && eruptionTicks > 0;
         MarsVolcanoPayload payload = new MarsVolcanoPayload(
-                volcanoPos,
+                erupting,
+                erupting ? volcanoPos : BlockPos.ZERO,   // 哨兵值，避免 null 编码崩溃
                 eruptionTicks,
                 eruptionTotalTicks,
                 cooldownTimer

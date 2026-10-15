@@ -30,9 +30,7 @@ public final class MarsVolcanoClientCache {
         return volcanoPos != null && eruptionTicks > 0;
     }
 
-    /**
-     * 喷发强度 0~1，中间最强（抛物线包络）
-     */
+    /** 喷发强度 0~1，中间最强（抛物线包络） */
     public static float getEruptionIntensity() {
         if (!isErupting() || eruptionTotalTicks <= 0) return 0f;
         float progress = 1f - (float) eruptionTicks / eruptionTotalTicks;
