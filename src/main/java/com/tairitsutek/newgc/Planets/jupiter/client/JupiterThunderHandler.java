@@ -16,7 +16,7 @@ public class JupiterThunderHandler {
 
     private static final int MIN_TICKS = 10;
     private static final int MAX_TICKS = 20;
-    private static final int LIGHTNING_RADIUS = 32;
+    private static final int LIGHTNING_RADIUS = 64;
 
     private static int cooldown = 0;
 
