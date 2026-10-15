@@ -25,10 +25,10 @@ public class JupiterWindParticles {
     private static final int HEIGHT_MAX = 28;
 
     // ===== 密度 =====
-    private static final int COUNT = 60;
+    private static final int COUNT = 100;
 
     // ===== 风速 =====
-    private static final double WIND_SPEED = 0.35;
+    private static final double WIND_SPEED = 0.8;
 
     // ===== 风向（水平角，单位：弧度）=====
     // 0 = +X 方向，PI/2 = +Z 方向
