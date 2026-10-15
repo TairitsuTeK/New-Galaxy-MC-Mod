@@ -1,4 +1,4 @@
-package com.tairitsutek.newgc.Planets.jupiter.client;
+package com.tairitsutek.newgc.Planets.jupiter;
 
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.Planets.ModDimensions;
