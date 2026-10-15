@@ -3,6 +3,7 @@ package com.tairitsutek.newgc.gui;
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.Planets.ModDimensions;
 import com.tairitsutek.newgc.Planets.jupiter.client.JupiterStormClientCache;
+import com.tairitsutek.newgc.Planets.mars.client.MarsDustStormClientCache;
 import com.tairitsutek.newgc.Planets.mars.client.MarsVolcanoClientCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,10 +22,12 @@ public class PlanetStatusHud {
     private static final int PADDING    = 10;
     private static final int HEADER_H   = 20;
     private static final int ROW_H      = 15;
-    private static final int CARD_GAP   = 8;
+    private static final int CARD_GAP   = 6;
     private static final int MARGIN_TOP = 60;
     private static final int MARGIN_RIGHT = 10;
-    private static final int CARD_INNER = ROW_H * 3 + PADDING * 2;
+
+    // 每张卡片的内部高度（3 行）
+    private static final int CARD_3ROW = ROW_H * 3 + PADDING * 2;
 
     // ===== 主色 =====
     private static final int BG          = 0xE00A121E;
@@ -36,7 +39,7 @@ public class PlanetStatusHud {
     private static final int VALUE       = 0xFFE0ECFF;
     private static final int SEPARATOR   = 0xFF2A3E54;
 
-    // ===== 阶段色 =====
+    // ===== 阶段色（木星）=====
     private static final int[] PHASE_COLORS = {
             0xFF7A8FA6, // CALM
             0xFFE0A050, // RISING
@@ -51,7 +54,8 @@ public class PlanetStatusHud {
     private static final int BAR_TICK    = 0x60FFFFFF;
 
     // ===== 火星色 =====
-    private static final int MARS_DOT    = 0xFFE06B4B;
+    private static final int MARS_DOT    = 0xFFE06B4B;   // 火山
+    private static final int DUST_DOT    = 0xFFC89650;   // 沙尘暴
 
     @SubscribeEvent
     public static void onRenderGui(RenderGuiEvent.Post event) {
@@ -69,8 +73,12 @@ public class PlanetStatusHud {
         int x = screenW - WIDTH - MARGIN_RIGHT;
         int y = MARGIN_TOP;
 
-        int cardCount = (inJupiter ? 1 : 0) + (inMars ? 1 : 0);
-        int totalH = HEADER_H + cardCount * (CARD_INNER + CARD_GAP) + PADDING + 2;
+        // 卡片数：木星 1 张；火星 2 张（火山 + 沙尘暴）
+        int cardCount = (inJupiter ? 1 : 0) + (inMars ? 2 : 0);
+        int totalH = HEADER_H
+                + cardCount * CARD_3ROW
+                + cardCount * CARD_GAP
+                + PADDING;
 
         // 外发光
         g.fill(x - 1, y - 1, x + WIDTH + 1, y + totalH + 1, 0x40000000);
@@ -83,8 +91,8 @@ public class PlanetStatusHud {
         g.fill(x + 1, y + 1, x + WIDTH - 1, y + 2, BORDER_IN);
         g.fill(x + 1, y + totalH - 2, x + WIDTH - 1, y + totalH - 1, BORDER_IN);
 
-        // 标题栏
-        String planetName = inJupiter ? "木星 · 风暴" : "火星 · 火山";
+        // 标题
+        String planetName = inJupiter ? "木星 · 风暴" : "火星 · 地表";
         g.drawString(mc.font, "◈ 星球状态", x + PADDING, y + 6, TITLE, false);
         int nameW = mc.font.width(planetName);
         g.drawString(mc.font, planetName,
@@ -94,7 +102,10 @@ public class PlanetStatusHud {
 
         int cy = y + HEADER_H;
         if (inJupiter) cy = drawJupiterCard(g, mc, x, cy);
-        if (inMars)    cy = drawMarsCard(g, mc, x, cy);
+        if (inMars) {
+            cy = drawVolcanoCard(g, mc, x, cy);
+            cy = drawDustStormCard(g, mc, x, cy);
+        }
     }
 
     // ================= 木星卡片 =================
@@ -104,10 +115,10 @@ public class PlanetStatusHud {
         float strength = JupiterStormClientCache.getStormStrength();
         int remain     = JupiterStormClientCache.getPhaseTimer();
 
-        g.fill(x + PADDING, y, x + WIDTH - PADDING, y + CARD_INNER, BG_INNER);
-        g.fill(x + PADDING - 1, y, x + PADDING + 4, y + CARD_INNER,
+        g.fill(x + PADDING, y, x + WIDTH - PADDING, y + CARD_3ROW, BG_INNER);
+        g.fill(x + PADDING - 1, y, x + PADDING + 4, y + CARD_3ROW,
                 0x40FFFFFF & phaseColor | 0x40000000);
-        g.fill(x + PADDING, y, x + PADDING + 3, y + CARD_INNER, phaseColor);
+        g.fill(x + PADDING, y, x + PADDING + 3, y + CARD_3ROW, phaseColor);
 
         int tx = x + PADDING + 9;
         int ty = y + PADDING;
@@ -124,17 +135,15 @@ public class PlanetStatusHud {
         g.drawString(mc.font, phaseName, pillX + pillPad, ty, 0xFFFFFFFF, false);
 
         ty += ROW_H;
-
         drawRow(g, mc, tx, ty, rightEdge, "阶段剩余", formatTicks(remain), VALUE);
         ty += ROW_H;
-
         drawRow(g, mc, tx, ty, rightEdge, "风暴强度",
                 String.format("%.2f", strength), VALUE);
 
         drawStormBar(g, x + PADDING + 9, ty + ROW_H - 5, WIDTH - PADDING * 2 - 17 - 8,
                 strength, phaseColor);
 
-        return y + CARD_INNER + CARD_GAP;
+        return y + CARD_3ROW + CARD_GAP;
     }
 
     private static void drawStormBar(GuiGraphics g, int x, int y, int w,
@@ -163,7 +172,6 @@ public class PlanetStatusHud {
         }
 
         drawBorder(g, x, y, w, h, 0xFF1A2A3C);
-
         if (fillW > 0 && fillW < w) {
             g.fill(x + fillW, y - 1, x + fillW + 1, y + h + 1, 0xFFFFFFFF);
         }
@@ -179,18 +187,18 @@ public class PlanetStatusHud {
         };
     }
 
-    // ================= 火星卡片 =================
-    private static int drawMarsCard(GuiGraphics g, Minecraft mc, int x, int y) {
+    // ================= 火星 · 火山卡片 =================
+    private static int drawVolcanoCard(GuiGraphics g, Minecraft mc, int x, int y) {
         int eruption     = MarsVolcanoClientCache.getEruptionTicks();
         int total        = MarsVolcanoClientCache.getEruptionTotalTicks();
         int cooldown     = MarsVolcanoClientCache.getCooldownTimer();
         BlockPos vp      = MarsVolcanoClientCache.getVolcanoPos();
         boolean erupting = MarsVolcanoClientCache.isErupting();
 
-        g.fill(x + PADDING, y, x + WIDTH - PADDING, y + CARD_INNER, BG_INNER);
-        g.fill(x + PADDING - 1, y, x + PADDING + 4, y + CARD_INNER,
+        g.fill(x + PADDING, y, x + WIDTH - PADDING, y + CARD_3ROW, BG_INNER);
+        g.fill(x + PADDING - 1, y, x + PADDING + 4, y + CARD_3ROW,
                 0x40FFFFFF & MARS_DOT | 0x40000000);
-        g.fill(x + PADDING, y, x + PADDING + 3, y + CARD_INNER, MARS_DOT);
+        g.fill(x + PADDING, y, x + PADDING + 3, y + CARD_3ROW, MARS_DOT);
 
         int tx = x + PADDING + 9;
         int ty = y + PADDING;
@@ -218,7 +226,6 @@ public class PlanetStatusHud {
             drawProgressBar(g, x + PADDING + 9, ty + ROW_H - 5,
                     WIDTH - PADDING * 2 - 17 - 8, progress, MARS_DOT);
         } else {
-            // 冷却剩余：现在可以从 ClientCache 读到
             drawRow(g, mc, tx, ty, rightEdge, "冷却剩余", formatTicks(cooldown), VALUE);
             ty += ROW_H;
 
@@ -232,7 +239,102 @@ public class PlanetStatusHud {
             drawRow(g, mc, tx, ty, rightEdge, "喷发点距离", dist, VALUE);
         }
 
-        return y + CARD_INNER + CARD_GAP;
+        return y + CARD_3ROW + CARD_GAP;
+    }
+
+    // ================= 火星 · 沙尘暴卡片 =================
+    private static int drawDustStormCard(GuiGraphics g, Minecraft mc, int x, int y) {
+        MarsDustStormClientCache.Phase phase = MarsDustStormClientCache.getPhase();
+        int phaseTimer = MarsDustStormClientCache.getPhaseTimer();
+        float strength = MarsDustStormClientCache.getStormStrength();
+
+        int phaseColor = dustPhaseColor(phase);
+
+        g.fill(x + PADDING, y, x + WIDTH - PADDING, y + CARD_3ROW, BG_INNER);
+        g.fill(x + PADDING - 1, y, x + PADDING + 4, y + CARD_3ROW,
+                0x40FFFFFF & DUST_DOT | 0x40000000);
+        g.fill(x + PADDING, y, x + PADDING + 3, y + CARD_3ROW, DUST_DOT);
+
+        int tx = x + PADDING + 9;
+        int ty = y + PADDING;
+        int rightEdge = x + WIDTH - PADDING - 8;
+
+        // 标题
+        g.drawString(mc.font, "■ 火星沙尘暴", tx, ty, TITLE, false);
+
+        // 阶段胶囊
+        String phaseName = dustPhaseName(phase);
+        int pW = mc.font.width(phaseName);
+        int pillPad = 4;
+        int pillX = rightEdge - pW - pillPad * 2;
+        int pillY = ty - 1;
+        g.fill(pillX, pillY, rightEdge, pillY + 10, 0x60000000 | (phaseColor & 0x00FFFFFF));
+        g.drawString(mc.font, phaseName, pillX + pillPad, ty, 0xFFFFFFFF, false);
+
+        ty += ROW_H;
+
+        // 阶段剩余
+        drawRow(g, mc, tx, ty, rightEdge, "阶段剩余", formatTicks(phaseTimer), VALUE);
+        ty += ROW_H;
+
+        // 沙尘强度
+        drawRow(g, mc, tx, ty, rightEdge, "沙尘强度",
+                String.format("%.2f", strength), VALUE);
+
+        // 强度条
+        drawDustStormBar(g, x + PADDING + 9, ty + ROW_H - 5,
+                WIDTH - PADDING * 2 - 17 - 8, strength, phaseColor);
+
+        return y + CARD_3ROW + CARD_GAP;
+    }
+
+    private static String dustPhaseName(MarsDustStormClientCache.Phase p) {
+        return switch (p) {
+            case CALM    -> "平静";
+            case RISING  -> "扬尘";
+            case PEAK    -> "沙暴";
+            case FALLING -> "消退";
+        };
+    }
+
+    private static int dustPhaseColor(MarsDustStormClientCache.Phase p) {
+        return switch (p) {
+            case CALM    -> 0xFF6A5830;
+            case RISING  -> 0xFFA8823C;
+            case PEAK    -> 0xFFC89650;
+            case FALLING -> 0xFF8A7040;
+        };
+    }
+
+    private static void drawDustStormBar(GuiGraphics g, int x, int y, int w,
+                                         float strength, int phaseColor) {
+        int h = 7;
+
+        g.fill(x, y, x + w, y + h / 2, BAR_BG_TOP);
+        g.fill(x, y + h / 2, x + w, y + h, BAR_BG_BOT);
+
+        float t = Math.max(0f, Math.min(1f, strength / 1.5f));
+        int fillW = (int) (w * t);
+
+        int fillColor;
+        if (strength > 1.0f)      fillColor = 0xFFC89650;
+        else if (strength > 0.5f) fillColor = 0xFFA8823C;
+        else                      fillColor = phaseColor;
+
+        g.fill(x, y, x + fillW, y + h, fillColor);
+        g.fill(x, y, x + fillW, y + 1, lighten(fillColor, 0x40));
+        g.fill(x, y + h - 1, x + fillW, y + h, darken(fillColor, 0x40));
+
+        // 刻度：对应强度 0.5 / 1.0
+        for (float tick : new float[]{1f / 3f, 2f / 3f}) {
+            int tx = x + (int) (w * tick);
+            g.fill(tx, y, tx + 1, y + h, BAR_TICK);
+        }
+
+        drawBorder(g, x, y, w, h, 0xFF1A2A3C);
+        if (fillW > 0 && fillW < w) {
+            g.fill(x + fillW, y - 1, x + fillW + 1, y + h + 1, 0xFFFFFFFF);
+        }
     }
 
     private static void drawProgressBar(GuiGraphics g, int x, int y, int w,
