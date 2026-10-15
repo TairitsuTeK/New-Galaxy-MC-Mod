@@ -19,28 +19,31 @@ public class MarsVolcanoHandler {
 
     private static final RandomSource RNG = RandomSource.create();
 
-    // 火山数量（同时存在的）
-    private static final int MAX_VOLCANOES = 3;
+    // ===== 喷发间隔随机范围（刻）=====
+    private static final int INTERVAL_MIN = 400;    // 20 秒
+    private static final int INTERVAL_MAX = 1800;   // 90 秒
 
-    // 喷发间隔（刻）
-    private static final int ERUPTION_INTERVAL = 600;   // 30 秒
+    // ===== 喷发持续时间随机范围（刻）=====
+    private static final int DURATION_MIN = 60;     // 3 秒
+    private static final int DURATION_MAX = 200;    // 10 秒
 
-    // 喷发持续时间（刻）
-    private static final int ERUPTION_DURATION = 100;   // 5 秒
-
-    // 火山搜索半径
+    // 搜索半径
     private static final int SEARCH_RADIUS = 48;
 
-    // 每刻生成的粒子数
+    // 每刻粒子数
     private static final int PARTICLES_PER_TICK = 8;
 
-    // 喷发高度
-    private static final double ERUPTION_HEIGHT = 6.0;
+    // 状态
+    private static int cooldownTimer = 0;
+    private static int eruptionTicks = 0;
+    private static int eruptionTotalTicks = 0;   // 本次喷发总时长（用于进度显示）
+    private static BlockPos volcanoPos = null;
 
-    // 当前喷发状态
-    private static int eruptionTimer = 0;
-    private static int currentEruptionTicks = 0;
-    private static BlockPos currentVolcanoPos = null;
+    // ===== HUD 读取用的 getter =====
+    public static int getEruptionTicks()      { return eruptionTicks; }
+    public static int getEruptionTotalTicks() { return eruptionTotalTicks; }
+    public static int getCooldownTimer()      { return cooldownTimer; }
+    public static BlockPos getVolcanoPos()    { return volcanoPos; }
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
@@ -49,40 +52,40 @@ public class MarsVolcanoHandler {
         if (level == null || mc.player == null) return;
         if (!level.dimension().equals(ModDimensions.MARS_LEVEL_KEY)) return;
 
-        // 每刻递减计时器
-        if (eruptionTimer > 0) {
-            eruptionTimer--;
-            return;
-        }
-
-        // 如果正在喷发，继续喷
-        if (currentEruptionTicks > 0 && currentVolcanoPos != null) {
-            spawnEruptionParticles(level, currentVolcanoPos);
-            currentEruptionTicks--;
-            if (currentEruptionTicks <= 0) {
-                currentVolcanoPos = null;
+        // 1. 正在喷发
+        if (eruptionTicks > 0 && volcanoPos != null) {
+            spawnEruptionParticles(level, volcanoPos);
+            eruptionTicks--;
+            if (eruptionTicks <= 0) {
+                volcanoPos = null;
+                // 随机冷却时间
+                cooldownTimer = INTERVAL_MIN + RNG.nextInt(INTERVAL_MAX - INTERVAL_MIN + 1);
             }
             return;
         }
 
-        // 开始新的喷发
-        eruptionTimer = ERUPTION_INTERVAL;
+        // 2. 冷却中
+        if (cooldownTimer > 0) {
+            cooldownTimer--;
+            return;
+        }
+
+        // 3. 开始新喷发
         startEruption(level, mc.player.position());
     }
 
     private static void startEruption(ClientLevel level, Vec3 playerPos) {
-        // 在玩家周围随机找一个火山位置
         double angle = RNG.nextDouble() * Math.PI * 2;
         double dist = 16 + RNG.nextDouble() * SEARCH_RADIUS;
 
         int x = (int) (playerPos.x + Math.cos(angle) * dist);
         int z = (int) (playerPos.z + Math.sin(angle) * dist);
-
-        // 获取该位置的地表高度
         int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
 
-        currentVolcanoPos = new BlockPos(x, y, z);
-        currentEruptionTicks = ERUPTION_DURATION;
+        volcanoPos = new BlockPos(x, y, z);
+        // 随机持续时间
+        eruptionTicks = DURATION_MIN + RNG.nextInt(DURATION_MAX - DURATION_MIN + 1);
+        eruptionTotalTicks = eruptionTicks;   // 记录总时长，供 HUD 显示进度
     }
 
     private static void spawnEruptionParticles(ClientLevel level, BlockPos pos) {
@@ -91,52 +94,28 @@ public class MarsVolcanoHandler {
         double cz = pos.getZ() + 0.5;
 
         for (int i = 0; i < PARTICLES_PER_TICK; i++) {
-            // 喷发方向：向上 + 随机水平偏移
             double vx = (RNG.nextDouble() - 0.5) * 0.3;
             double vy = 0.5 + RNG.nextDouble() * 0.8;
             double vz = (RNG.nextDouble() - 0.5) * 0.3;
 
-            // 初始位置在火山口附近
             double px = cx + (RNG.nextDouble() - 0.5) * 1.5;
             double py = cy + RNG.nextDouble() * 0.5;
             double pz = cz + (RNG.nextDouble() - 0.5) * 1.5;
 
-            // 随机选择粒子类型
             float roll = RNG.nextFloat();
-
             if (roll < 0.5f) {
-                // 熔岩粒子（橙色）
-                level.addParticle(
-                        ParticleTypes.FLAME,
-                        px, py, pz,
-                        vx, vy, vz);
+                level.addParticle(ParticleTypes.FLAME, px, py, pz, vx, vy, vz);
             } else if (roll < 0.75f) {
-                // 岩浆粒子
-                level.addParticle(
-                        ParticleTypes.LAVA,
-                        px, py, pz,
-                        vx * 0.5, vy * 0.3, vz * 0.5);
+                level.addParticle(ParticleTypes.LAVA, px, py, pz, vx * 0.5, vy * 0.3, vz * 0.5);
             } else if (roll < 0.9f) {
-                // 浓烟
-                level.addParticle(
-                        ParticleTypes.LARGE_SMOKE,
-                        px, py, pz,
-                        vx * 0.8, vy * 0.6, vz * 0.8);
+                level.addParticle(ParticleTypes.LARGE_SMOKE, px, py, pz, vx * 0.8, vy * 0.6, vz * 0.8);
             } else {
-                // 灰烬
-                level.addParticle(
-                        ParticleTypes.ASH,
-                        px, py, pz,
-                        vx * 0.5, vy * 0.4, vz * 0.5);
+                level.addParticle(ParticleTypes.ASH, px, py, pz, vx * 0.5, vy * 0.4, vz * 0.5);
             }
         }
 
-        // 火山口持续冒烟
         if (RNG.nextFloat() < 0.3f) {
-            level.addParticle(
-                    ParticleTypes.CAMPFIRE_COSY_SMOKE,
-                    cx, cy + 1.0, cz,
-                    0, 0.05, 0);
+            level.addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, cx, cy + 1.0, cz, 0, 0.05, 0);
         }
     }
 }

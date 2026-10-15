@@ -2,7 +2,6 @@ package com.tairitsutek.newgc.Planets.jupiter.client;
 
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.Planets.ModDimensions;
-import com.tairitsutek.newgc.Planets.jupiter.client.JupiterWindParticles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.neoforged.api.distmarker.Dist;
@@ -24,7 +23,8 @@ public class JupiterStormOverlay {
         if (mc.level == null) return;
         if (!mc.level.dimension().equals(ModDimensions.JUPITER_LEVEL_KEY)) return;
 
-        float strength = JupiterStormManager.getStormStrength();
+        // 改：从客户端缓存读
+        float strength = JupiterStormClientCache.getStormStrength();
         if (Float.isNaN(strength) || Float.isInfinite(strength)) strength = 1.0f;
 
         float target = Math.max(1.0f, Math.min(2.5f, strength));

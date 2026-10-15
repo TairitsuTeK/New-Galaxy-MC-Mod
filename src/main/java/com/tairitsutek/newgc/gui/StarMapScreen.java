@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.tairitsutek.newgc.Planets.ModDimensions;
+import com.tairitsutek.newgc.network.TeleportRequestPacket;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -14,11 +15,10 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
@@ -43,7 +43,6 @@ public class StarMapScreen extends Screen {
                     .createCompositeState(false)
     );
 
-    // ====== 颜色 ======
     private static final int COLOR_BG_TOP    = 0xFF03050C;
     private static final int COLOR_BG_BOTTOM = 0xFF0B1422;
 
@@ -76,7 +75,6 @@ public class StarMapScreen extends Screen {
     private static final int COLOR_LIST_SCROLLBAR  = 0x60A0E0FF;
     private static final int COLOR_LIST_SCROLL_BG  = 0x30FFFFFF;
 
-    // 列表行：能去 = 绿色渐变，不能去 = 红色渐变，文字统一白色
     private static final int COLOR_ROW_GREEN_TOP    = 0x4000E050;
     private static final int COLOR_ROW_GREEN_BOTTOM = 0x26007030;
     private static final int COLOR_ROW_RED_TOP      = 0x40E03030;
@@ -114,7 +112,6 @@ public class StarMapScreen extends Screen {
     private static final int PLANET_ICON_DISPLAY = 10;
     private static final int SUN_ICON_DISPLAY    = 14;
 
-    // 缩放范围：整体最小缩放增大；聚焦时范围收窄
     private static final float MIN_SCALE = 0.15f;
     private static final float MAX_SCALE = 4.0f;
     private static final float FOCUS_MIN_SCALE = 0.4f;
@@ -164,7 +161,6 @@ public class StarMapScreen extends Screen {
     private float targetListScroll = 0f;
     private int listContentHeight = 0;
 
-    // ====== 卫星 ======
     private static class Moon {
         final String nameKey;
         final int orbitA, orbitB;
@@ -191,10 +187,7 @@ public class StarMapScreen extends Screen {
             this.cachedName = Component.translatable(nameKey).getString();
         }
 
-        String displayName() {
-            return cachedName;
-        }
-
+        String displayName() { return cachedName; }
         boolean isTeleportable() { return dimension != null; }
 
         float relX(long openedAt) {
@@ -209,7 +202,6 @@ public class StarMapScreen extends Screen {
         }
     }
 
-    // ====== 行星 ======
     private static class Planet {
         final String nameKey;
         final String dimId;
@@ -245,10 +237,7 @@ public class StarMapScreen extends Screen {
             this.cachedName = Component.translatable(nameKey).getString();
         }
 
-        String displayName() {
-            return cachedName;
-        }
-
+        String displayName() { return cachedName; }
         boolean isTeleportable() { return dimension != null; }
 
         float worldX(long openedAt) {
@@ -269,27 +258,20 @@ public class StarMapScreen extends Screen {
             ResourceLocation.fromNamespaceAndPath("newgc", "textures/gui/sun_icon.png");
     private static final int SUN_ICON_SIZE = 16;
 
-    // ====== 选中项 ======
     private static class Selection {
         Planet planet;
         int moonIndex;
         boolean isMoon() { return moonIndex >= 0; }
 
         ResourceKey<Level> getDimension() {
-            if (isMoon()) {
-                return planet.moons.get(moonIndex).dimension;
-            }
+            if (isMoon()) return planet.moons.get(moonIndex).dimension;
             return planet.dimension;
         }
 
-        boolean isTeleportable() {
-            return getDimension() != null;
-        }
+        boolean isTeleportable() { return getDimension() != null; }
 
         String displayName() {
-            if (isMoon()) {
-                return planet.moons.get(moonIndex).displayName();
-            }
+            if (isMoon()) return planet.moons.get(moonIndex).displayName();
             return planet.displayName();
         }
     }
@@ -306,6 +288,7 @@ public class StarMapScreen extends Screen {
     private float dragStartTargetPanX, dragStartTargetPanY;
 
     private boolean teleportBtnPressed = false;
+    private boolean teleporting = false;
 
     public StarMapScreen() {
         super(Component.translatable("gui.newgc.star_map"));
@@ -514,13 +497,15 @@ public class StarMapScreen extends Screen {
         listScroll = 0f;
         targetListScroll = 0f;
         listContentHeight = 0;
+
+        teleporting = false;
+        teleportBtnPressed = false;
     }
 
     private static ResourceLocation tex(String name) {
         return ResourceLocation.fromNamespaceAndPath("newgc", "textures/gui/" + name);
     }
 
-    // ====== 3D 投影 ======
     private void updateRotationMatrix() {
         float cosR = Mth.cos(rotRoll), sinR = Mth.sin(rotRoll);
         float cosP = Mth.cos(rotPitch), sinP = Mth.sin(rotPitch);
@@ -556,16 +541,8 @@ public class StarMapScreen extends Screen {
         out[1] = Y * w;
     }
 
-    // 深度淡出：只降不升，避免 RGB 饱和偏色（修复旋转后轨道变绿）
     private float depthFade(float w) {
         return Mth.clamp(w, 0.35f, 1.0f);
-    }
-
-    private boolean isAlreadyHere(ResourceKey<Level> dim) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) return false;
-        if (dim == null) return false;
-        return mc.level.dimension().equals(dim);
     }
 
     private void showToast(String msg) {
@@ -646,7 +623,6 @@ public class StarMapScreen extends Screen {
         return mode == Mode.FOCUS_PLANET || mode == Mode.FOCUS_MOON;
     }
 
-    // ==================== 渲染 ====================
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (isFocusMode() && focusedPlanet != null) {
@@ -938,7 +914,6 @@ public class StarMapScreen extends Screen {
         }
     }
 
-    // ==================== 顶点追加 ====================
     private void appendPoint4(VertexConsumer vc, Matrix4f mat, float x, float y,
                               float size, int r, int g, int b, int a) {
         float x1 = x + size;
@@ -1092,7 +1067,6 @@ public class StarMapScreen extends Screen {
         }
     }
 
-    // ==================== 绘制工具 ====================
     private void drawTeleportButton(GuiGraphics g, int mouseX, int mouseY) {
         int bx = teleportBtnX();
         int by = teleportBtnY();
@@ -1188,7 +1162,6 @@ public class StarMapScreen extends Screen {
                 && mouseY >= clipTop && mouseY < clipBottom;
         boolean isSelected = selected != null && !selected.isMoon() && selected.planet == p;
 
-        // 能去：绿色渐变；不能去：红色渐变
         if (p.isTeleportable()) {
             g.fillGradient(rowX, rowY, rowX + rowW, rowY + LIST_ROW_H, COLOR_ROW_GREEN_TOP, COLOR_ROW_GREEN_BOTTOM);
         } else {
@@ -1222,7 +1195,6 @@ public class StarMapScreen extends Screen {
         boolean isSelected = selected != null && selected.isMoon()
                 && selected.planet == parent && selected.moonIndex == moonIndex;
 
-        // 能去：绿色渐变；不能去：红色渐变
         if (m.isTeleportable()) {
             g.fillGradient(moonX, rowY, rowX + rowW, rowY + MOON_ROW_H, COLOR_ROW_GREEN_TOP, COLOR_ROW_GREEN_BOTTOM);
         } else {
@@ -1272,7 +1244,6 @@ public class StarMapScreen extends Screen {
         g.fill(x2 - t, y2 - len, x2, y2, color);
     }
 
-    // ==================== 输入 ====================
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         float step = 0.12f;
@@ -1304,6 +1275,8 @@ public class StarMapScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (teleporting) return false;
+
         if (button == 1 && isFocusMode()) {
             exitFocusAndCollapse();
             return true;
@@ -1313,7 +1286,7 @@ public class StarMapScreen extends Screen {
             int bx = teleportBtnX();
             int by = teleportBtnY();
             if (mouseX >= bx && mouseX < bx + BTN_W && mouseY >= by && mouseY < by + BTN_H) {
-                if (isTeleportBtnActive()) {
+                if (isTeleportBtnActive() && !teleporting) {
                     teleportBtnPressed = true;
                     Selection t = getTeleportTarget();
                     if (t != null) teleportTo(t);
@@ -1532,7 +1505,6 @@ public class StarMapScreen extends Screen {
             if (max > 0) targetListScroll = Mth.clamp(targetListScroll - (float) deltaY * 20f, 0, max);
             return true;
         }
-        // 聚焦时缩放范围收窄
         float minS = isFocusMode() ? FOCUS_MIN_SCALE : MIN_SCALE;
         float maxS = isFocusMode() ? FOCUS_MAX_SCALE : MAX_SCALE;
         float factor = deltaY > 0 ? 1.1f : 1f / 1.1f;
@@ -1625,6 +1597,8 @@ public class StarMapScreen extends Screen {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return;
 
+        if (teleporting) return;
+
         ResourceKey<Level> targetDim = sel.getDimension();
         if (targetDim == null) {
             showToast("§c" + Component.translatable(
@@ -1636,24 +1610,13 @@ public class StarMapScreen extends Screen {
                     "gui.newgc.star_map.toast.already", sel.displayName()).getString());
             return;
         }
-        if (mc.getSingleplayerServer() != null) {
-            ServerLevel targetLevel = mc.getSingleplayerServer().getLevel(targetDim);
-            if (targetLevel != null) {
-                ServerPlayer sp = mc.getSingleplayerServer()
-                        .getPlayerList()
-                        .getPlayer(mc.player.getUUID());
-                if (sp != null) {
-                    if (targetDim.equals(Level.OVERWORLD)) {
-                        BlockPos spawn = targetLevel.getSharedSpawnPos();
-                        sp.teleportTo(targetLevel, spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5,
-                                sp.getYRot(), sp.getXRot());
-                    } else {
-                        sp.teleportTo(targetLevel, sp.getX(), 100, sp.getZ(),
-                                sp.getYRot(), sp.getXRot());
-                    }
-                }
-            }
-        }
+
+        teleporting = true;
+        PacketDistributor.sendToServer(new TeleportRequestPacket(
+                targetDim,
+                BlockPos.containing(mc.player.getX(), 100, mc.player.getZ())
+        ));
+
         this.onClose();
     }
 

@@ -2,11 +2,14 @@ package com.tairitsutek.newgc.Planets.jupiter.client;
 
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.Planets.ModDimensions;
+import com.tairitsutek.newgc.Planets.jupiter.network.JupiterStormPayload;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 @EventBusSubscriber(modid = NewGalaxyMain.MODID)
 public class JupiterStormManager {
@@ -29,12 +32,12 @@ public class JupiterStormManager {
     private static final int SUDDEN_MIN_TICKS = 200, SUDDEN_MAX_TICKS = 400;
     private static final int FALLING_MIN_TICKS = 300, FALLING_MAX_TICKS = 600;
 
-    // 平滑系数：约 5 秒追上目标
     private static final float SMOOTH = 0.01f;
-
-    // 阶段内正弦波，避免完全静止
     private static final float WAVE_AMPLITUDE = 0.1f;
     private static final float WAVE_PERIOD = 0.01f;
+
+    // ===== 同步间隔 =====
+    private static final int SYNC_INTERVAL = 10;   // 0.5 秒
 
     private static Phase currentPhase = Phase.CALM;
     private static int phaseTimer = 0;
@@ -43,26 +46,26 @@ public class JupiterStormManager {
     private static float targetStrength = CALM_MIN;
     private static float stormStrength = CALM_MIN;
 
+    private static int syncCounter = 0;
+
     private static final RandomSource RNG = RandomSource.create();
 
-    public static float getStormStrength() {
-        return stormStrength;
-    }
-
-    public static Phase getCurrentPhase() {
-        return currentPhase;
-    }
+    // ===== 服务端读取用（服务端逻辑，如雷击、环境伤害）=====
+    public static float getStormStrength() { return stormStrength; }
+    public static Phase getCurrentPhase()  { return currentPhase; }
+    public static int getPhaseTimer()      { return phaseTimer; }
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
-        boolean jupiterLoaded = false;
+        ServerLevel jupiterLevel = null;
         for (ServerLevel level : event.getServer().getAllLevels()) {
             if (level.dimension().equals(ModDimensions.JUPITER_LEVEL_KEY)) {
-                jupiterLoaded = true;
+                jupiterLevel = level;
                 break;
             }
         }
-        if (!jupiterLoaded) {
+
+        if (jupiterLevel == null) {
             stormStrength = CALM_MIN;
             targetStrength = CALM_MIN;
             baseTarget = CALM_MIN;
@@ -79,17 +82,28 @@ public class JupiterStormManager {
             baseTarget = getRandomStrengthForPhase(currentPhase);
         }
 
-        // 阶段内叠加正弦波，避免完全静止
         float wave = (float) Math.sin(globalTick * WAVE_PERIOD) * WAVE_AMPLITUDE;
         targetStrength = baseTarget + wave;
-
-        // 平滑跟随
         stormStrength += (targetStrength - stormStrength) * SMOOTH;
 
         if (Float.isNaN(stormStrength) || Float.isInfinite(stormStrength)) {
             stormStrength = CALM_MIN;
         }
         stormStrength = Math.max(0.0f, Math.min(SUDDEN_MAX, stormStrength));
+
+        // ===== 定期同步给木星维度内的玩家 =====
+        syncCounter++;
+        if (syncCounter >= SYNC_INTERVAL) {
+            syncCounter = 0;
+            JupiterStormPayload payload = new JupiterStormPayload(
+                    currentPhase.ordinal(),
+                    phaseTimer,
+                    stormStrength
+            );
+            for (ServerPlayer player : jupiterLevel.players()) {
+                PacketDistributor.sendToPlayer(player, payload);
+            }
+        }
     }
 
     private static void switchToNextPhase() {
