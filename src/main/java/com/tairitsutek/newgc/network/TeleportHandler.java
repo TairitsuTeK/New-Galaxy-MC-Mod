@@ -14,7 +14,6 @@ import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 @EventBusSubscriber(modid = NewGalaxyMain.MODID)
 public class TeleportHandler {
 
-    // ==================== 注册包 ====================
     @SubscribeEvent
     public static void register(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar("1");
@@ -26,7 +25,6 @@ public class TeleportHandler {
         );
     }
 
-    // ==================== 服务端处理 ====================
     private static void handle(TeleportRequestPacket packet, IPayloadContext context) {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
@@ -34,10 +32,8 @@ public class TeleportHandler {
             ServerLevel targetLevel = player.server.getLevel(packet.dimension());
             if (targetLevel == null) return;
 
-            // 已经在目标维度，不传送
             if (player.level().dimension().equals(packet.dimension())) return;
 
-            // 用 changeDimension 跨维度传送
             player.changeDimension(new DimensionTransition(
                     targetLevel,
                     net.minecraft.world.phys.Vec3.atBottomCenterOf(packet.pos()),
