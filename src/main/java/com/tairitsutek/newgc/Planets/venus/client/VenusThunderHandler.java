@@ -14,12 +14,9 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
 @EventBusSubscriber(modid = NewGalaxyMain.MODID)
 public class VenusThunderHandler {
 
-    // ===== 闪电间隔（刻）=====
-    // 木星是 10~20 刻，金星更慢，用 400~800 刻（20~40 秒）
-    private static final int MIN_TICKS = 400;
-    private static final int MAX_TICKS = 800;
+    private static final int MIN_TICKS = 100;
+    private static final int MAX_TICKS = 200;
 
-    // 闪电落点距玩家的最大半径
     private static final int LIGHTNING_RADIUS = 24;
 
     private static int cooldown = 0;
@@ -36,7 +33,6 @@ public class VenusThunderHandler {
             return;
         }
 
-        // 重置冷却，下一次 400~800 刻后
         cooldown = MIN_TICKS + venus.random.nextInt(MAX_TICKS - MIN_TICKS + 1);
 
         if (venus.players().isEmpty()) return;
@@ -48,7 +44,7 @@ public class VenusThunderHandler {
 
         LightningBolt bolt = new LightningBolt(EntityType.LIGHTNING_BOLT, venus);
         bolt.moveTo(x, y, z);
-        bolt.setVisualOnly(true);   // 只做视觉，不造成伤害、不引火
+        bolt.setVisualOnly(true);
         venus.addFreshEntity(bolt);
     }
 }

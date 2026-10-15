@@ -2,6 +2,7 @@ package com.tairitsutek.newgc.Planets.jupiter.client;
 
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.Planets.ModDimensions;
+import com.tairitsutek.newgc.Planets.jupiter.client.JupiterStormManager;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -23,12 +24,10 @@ public class JupiterWindParticles {
     private static final int HEIGHT_MIN = -10;
     private static final int HEIGHT_MAX = 28;
 
-    private static final int COUNT = 150;
-
-    private static final double WIND_SPEED = 3.0;
+    private static final int BASE_COUNT = 130;
+    private static final double BASE_WIND_SPEED = 2.0;
 
     private static final float WIND_ANGLE = (float) Math.toRadians(35.0f);
-
     private static final double WIND_JITTER = 0.08;
     private static final double VERTICAL_DRIFT = 0.04;
 
@@ -43,10 +42,14 @@ public class JupiterWindParticles {
     }
 
     private static void spawnWind(ClientLevel level, Player player) {
+        float strength = JupiterStormManager.getStormStrength();
+        int count = (int) (BASE_COUNT * strength);
+        double windSpeed = BASE_WIND_SPEED * strength;
+
         double dirX = Math.cos(WIND_ANGLE);
         double dirZ = Math.sin(WIND_ANGLE);
 
-        for (int i = 0; i < COUNT; i++) {
+        for (int i = 0; i < count; i++) {
             double dx = (RNG.nextDouble() - 0.5) * RADIUS * 2;
             double dz = (RNG.nextDouble() - 0.5) * RADIUS * 2;
             double dy = HEIGHT_MIN + RNG.nextDouble() * (HEIGHT_MAX - HEIGHT_MIN);
@@ -57,12 +60,11 @@ public class JupiterWindParticles {
 
             if (!level.isEmptyBlock(BlockPos.containing(px, py, pz))) continue;
 
-            double speed = WIND_SPEED * (0.6 + RNG.nextDouble() * 0.8);
+            double speed = windSpeed * (0.6 + RNG.nextDouble() * 0.8);
             double vx = dirX * speed + (RNG.nextDouble() - 0.5) * WIND_JITTER;
             double vz = dirZ * speed + (RNG.nextDouble() - 0.5) * WIND_JITTER;
             double vy = (RNG.nextDouble() - 0.5) * VERTICAL_DRIFT;
 
-            // ===== 主尘埃（橙 / 黑）=====
             float roll = RNG.nextFloat();
             if (roll < 0.6f) {
                 level.addParticle(
@@ -76,7 +78,6 @@ public class JupiterWindParticles {
                         px, py, pz, vx, vy, vz);
             }
 
-            // ===== 烟雾拖尾 =====
             if (RNG.nextFloat() < 0.15f) {
                 level.addParticle(
                         ParticleTypes.CAMPFIRE_COSY_SMOKE,
@@ -84,7 +85,6 @@ public class JupiterWindParticles {
                         vx * 1.2, vy * 0.5, vz * 1.2);
             }
 
-            // ===== 1. 火花粒子（橙黄，快速）=====
             if (RNG.nextFloat() < 0.08f) {
                 double sparkVx = dirX * speed * 1.5 + (RNG.nextDouble() - 0.5) * 0.3;
                 double sparkVz = dirZ * speed * 1.5 + (RNG.nextDouble() - 0.5) * 0.3;
@@ -95,7 +95,6 @@ public class JupiterWindParticles {
                         sparkVx, sparkVy, sparkVz);
             }
 
-            // ===== 2. 灰烬粒子（灰白，慢飘）=====
             if (RNG.nextFloat() < 0.12f) {
                 double ashVx = dirX * speed * 0.5 + (RNG.nextDouble() - 0.5) * 0.05;
                 double ashVz = dirZ * speed * 0.5 + (RNG.nextDouble() - 0.5) * 0.05;
@@ -106,7 +105,6 @@ public class JupiterWindParticles {
                         ashVx, ashVy, ashVz);
             }
 
-            // ===== 3. 闪电微光（白色光点，快速）=====
             if (RNG.nextFloat() < 0.03f) {
                 double glowVx = dirX * speed * 2.0 + (RNG.nextDouble() - 0.5) * 0.5;
                 double glowVz = dirZ * speed * 2.0 + (RNG.nextDouble() - 0.5) * 0.5;

@@ -14,9 +14,7 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
 @EventBusSubscriber(modid = NewGalaxyMain.MODID)
 public class JupiterThunderHandler {
 
-    private static final int MIN_TICKS = 10;
-    private static final int MAX_TICKS = 20;
-    private static final int LIGHTNING_RADIUS = 64;
+    private static final int LIGHTNING_RADIUS = 16;
 
     private static int cooldown = 0;
 
@@ -32,7 +30,10 @@ public class JupiterThunderHandler {
             return;
         }
 
-        cooldown = MIN_TICKS + jupiter.random.nextInt(MAX_TICKS - MIN_TICKS + 1);
+        float strength = JupiterStormManager.getStormStrength();
+        int dynamicMin = (int) (20 - 17 * strength);
+        int dynamicMax = (int) (40 - 34 * strength);
+        cooldown = dynamicMin + jupiter.random.nextInt(dynamicMax - dynamicMin + 1);
 
         if (jupiter.players().isEmpty()) return;
 
