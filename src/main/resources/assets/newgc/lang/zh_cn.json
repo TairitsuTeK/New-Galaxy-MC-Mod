@@ -127,5 +127,6 @@
   "tooltip.newgc.oxygen_tank.remaining": "剩余氧气：%1$s / %2$s",
   "tooltip.newgc.oxygen_tank.usage": "右键使用：为自身充氧",
   "message.newgc.venus.no_armor": "金星大气正在腐蚀你！请穿上铁质及以上的全套盔甲（每30秒会损耗2点耐久值）",
-  "message.newgc.venus.armor_wear": "你的盔甲正在被金星大气腐蚀"
+  "message.newgc.venus.armor_wear": "你的盔甲正在被金星大气腐蚀",
+  "message.newgc.jupiter.no_armor": "木星的狂暴风暴正在撕裂你！请穿上铁质及以上的全套盔甲（每10秒损耗4点耐久）"
 }

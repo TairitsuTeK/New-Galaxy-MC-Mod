@@ -23,9 +23,9 @@ public class JupiterWindParticles {
     private static final int HEIGHT_MIN = -10;
     private static final int HEIGHT_MAX = 28;
 
-    private static final int COUNT = 130;
+    private static final int COUNT = 150;
 
-    private static final double WIND_SPEED = 5.0;
+    private static final double WIND_SPEED = 3.0;
 
     private static final float WIND_ANGLE = (float) Math.toRadians(35.0f);
 

@@ -127,5 +127,6 @@
   "tooltip.newgc.oxygen_tank.remaining": "Oxygen: %1$s / %2$s",
   "tooltip.newgc.oxygen_tank.usage": "Right-click to fill your oxygen",
   "message.newgc.venus.no_armor": "Venus's atmosphere is corroding you! Wear a full set of iron or better armor (loses 2 durability every 30 seconds)",
-  "message.newgc.venus.armor_wear": "Your armor is being corroded by Venus's atmosphere"
+  "message.newgc.venus.armor_wear": "Your armor is being corroded by Venus's atmosphere",
+  "message.newgc.jupiter.no_armor": "Jupiter's raging storm is tearing you apart! Wear a full set of iron or better armor (4 durability lost every 10 seconds)"
 }
