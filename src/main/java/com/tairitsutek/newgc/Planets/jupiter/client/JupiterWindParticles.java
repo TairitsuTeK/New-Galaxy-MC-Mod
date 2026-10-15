@@ -19,25 +19,17 @@ public class JupiterWindParticles {
 
     private static final RandomSource RNG = RandomSource.create();
 
-    // ===== 范围 =====
     private static final int RADIUS = 36;
     private static final int HEIGHT_MIN = -10;
     private static final int HEIGHT_MAX = 28;
 
-    // ===== 密度 =====
-    private static final int COUNT = 100;
+    private static final int COUNT = 130;
 
-    // ===== 风速 =====
-    private static final double WIND_SPEED = 0.8;
+    private static final double WIND_SPEED = 2.0;
 
-    // ===== 风向（水平角，单位：弧度）=====
-    // 0 = +X 方向，PI/2 = +Z 方向
     private static final float WIND_ANGLE = (float) Math.toRadians(35.0f);
 
-    // ===== 风向随机抖动 =====
     private static final double WIND_JITTER = 0.08;
-
-    // ===== 垂直分量（稍微上下飘）=====
     private static final double VERTICAL_DRIFT = 0.04;
 
     @SubscribeEvent
@@ -51,12 +43,10 @@ public class JupiterWindParticles {
     }
 
     private static void spawnWind(ClientLevel level, Player player) {
-        // 风向的单位向量
         double dirX = Math.cos(WIND_ANGLE);
         double dirZ = Math.sin(WIND_ANGLE);
 
         for (int i = 0; i < COUNT; i++) {
-            // 在玩家周围随机位置生成
             double dx = (RNG.nextDouble() - 0.5) * RADIUS * 2;
             double dz = (RNG.nextDouble() - 0.5) * RADIUS * 2;
             double dy = HEIGHT_MIN + RNG.nextDouble() * (HEIGHT_MAX - HEIGHT_MIN);
@@ -65,16 +55,14 @@ public class JupiterWindParticles {
             double py = player.getY() + dy;
             double pz = player.getZ() + dz;
 
-            // 只在空气里生成
             if (!level.isEmptyBlock(BlockPos.containing(px, py, pz))) continue;
 
-            // 速度：主风向 + 抖动
             double speed = WIND_SPEED * (0.6 + RNG.nextDouble() * 0.8);
             double vx = dirX * speed + (RNG.nextDouble() - 0.5) * WIND_JITTER;
             double vz = dirZ * speed + (RNG.nextDouble() - 0.5) * WIND_JITTER;
             double vy = (RNG.nextDouble() - 0.5) * VERTICAL_DRIFT;
 
-            // 橙 / 黑 两色
+            // ===== 主尘埃（橙 / 黑）=====
             float roll = RNG.nextFloat();
             if (roll < 0.6f) {
                 level.addParticle(
@@ -88,12 +76,45 @@ public class JupiterWindParticles {
                         px, py, pz, vx, vy, vz);
             }
 
-            // 偶尔加一条"风线"（普通烟雾拖尾）
+            // ===== 烟雾拖尾 =====
             if (RNG.nextFloat() < 0.15f) {
                 level.addParticle(
                         ParticleTypes.CAMPFIRE_COSY_SMOKE,
                         px, py, pz,
                         vx * 1.2, vy * 0.5, vz * 1.2);
+            }
+
+            // ===== 1. 火花粒子（橙黄，快速）=====
+            if (RNG.nextFloat() < 0.08f) {
+                double sparkVx = dirX * speed * 1.5 + (RNG.nextDouble() - 0.5) * 0.3;
+                double sparkVz = dirZ * speed * 1.5 + (RNG.nextDouble() - 0.5) * 0.3;
+                double sparkVy = (RNG.nextDouble() - 0.5) * 0.15;
+                level.addParticle(
+                        ParticleTypes.FLAME,
+                        px, py, pz,
+                        sparkVx, sparkVy, sparkVz);
+            }
+
+            // ===== 2. 灰烬粒子（灰白，慢飘）=====
+            if (RNG.nextFloat() < 0.12f) {
+                double ashVx = dirX * speed * 0.5 + (RNG.nextDouble() - 0.5) * 0.05;
+                double ashVz = dirZ * speed * 0.5 + (RNG.nextDouble() - 0.5) * 0.05;
+                double ashVy = (RNG.nextDouble() - 0.5) * 0.02;
+                level.addParticle(
+                        ParticleTypes.WHITE_ASH,
+                        px, py, pz,
+                        ashVx, ashVy, ashVz);
+            }
+
+            // ===== 3. 闪电微光（白色光点，快速）=====
+            if (RNG.nextFloat() < 0.03f) {
+                double glowVx = dirX * speed * 2.0 + (RNG.nextDouble() - 0.5) * 0.5;
+                double glowVz = dirZ * speed * 2.0 + (RNG.nextDouble() - 0.5) * 0.5;
+                double glowVy = (RNG.nextDouble() - 0.5) * 0.2;
+                level.addParticle(
+                        ParticleTypes.END_ROD,
+                        px, py, pz,
+                        glowVx, glowVy, glowVz);
             }
         }
     }
