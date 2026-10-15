@@ -20,15 +20,20 @@ public class JupiterStormOverlay {
         if (!mc.level.dimension().equals(ModDimensions.JUPITER_LEVEL_KEY)) return;
 
         float strength = JupiterStormManager.getStormStrength();
-        if (strength < 0.5f) return;
+        if (strength < 1.0f) return;
+
+        // 钳制 strength
+        strength = Math.min(strength, 2.0f);
 
         GuiGraphics g = event.getGuiGraphics();
         int width = mc.getWindow().getGuiScaledWidth();
         int height = mc.getWindow().getGuiScaledHeight();
 
-        int alpha = (int) ((strength - 0.5f) * 2 * 80);
-        int color = (alpha << 24) | 0xCC6600;
+        // 钳制 alpha
+        int alpha = (int) ((strength - 1.0f) * 150);
+        alpha = Math.max(0, Math.min(180, alpha));
 
+        int color = (alpha << 24) | 0xCC6600;
         g.fill(0, 0, width, height, color);
     }
 }
