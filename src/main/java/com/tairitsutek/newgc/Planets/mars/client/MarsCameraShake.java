@@ -16,16 +16,10 @@ public class MarsCameraShake {
 
     private static final RandomSource RNG = RandomSource.create();
 
-    // 影响半径：超过这个距离完全无感
     private static final double MAX_DISTANCE = 64.0;
-
-    // 近距离时最大晃动幅度（度）
     private static final float MAX_AMPLITUDE = 1.6f;
-
-    // 平滑系数
     private static final float SMOOTH = 0.08f;
 
-    // 内部状态
     private static float smoothedAmplitude = 0f;
     private static float shakeTime = 0f;
 
@@ -35,11 +29,11 @@ public class MarsCameraShake {
         if (mc.level == null || mc.player == null) return;
         if (!mc.level.dimension().equals(ModDimensions.MARS_LEVEL_KEY)) return;
 
-        // ---- 目标幅度：按距离 + 喷发强度 ----
         float targetAmplitude = 0f;
 
-        BlockPos vp = MarsVolcanoHandler.getVolcanoPos();
-        float intensity = MarsVolcanoHandler.getEruptionIntensity();
+        // 改：从 ClientCache 读
+        BlockPos vp = MarsVolcanoClientCache.getVolcanoPos();
+        float intensity = MarsVolcanoClientCache.getEruptionIntensity();
 
         if (vp != null && intensity > 0f) {
             Vec3 p = mc.player.position();
@@ -49,24 +43,18 @@ public class MarsCameraShake {
             double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
 
             if (dist < MAX_DISTANCE) {
-                // 归一化距离：0 = 在喷发点，1 = 在边界
                 double t = dist / MAX_DISTANCE;
-                // 距离衰减：平方衰减，近处更猛
                 double distanceFactor = 1.0 - t * t;
-
                 targetAmplitude = (float) (MAX_AMPLITUDE * intensity * distanceFactor);
             }
         }
 
-        // ---- 平滑跟随 ----
         smoothedAmplitude += (targetAmplitude - smoothedAmplitude) * SMOOTH;
         if (Float.isNaN(smoothedAmplitude)) smoothedAmplitude = 0f;
         if (smoothedAmplitude < 0.01f) return;
 
-        // ---- 晃动 ----
         shakeTime += 1.0f;
 
-        // 随机抖动 + 缓慢正弦，模拟地震
         float jitterX = (RNG.nextFloat() - 0.5f) * smoothedAmplitude;
         float jitterY = (RNG.nextFloat() - 0.5f) * smoothedAmplitude;
 
