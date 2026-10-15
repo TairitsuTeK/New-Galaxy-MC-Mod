@@ -15,23 +15,24 @@ public class JupiterStormManager {
         CALM, RISING, PEAK, SUDDEN, FALLING
     }
 
+    // ===== 各阶段强度范围 =====
     private static final float CALM_MIN = 0.0f, CALM_MAX = 0.15f;
     private static final float RISING_MIN = 0.2f, RISING_MAX = 0.7f;
     private static final float PEAK_MIN = 1.0f, PEAK_MAX = 1.5f;
     private static final float SUDDEN_MIN = 1.8f, SUDDEN_MAX = 2.5f;
     private static final float FALLING_MIN = 0.3f, FALLING_MAX = 0.8f;
 
-    // 阶段持续时间：适中，不太长
+    // ===== 各阶段持续时间（刻）=====
     private static final int CALM_MIN_TICKS = 600, CALM_MAX_TICKS = 1200;
     private static final int RISING_MIN_TICKS = 300, RISING_MAX_TICKS = 600;
     private static final int PEAK_MIN_TICKS = 300, PEAK_MAX_TICKS = 600;
     private static final int SUDDEN_MIN_TICKS = 200, SUDDEN_MAX_TICKS = 400;
     private static final int FALLING_MIN_TICKS = 300, FALLING_MAX_TICKS = 600;
 
-    // 平滑系数：5 秒追上
+    // 平滑系数：约 5 秒追上目标
     private static final float SMOOTH = 0.01f;
 
-    // 阶段内正弦波幅度和周期
+    // 阶段内正弦波，避免完全静止
     private static final float WAVE_AMPLITUDE = 0.1f;
     private static final float WAVE_PERIOD = 0.01f;
 
