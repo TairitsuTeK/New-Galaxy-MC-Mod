@@ -14,9 +14,8 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
 @EventBusSubscriber(modid = NewGalaxyMain.MODID)
 public class JupiterThunderHandler {
 
-    // ★ 从 3~10 秒改成 1~4 秒（更快、更随机）
-    private static final int MIN_TICKS = 20;        // 最短 1 秒
-    private static final int MAX_TICKS = 80;        // 最长 4 秒
+    private static final int MIN_TICKS = 10;
+    private static final int MAX_TICKS = 20;
     private static final int LIGHTNING_RADIUS = 32;
 
     private static int cooldown = 0;
@@ -32,7 +31,7 @@ public class JupiterThunderHandler {
             cooldown--;
             return;
         }
-        // 每次冷却随机 20~80 tick（1~4 秒）
+
         cooldown = MIN_TICKS + jupiter.random.nextInt(MAX_TICKS - MIN_TICKS + 1);
 
         if (jupiter.players().isEmpty()) return;

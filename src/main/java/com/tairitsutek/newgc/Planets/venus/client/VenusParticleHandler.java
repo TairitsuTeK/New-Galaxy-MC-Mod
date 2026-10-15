@@ -67,7 +67,7 @@ public class VenusParticleHandler {
 
             if (random.nextFloat() < 0.3f) {
                 level.addParticle(
-                        ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                        ParticleTypes.SMOKE,
                         x, y, z,
                         vx * 0.5, vy * 0.5, vz * 0.5
                 );
