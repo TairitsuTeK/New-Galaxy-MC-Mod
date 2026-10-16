@@ -5,6 +5,8 @@ import com.tairitsutek.newgc.Planets.ModDimensions;
 import com.tairitsutek.newgc.Planets.jupiter.client.JupiterStormClientCache;
 import com.tairitsutek.newgc.Planets.mars.client.MarsDustStormClientCache;
 import com.tairitsutek.newgc.Planets.mars.client.MarsVolcanoClientCache;
+import com.tairitsutek.newgc.client.debug.DebugState;
+import com.tairitsutek.newgc.config.NewGalaxyConfig;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
@@ -12,6 +14,7 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 @EventBusSubscriber(modid = NewGalaxyMain.MODID, value = Dist.CLIENT)
@@ -25,9 +28,7 @@ public class PlanetStatusHud {
     private static final int CARD_GAP   = 6;
     private static final int MARGIN_TOP = 60;
     private static final int MARGIN_RIGHT = 10;
-
-    // 每张卡片的内部高度（3 行）
-    private static final int CARD_3ROW = ROW_H * 3 + PADDING * 2;
+    private static final int CARD_3ROW  = ROW_H * 3 + PADDING * 2;
 
     // ===== 主色 =====
     private static final int BG          = 0xE00A121E;
@@ -57,6 +58,18 @@ public class PlanetStatusHud {
     private static final int MARS_DOT    = 0xFFE06B4B;   // 火山
     private static final int DUST_DOT    = 0xFFC89650;   // 沙尘暴
 
+    // ===== 调试按钮布局 =====
+    private static final int DEBUG_BTN_W = 40;
+    private static final int DEBUG_BTN_H = 16;
+    private static final int DEBUG_BTN_GAP = 4;
+
+    // ===== HUD 位置缓存（供点击判定用）=====
+    private static int lastHudX = 0;
+    private static int lastHudY = 0;
+    private static int lastHudW = 0;
+    private static int lastHudH = 0;
+    private static boolean debugButtonsVisible = false;
+
     @SubscribeEvent
     public static void onRenderGui(RenderGuiEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
@@ -65,7 +78,10 @@ public class PlanetStatusHud {
 
         boolean inJupiter = mc.level.dimension().equals(ModDimensions.JUPITER_LEVEL_KEY);
         boolean inMars    = mc.level.dimension().equals(ModDimensions.MARS_LEVEL_KEY);
-        if (!inJupiter && !inMars) return;
+        if (!inJupiter && !inMars) {
+            debugButtonsVisible = false;
+            return;
+        }
 
         GuiGraphics g = event.getGuiGraphics();
         int screenW = mc.getWindow().getGuiScaledWidth();
@@ -73,12 +89,13 @@ public class PlanetStatusHud {
         int x = screenW - WIDTH - MARGIN_RIGHT;
         int y = MARGIN_TOP;
 
-        // 卡片数：木星 1 张；火星 2 张（火山 + 沙尘暴）
+        // ===== 动态计算总高度 =====
+        int jupiterH = inJupiter ? CARD_3ROW : 0;
+        int marsH = inMars ? CARD_3ROW * 2 : 0;   // 火山 + 沙尘暴两张卡
         int cardCount = (inJupiter ? 1 : 0) + (inMars ? 2 : 0);
-        int totalH = HEADER_H
-                + cardCount * CARD_3ROW
-                + cardCount * CARD_GAP
-                + PADDING;
+        int totalH = HEADER_H + jupiterH + marsH
+                + (cardCount - 1) * CARD_GAP
+                + PADDING + 2;
 
         // 外发光
         g.fill(x - 1, y - 1, x + WIDTH + 1, y + totalH + 1, 0x40000000);
@@ -106,6 +123,20 @@ public class PlanetStatusHud {
             cy = drawVolcanoCard(g, mc, x, cy);
             cy = drawDustStormCard(g, mc, x, cy);
         }
+
+        // 记录 HUD 位置
+        lastHudX = x;
+        lastHudY = y;
+        lastHudW = WIDTH;
+        lastHudH = totalH;
+
+        // ===== 调试按钮 =====
+        if (NewGalaxyConfig.CLIENT.debugMode.get()) {
+            debugButtonsVisible = true;
+            drawDebugButtons(g, mc, x, y + totalH + 6, inJupiter, inMars);
+        } else {
+            debugButtonsVisible = false;
+        }
     }
 
     // ================= 木星卡片 =================
@@ -113,7 +144,7 @@ public class PlanetStatusHud {
         JupiterStormClientCache.Phase phase = JupiterStormClientCache.getPhase();
         int phaseColor = PHASE_COLORS[phase.ordinal()];
         float strength = JupiterStormClientCache.getStormStrength();
-        int remain     = JupiterStormClientCache.getPhaseTimer();
+        int remain = JupiterStormClientCache.getPhaseTimer();
 
         g.fill(x + PADDING, y, x + WIDTH - PADDING, y + CARD_3ROW, BG_INNER);
         g.fill(x + PADDING - 1, y, x + PADDING + 4, y + CARD_3ROW,
@@ -140,8 +171,8 @@ public class PlanetStatusHud {
         drawRow(g, mc, tx, ty, rightEdge, "风暴强度",
                 String.format("%.2f", strength), VALUE);
 
-        drawStormBar(g, x + PADDING + 9, ty + ROW_H - 5, WIDTH - PADDING * 2 - 17 - 8,
-                strength, phaseColor);
+        drawStormBar(g, x + PADDING + 9, ty + ROW_H - 5,
+                WIDTH - PADDING * 2 - 17 - 8, strength, phaseColor);
 
         return y + CARD_3ROW + CARD_GAP;
     }
@@ -189,10 +220,10 @@ public class PlanetStatusHud {
 
     // ================= 火星 · 火山卡片 =================
     private static int drawVolcanoCard(GuiGraphics g, Minecraft mc, int x, int y) {
-        int eruption     = MarsVolcanoClientCache.getEruptionTicks();
-        int total        = MarsVolcanoClientCache.getEruptionTotalTicks();
-        int cooldown     = MarsVolcanoClientCache.getCooldownTimer();
-        BlockPos vp      = MarsVolcanoClientCache.getVolcanoPos();
+        int eruption = MarsVolcanoClientCache.getEruptionTicks();
+        int total = MarsVolcanoClientCache.getEruptionTotalTicks();
+        int cooldown = MarsVolcanoClientCache.getCooldownTimer();
+        BlockPos vp = MarsVolcanoClientCache.getVolcanoPos();
         boolean erupting = MarsVolcanoClientCache.isErupting();
 
         g.fill(x + PADDING, y, x + WIDTH - PADDING, y + CARD_3ROW, BG_INNER);
@@ -259,10 +290,8 @@ public class PlanetStatusHud {
         int ty = y + PADDING;
         int rightEdge = x + WIDTH - PADDING - 8;
 
-        // 标题
         g.drawString(mc.font, "■ 火星沙尘暴", tx, ty, TITLE, false);
 
-        // 阶段胶囊
         String phaseName = dustPhaseName(phase);
         int pW = mc.font.width(phaseName);
         int pillPad = 4;
@@ -272,16 +301,11 @@ public class PlanetStatusHud {
         g.drawString(mc.font, phaseName, pillX + pillPad, ty, 0xFFFFFFFF, false);
 
         ty += ROW_H;
-
-        // 阶段剩余
         drawRow(g, mc, tx, ty, rightEdge, "阶段剩余", formatTicks(phaseTimer), VALUE);
         ty += ROW_H;
-
-        // 沙尘强度
         drawRow(g, mc, tx, ty, rightEdge, "沙尘强度",
                 String.format("%.2f", strength), VALUE);
 
-        // 强度条
         drawDustStormBar(g, x + PADDING + 9, ty + ROW_H - 5,
                 WIDTH - PADDING * 2 - 17 - 8, strength, phaseColor);
 
@@ -325,7 +349,6 @@ public class PlanetStatusHud {
         g.fill(x, y, x + fillW, y + 1, lighten(fillColor, 0x40));
         g.fill(x, y + h - 1, x + fillW, y + h, darken(fillColor, 0x40));
 
-        // 刻度：对应强度 0.5 / 1.0
         for (float tick : new float[]{1f / 3f, 2f / 3f}) {
             int tx = x + (int) (w * tick);
             g.fill(tx, y, tx + 1, y + h, BAR_TICK);
@@ -351,6 +374,121 @@ public class PlanetStatusHud {
         g.fill(x, y + h - 1, x + fillW, y + h, darken(color, 0x40));
 
         drawBorder(g, x, y, w, h, 0xFF1A2A3C);
+    }
+
+    // ================= 调试按钮 =================
+    private static void drawDebugButtons(GuiGraphics g, Minecraft mc,
+                                         int x, int y,
+                                         boolean inJupiter, boolean inMars) {
+        int btnX = x;
+        int btnY = y;
+
+        if (inJupiter) {
+            String[] names = {"平静", "增强", "峰值", "暴烈", "衰退"};
+            int[] phases = {
+                    DebugState.JUPITER_CALM,
+                    DebugState.JUPITER_RISING,
+                    DebugState.JUPITER_PEAK,
+                    DebugState.JUPITER_SUDDEN,
+                    DebugState.JUPITER_FALLING
+            };
+            int current = DebugState.getJupiterPhase();
+            for (int i = 0; i < names.length; i++) {
+                drawDebugButton(g, mc, btnX, btnY, names[i], phases[i] == current);
+                btnX += DEBUG_BTN_W + DEBUG_BTN_GAP;
+            }
+        } else if (inMars) {
+            String[] names = {"平静", "扬尘", "沙暴", "消退"};
+            int[] phases = {
+                    DebugState.MARS_DUST_CALM,
+                    DebugState.MARS_DUST_RISING,
+                    DebugState.MARS_DUST_PEAK,
+                    DebugState.MARS_DUST_FALLING
+            };
+            int current = DebugState.getMarsDustPhase();
+            for (int i = 0; i < names.length; i++) {
+                drawDebugButton(g, mc, btnX, btnY, names[i], phases[i] == current);
+                btnX += DEBUG_BTN_W + DEBUG_BTN_GAP;
+            }
+        }
+    }
+
+    private static void drawDebugButton(GuiGraphics g, Minecraft mc,
+                                        int x, int y, String label, boolean active) {
+        int bgColor = active ? 0xFF3A5570 : 0xB0142436;
+        int borderColor = active ? 0xFF7AA0C0 : 0xFF2F4157;
+        int textColor = active ? 0xFFFFFFFF : 0xC0D0E0;
+
+        g.fill(x, y, x + DEBUG_BTN_W, y + DEBUG_BTN_H, bgColor);
+        g.fill(x, y, x + DEBUG_BTN_W, y + 1, borderColor);
+        g.fill(x, y + DEBUG_BTN_H - 1, x + DEBUG_BTN_W, y + DEBUG_BTN_H, borderColor);
+        g.fill(x, y, x + 1, y + DEBUG_BTN_H, borderColor);
+        g.fill(x + DEBUG_BTN_W - 1, y, x + DEBUG_BTN_W, y + DEBUG_BTN_H, borderColor);
+
+        int textW = mc.font.width(label);
+        g.drawString(mc.font, label,
+                x + (DEBUG_BTN_W - textW) / 2,
+                y + (DEBUG_BTN_H - 8) / 2,
+                textColor, false);
+    }
+
+    // ================= 点击判定 =================
+    @SubscribeEvent
+    public static void onMouseClick(InputEvent.MouseButton.Pre event) {
+        if (event.getAction() != 1) return;   // 1 = press
+        if (!NewGalaxyConfig.CLIENT.debugMode.get()) return;
+        if (!debugButtonsVisible) return;
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.level == null || mc.screen != null) return;
+
+        double mouseX = mc.mouseHandler.xpos()
+                * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getWidth();
+        double mouseY = mc.mouseHandler.ypos()
+                * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getHeight();
+
+        boolean inJupiter = mc.level.dimension().equals(ModDimensions.JUPITER_LEVEL_KEY);
+        boolean inMars    = mc.level.dimension().equals(ModDimensions.MARS_LEVEL_KEY);
+
+        int btnY = lastHudY + lastHudH + 6;
+        int btnX = lastHudX;
+
+        if (inJupiter) {
+            int[] phases = {
+                    DebugState.JUPITER_CALM,
+                    DebugState.JUPITER_RISING,
+                    DebugState.JUPITER_PEAK,
+                    DebugState.JUPITER_SUDDEN,
+                    DebugState.JUPITER_FALLING
+            };
+            for (int phase : phases) {
+                if (isHover(mouseX, mouseY, btnX, btnY, DEBUG_BTN_W, DEBUG_BTN_H)) {
+                    DebugState.setJupiterPhase(phase);
+                    event.setCanceled(true);
+                    return;
+                }
+                btnX += DEBUG_BTN_W + DEBUG_BTN_GAP;
+            }
+        } else if (inMars) {
+            int[] phases = {
+                    DebugState.MARS_DUST_CALM,
+                    DebugState.MARS_DUST_RISING,
+                    DebugState.MARS_DUST_PEAK,
+                    DebugState.MARS_DUST_FALLING
+            };
+            for (int phase : phases) {
+                if (isHover(mouseX, mouseY, btnX, btnY, DEBUG_BTN_W, DEBUG_BTN_H)) {
+                    DebugState.setMarsDustPhase(phase);
+                    event.setCanceled(true);
+                    return;
+                }
+                btnX += DEBUG_BTN_W + DEBUG_BTN_GAP;
+            }
+        }
+    }
+
+    private static boolean isHover(double mx, double my, int x, int y, int w, int h) {
+        return mx >= x && mx <= x + w && my >= y && my <= y + h;
     }
 
     // ================= 工具 =================

@@ -2,6 +2,7 @@ package com.tairitsutek.newgc.Planets.jupiter.client;
 
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.Planets.ModDimensions;
+import com.tairitsutek.newgc.Planets.jupiter.server.JupiterStormManager;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

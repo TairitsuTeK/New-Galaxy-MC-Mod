@@ -1,9 +1,7 @@
 package com.tairitsutek.newgc.Planets.jupiter.client;
 
-/**
- * 纯客户端镜像缓存：由 JupiterStormPayload 写入，所有客户端 HUD/特效读取。
- * 不依赖任何服务端状态，避免 Dist 隔离问题。
- */
+import com.tairitsutek.newgc.client.debug.DebugState;
+
 public final class JupiterStormClientCache {
 
     public enum Phase {
@@ -17,17 +15,38 @@ public final class JupiterStormClientCache {
     private JupiterStormClientCache() {}
 
     public static void set(int ordinal, int timer, float strength) {
+        // 调试模式下不覆盖网络同步的值（由 DebugState 接管）
+        if (DebugState.getJupiterForcedStrength() >= 0) {
+            return;
+        }
         phaseOrdinal = ordinal;
         phaseTimer = timer;
         stormStrength = strength;
     }
 
     public static Phase getPhase() {
+        // 调试模式优先
+        int debugPhase = DebugState.getJupiterPhase();
+        if (debugPhase >= 0) {
+            Phase[] v = Phase.values();
+            return v[Math.max(0, Math.min(v.length - 1, debugPhase))];
+        }
+
         Phase[] v = Phase.values();
         int i = Math.max(0, Math.min(v.length - 1, phaseOrdinal));
         return v[i];
     }
 
-    public static int getPhaseTimer() { return phaseTimer; }
-    public static float getStormStrength() { return stormStrength; }
+    public static int getPhaseTimer() {
+        // 调试模式不显示"剩余"（永远 0）
+        if (DebugState.getJupiterForcedStrength() >= 0) return 0;
+        return phaseTimer;
+    }
+
+    public static float getStormStrength() {
+        // 调试模式：平滑逼近目标
+        float debug = DebugState.tickJupiterSmooth();
+        if (debug >= 0) return debug;
+        return stormStrength;
+    }
 }

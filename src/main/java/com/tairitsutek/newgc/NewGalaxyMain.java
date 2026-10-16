@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.tairitsutek.newgc.Planets.ModDimensions;
 import com.tairitsutek.newgc.block.PlanetsBlock;
 import com.tairitsutek.newgc.block.entity.ModBlockEntities;
+import com.tairitsutek.newgc.config.NewGalaxyConfig;
 import com.tairitsutek.newgc.item.material.Material;
 import com.tairitsutek.newgc.block.MachinesBlock;
 import com.tairitsutek.newgc.menu.ModMenus;
@@ -37,12 +38,14 @@ public class NewGalaxyMain {
         ModAttachments.register(modEventBus);
         modEventBus.addListener(this::registerPayloads);
         NeoForge.EVENT_BUS.register(this);
+
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        modContainer.registerConfig(ModConfig.Type.CLIENT, NewGalaxyConfig.SPEC);
+
         ModDimensions.register();
         MachinesBlock.register(modEventBus);
         Material.register(modEventBus);
         ModRecipes.register(modEventBus);
-
     }
 
     private void registerPayloads(final RegisterPayloadHandlersEvent event) {

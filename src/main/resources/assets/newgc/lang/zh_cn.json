@@ -119,6 +119,8 @@
   "itemGroup.newgc.tools": "新星系 - 工具",
   "key.categories.newgc": "新星系",
   "key.newgc.star_map": "打开星图",
+  "key.newgc.reset_tank": "重置氧气罐",
+  "key.newgc.toggle_hud_mouse": "呼出鼠标 (HUD调试)",
   "message.newgc.need_teleporter": "你必须手持传送器来打开星图并进行传送",
   "message.newgc.oxygen_tank.empty": "氧气罐已空，需要补充",
   "message.newgc.oxygen_tank.used": "已充氧 +%1$s",

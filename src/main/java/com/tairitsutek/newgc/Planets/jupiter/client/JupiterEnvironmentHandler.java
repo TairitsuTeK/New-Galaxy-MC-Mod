@@ -2,6 +2,7 @@ package com.tairitsutek.newgc.Planets.jupiter.client;
 
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.Planets.ModDimensions;
+import com.tairitsutek.newgc.Planets.jupiter.server.JupiterStormManager;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -17,14 +18,23 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 @EventBusSubscriber(modid = NewGalaxyMain.MODID)
 public class JupiterEnvironmentHandler {
 
-    private static final int BASE_DAMAGE_INTERVAL = 20;
-    private static final float BASE_DAMAGE_AMOUNT = 3.0f;
+    // ===== 无护甲时：伤害间隔范围 =====
+    // 平静期：120 刻一次（6 秒，伤害概率低）
+    // 暴烈期：8 刻一次（0.4 秒，非常密）
+    private static final int DAMAGE_INTERVAL_CALM = 120;
+    private static final int DAMAGE_INTERVAL_STORM = 8;
 
-    private static final int BASE_ARMOR_INTERVAL = 100;
-    private static final int BASE_ARMOR_AMOUNT = 6;
+    // ===== 无护甲时：伤害值范围 =====
+    // 平静期：0.3 点
+    // 暴烈期：8 点（原 7.5，略提）
+    private static final float DAMAGE_AMOUNT_CALM = 0.3f;
+    private static final float DAMAGE_AMOUNT_STORM = 8.0f;
+
+    // ===== 有护甲时：护甲耐久损耗 =====
+    private static final int ARMOR_INTERVAL_BASE = 100;
+    private static final int ARMOR_AMOUNT_BASE = 6;
 
     private static final int MESSAGE_INTERVAL = 20;
-
     private static final float SMOOTH_FACTOR = 0.01f;
 
     private static float smoothedStrength = 1.0f;
@@ -35,29 +45,45 @@ public class JupiterEnvironmentHandler {
         if (!player.level().dimension().equals(ModDimensions.JUPITER_LEVEL_KEY)) return;
         if (player.isCreative() || player.isSpectator()) return;
 
-        // 目标强度
+        // 目标强度（不再强制下限 0.5）
         float targetStrength = JupiterStormManager.getStormStrength();
-        targetStrength = Math.max(0.5f, Math.min(2.5f, targetStrength));
+        targetStrength = Math.max(0f, Math.min(2.5f, targetStrength));
 
         // 平滑跟随
         smoothedStrength += (targetStrength - smoothedStrength) * SMOOTH_FACTOR;
+        if (Float.isNaN(smoothedStrength)) smoothedStrength = 0f;
+        smoothedStrength = Math.max(0f, Math.min(2.5f, smoothedStrength));
 
-        // 兜底
-        if (Float.isNaN(smoothedStrength)) smoothedStrength = 1.0f;
-        smoothedStrength = Math.max(0.5f, Math.min(2.5f, smoothedStrength));
+        // ===== 归一化：0 = 平静，1 = 暴烈顶点 =====
+        float t = smoothedStrength / 2.5f;
+        t = Math.max(0f, Math.min(1f, t));
 
-        // 用平滑后的强度算伤害/耐久
-        int damageInterval = Math.max(5, (int) (BASE_DAMAGE_INTERVAL / smoothedStrength));
-        float damageAmount = BASE_DAMAGE_AMOUNT * smoothedStrength;
+        // ===== 曲线：t^2.5 让平静期伤害几乎为零 =====
+        float curve = (float) Math.pow(t, 2.5);
 
-        int armorInterval = Math.max(20, (int) (BASE_ARMOR_INTERVAL / smoothedStrength));
-        int armorAmount = Math.max(1, (int) (BASE_ARMOR_AMOUNT * smoothedStrength));
+        // ===== 伤害间隔：曲线决定，平静期极长 =====
+        int damageInterval = (int) (DAMAGE_INTERVAL_CALM
+                - (DAMAGE_INTERVAL_CALM - DAMAGE_INTERVAL_STORM) * curve);
+        damageInterval = Math.max(DAMAGE_INTERVAL_STORM, damageInterval);
+
+        // ===== 伤害值：曲线决定 =====
+        float damageAmount = DAMAGE_AMOUNT_CALM
+                + (DAMAGE_AMOUNT_STORM - DAMAGE_AMOUNT_CALM) * curve;
+
+        // ===== 护甲耐久损耗（随强度）=====
+        int armorInterval = Math.max(20,
+                (int) (ARMOR_INTERVAL_BASE / (0.5f + smoothedStrength)));
+        int armorAmount = Math.max(1,
+                (int) (ARMOR_AMOUNT_BASE * (0.5f + smoothedStrength)));
 
         boolean protectedByArmor = hasFullProtectiveArmor(player);
 
         if (!protectedByArmor) {
             if (player.tickCount % damageInterval == 0) {
-                player.hurt(player.damageSources().generic(), damageAmount);
+                // 平静期伤害极小，暴烈期致命
+                if (damageAmount >= 0.05f) {
+                    player.hurt(player.damageSources().generic(), damageAmount);
+                }
             }
             if (player.tickCount % MESSAGE_INTERVAL == 0) {
                 player.displayClientMessage(

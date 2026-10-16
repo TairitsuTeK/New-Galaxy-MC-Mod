@@ -1,4 +1,4 @@
-package com.tairitsutek.newgc.Planets.jupiter.client;
+package com.tairitsutek.newgc.Planets.jupiter.server;
 
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.Planets.ModDimensions;
@@ -25,19 +25,18 @@ public class JupiterStormManager {
     private static final float SUDDEN_MIN = 1.8f, SUDDEN_MAX = 2.5f;
     private static final float FALLING_MIN = 0.3f, FALLING_MAX = 0.8f;
 
-    // ===== 各阶段持续时间（刻）=====
-    private static final int CALM_MIN_TICKS = 600, CALM_MAX_TICKS = 1200;
-    private static final int RISING_MIN_TICKS = 300, RISING_MAX_TICKS = 600;
+    // ===== 各阶段持续时间（刻）——平静缩短、暴烈延长 =====
+    private static final int CALM_MIN_TICKS = 300, CALM_MAX_TICKS = 600;
+    private static final int RISING_MIN_TICKS = 200, RISING_MAX_TICKS = 400;
     private static final int PEAK_MIN_TICKS = 300, PEAK_MAX_TICKS = 600;
-    private static final int SUDDEN_MIN_TICKS = 200, SUDDEN_MAX_TICKS = 400;
+    private static final int SUDDEN_MIN_TICKS = 400, SUDDEN_MAX_TICKS = 800;
     private static final int FALLING_MIN_TICKS = 300, FALLING_MAX_TICKS = 600;
 
     private static final float SMOOTH = 0.01f;
     private static final float WAVE_AMPLITUDE = 0.1f;
     private static final float WAVE_PERIOD = 0.01f;
 
-    // ===== 同步间隔 =====
-    private static final int SYNC_INTERVAL = 10;   // 0.5 秒
+    private static final int SYNC_INTERVAL = 10;
 
     private static Phase currentPhase = Phase.CALM;
     private static int phaseTimer = 0;
@@ -50,7 +49,6 @@ public class JupiterStormManager {
 
     private static final RandomSource RNG = RandomSource.create();
 
-    // ===== 服务端读取用（服务端逻辑，如雷击、环境伤害）=====
     public static float getStormStrength() { return stormStrength; }
     public static Phase getCurrentPhase()  { return currentPhase; }
     public static int getPhaseTimer()      { return phaseTimer; }
@@ -91,7 +89,7 @@ public class JupiterStormManager {
         }
         stormStrength = Math.max(0.0f, Math.min(SUDDEN_MAX, stormStrength));
 
-        // ===== 定期同步给木星维度内的玩家 =====
+        // ===== 定期同步 =====
         syncCounter++;
         if (syncCounter >= SYNC_INTERVAL) {
             syncCounter = 0;
@@ -109,10 +107,15 @@ public class JupiterStormManager {
     private static void switchToNextPhase() {
         Phase next;
         switch (currentPhase) {
-            case CALM -> next = RNG.nextFloat() < 0.7f ? Phase.RISING : Phase.SUDDEN;
-            case RISING -> next = RNG.nextFloat() < 0.8f ? Phase.PEAK : Phase.FALLING;
-            case PEAK -> next = RNG.nextFloat() < 0.5f ? Phase.SUDDEN : Phase.FALLING;
-            case SUDDEN -> next = RNG.nextFloat() < 0.6f ? Phase.PEAK : Phase.FALLING;
+            case CALM -> {
+                float r = RNG.nextFloat();
+                if (r < 0.4f)      next = Phase.SUDDEN;
+                else if (r < 0.9f) next = Phase.RISING;
+                else               next = Phase.PEAK;
+            }
+            case RISING -> next = RNG.nextFloat() < 0.9f ? Phase.PEAK : Phase.SUDDEN;
+            case PEAK -> next = RNG.nextFloat() < 0.7f ? Phase.SUDDEN : Phase.FALLING;
+            case SUDDEN -> next = RNG.nextFloat() < 0.4f ? Phase.PEAK : Phase.FALLING;
             case FALLING -> next = Phase.CALM;
             default -> next = Phase.CALM;
         }
