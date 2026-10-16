@@ -12,8 +12,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
- * 水星太阳耀斑状态机（服务端权威）。
- * 节奏：CALM（60~180s）→ BUILDUP（3~8s）→ FLARE（2~5s）→ DECAY（5~15s）→ CALM
+ * 水星太阳耀斑状态机。
+ * 平静期 5~15 分钟，让耀斑成为"罕见事件"。
  */
 @EventBusSubscriber(modid = NewGalaxyMain.MODID)
 public class MercurySolarFlareManager {
@@ -23,10 +23,14 @@ public class MercurySolarFlareManager {
     }
 
     // ===== 各阶段持续时间（刻）=====
-    private static final int CALM_MIN_TICKS    = 1200, CALM_MAX_TICKS    = 3600;   // 60~180s
-    private static final int BUILDUP_MIN_TICKS = 60,   BUILDUP_MAX_TICKS = 160;    // 3~8s
-    private static final int FLARE_MIN_TICKS   = 40,   FLARE_MAX_TICKS   = 100;    // 2~5s
-    private static final int DECAY_MIN_TICKS   = 100,  DECAY_MAX_TICKS   = 300;    // 5~15s
+    // 平静：5~15 分钟
+    private static final int CALM_MIN_TICKS    = 6000, CALM_MAX_TICKS    = 18000;
+    // 预警：3~8 秒
+    private static final int BUILDUP_MIN_TICKS = 60,   BUILDUP_MAX_TICKS = 160;
+    // 爆发：2~5 秒
+    private static final int FLARE_MIN_TICKS   = 40,   FLARE_MAX_TICKS   = 100;
+    // 消退：5~15 秒
+    private static final int DECAY_MIN_TICKS   = 100,  DECAY_MAX_TICKS   = 300;
 
     private static final int SYNC_INTERVAL = 5;
 
@@ -41,30 +45,20 @@ public class MercurySolarFlareManager {
     public static Phase getCurrentPhase() { return currentPhase; }
     public static int getPhaseTimer()     { return phaseTimer; }
 
-    /**
-     * 耀斑强度：
-     * CALM: 0
-     * BUILDUP: 0~1（渐强，预警用）
-     * FLARE: 1~1.5（峰值）
-     * DECAY: 1~0（渐弱）
-     */
     public static float getFlareIntensity() {
         return switch (currentPhase) {
             case CALM -> 0f;
             case BUILDUP -> {
-                // 从 BUILDUP 总时长倒推进度
-                int total = BUILDUP_MAX_TICKS;
+                int total = Math.max(1, BUILDUP_MAX_TICKS);
                 float progress = 1f - (float) phaseTimer / total;
                 yield Math.max(0f, Math.min(1f, progress));
             }
             case FLARE -> {
-                // 峰值 + 正弦波动
                 float wave = (float) Math.sin(globalTick * 0.3) * 0.15f;
                 yield 1.0f + wave;
             }
             case DECAY -> {
-                // 从 1 降到 0
-                int total = DECAY_MAX_TICKS;
+                int total = Math.max(1, DECAY_MAX_TICKS);
                 float progress = (float) phaseTimer / total;
                 yield Math.max(0f, Math.min(1f, progress));
             }
@@ -93,7 +87,6 @@ public class MercurySolarFlareManager {
             switchToNextPhase();
         }
 
-        // 同步
         syncCounter++;
         if (syncCounter >= SYNC_INTERVAL) {
             syncCounter = 0;
