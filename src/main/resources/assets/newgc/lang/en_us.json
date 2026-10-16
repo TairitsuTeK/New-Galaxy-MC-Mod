@@ -131,5 +131,7 @@
   "message.newgc.venus.no_armor": "The Venusian atmosphere is corroding you! Wear a full set of iron-tier or better armor (loses 2 durability every 30 seconds)",
   "message.newgc.venus.armor_wear": "Your armor is being corroded by the Venusian atmosphere",
   "message.newgc.jupiter.no_armor": "Jupiter's raging storm is tearing you apart! Wear a full set of iron-tier or better armor (loses 4 durability every 10 seconds)",
-  "message.newgc.mars.volcano": "Warning: A Martian volcano is erupting!"
+  "message.newgc.mars.volcano": "Warning: A Martian volcano is erupting!",
+  "message.newgc.mercury.flare_warning": "Warning: Solar flare incoming, find cover!",
+  "message.newgc.mercury.flare_active": "Solar flare active!"
 }

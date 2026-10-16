@@ -2,6 +2,11 @@ package com.tairitsutek.newgc;
 
 import com.mojang.logging.LogUtils;
 import com.tairitsutek.newgc.Planets.ModDimensions;
+import com.tairitsutek.newgc.Planets.jupiter.network.JupiterStormPayload;
+import com.tairitsutek.newgc.Planets.mars.network.MarsDustStormPayload;
+import com.tairitsutek.newgc.Planets.mars.network.MarsVolcanoDebugPayload;
+import com.tairitsutek.newgc.Planets.mars.network.MarsVolcanoPayload;
+import com.tairitsutek.newgc.Planets.mercury.network.MercurySolarFlarePayload;   // ← 新增
 import com.tairitsutek.newgc.block.PlanetsBlock;
 import com.tairitsutek.newgc.block.entity.ModBlockEntities;
 import com.tairitsutek.newgc.config.NewGalaxyConfig;
@@ -51,16 +56,44 @@ public class NewGalaxyMain {
     private void registerPayloads(final RegisterPayloadHandlersEvent event) {
         final PayloadRegistrar registrar = event.registrar("1");
 
+        // ========== S2C ==========
         registrar.playToClient(
                 OxygenSyncPacket.TYPE,
                 OxygenSyncPacket.STREAM_CODEC,
                 OxygenSyncPacket::handle
         );
+        registrar.playToClient(
+                JupiterStormPayload.TYPE,
+                JupiterStormPayload.STREAM_CODEC,
+                JupiterStormPayload::handle
+        );
+        registrar.playToClient(
+                MarsVolcanoPayload.TYPE,
+                MarsVolcanoPayload.STREAM_CODEC,
+                MarsVolcanoPayload::handle
+        );
+        registrar.playToClient(
+                MarsDustStormPayload.TYPE,
+                MarsDustStormPayload.STREAM_CODEC,
+                MarsDustStormPayload::handle
+        );
+        // ===== 水星太阳耀斑 =====
+        registrar.playToClient(
+                MercurySolarFlarePayload.TYPE,
+                MercurySolarFlarePayload.STREAM_CODEC,
+                MercurySolarFlarePayload::handle
+        );
 
+        // ========== C2S ==========
         registrar.playToServer(
                 ResetTankPacket.TYPE,
                 ResetTankPacket.STREAM_CODEC,
                 ResetTankPacket::handle
+        );
+        registrar.playToServer(
+                MarsVolcanoDebugPayload.TYPE,
+                MarsVolcanoDebugPayload.STREAM_CODEC,
+                MarsVolcanoDebugPayload::handle
         );
     }
 

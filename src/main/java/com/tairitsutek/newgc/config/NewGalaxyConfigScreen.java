@@ -1,5 +1,6 @@
 package com.tairitsutek.newgc.config;
 
+import com.tairitsutek.newgc.client.debug.DebugState;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -22,14 +23,12 @@ public class NewGalaxyConfigScreen extends Screen {
         int w = 220;
         int h = 20;
 
-        // 只有一个开关：调试模式
         this.addRenderableWidget(CycleButton.onOffBuilder(
                         NewGalaxyConfig.CLIENT.debugMode.get())
                 .create(cx - w / 2, cy - 30, w, h,
                         Component.literal("开启调试按钮"),
                         (btn, val) -> NewGalaxyConfig.CLIENT.debugMode.set(val)));
 
-        // 完成
         this.addRenderableWidget(Button.builder(
                         Component.literal("完成"),
                         btn -> this.onClose())
@@ -47,6 +46,12 @@ public class NewGalaxyConfigScreen extends Screen {
     @Override
     public void onClose() {
         NewGalaxyConfig.SPEC.save();
+
+        // 关闭调试模式时，立即清空调试目标，恢复状态机
+        if (!NewGalaxyConfig.CLIENT.debugMode.get()) {
+            DebugState.resetAll();
+        }
+
         this.minecraft.setScreen(parent);
     }
 }

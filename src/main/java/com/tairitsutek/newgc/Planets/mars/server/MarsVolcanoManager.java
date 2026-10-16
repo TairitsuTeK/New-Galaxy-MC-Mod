@@ -12,6 +12,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 
 @EventBusSubscriber(modid = NewGalaxyMain.MODID)
 public class MarsVolcanoManager {
@@ -26,14 +27,13 @@ public class MarsVolcanoManager {
     private static final int SEARCH_RADIUS = 48;
     private static final int SYNC_INTERVAL = 5;
 
-    // 服务端状态
     private static int cooldownTimer = 0;
     private static int eruptionTicks = 0;
     private static int eruptionTotalTicks = 0;
-    private static BlockPos volcanoPos = null;   // 服务端内部仍用 null 表示无喷发
+    private static BlockPos volcanoPos = null;
     private static int syncCounter = 0;
 
-    // ===== 供伤害处理器读取 =====
+    // ===== Getter =====
     public static BlockPos getVolcanoPos()     { return volcanoPos; }
     public static boolean isErupting()         { return volcanoPos != null && eruptionTicks > 0; }
     public static int getEruptionTicks()       { return eruptionTicks; }
@@ -47,15 +47,54 @@ public class MarsVolcanoManager {
         return 0.25f + 0.75f * envelope;
     }
 
-    @SubscribeEvent
-    public static void onServerTick(ServerTickEvent.Post event) {
-        ServerLevel marsLevel = null;
-        for (ServerLevel level : event.getServer().getAllLevels()) {
+    // ===== 调试 =====
+    public static void debugForceErupt() {
+        ServerLevel marsLevel = findMarsLevel();
+        if (marsLevel == null || marsLevel.players().isEmpty()) return;
+
+        ServerPlayer anchor = marsLevel.players().get(RNG.nextInt(marsLevel.players().size()));
+
+        double angle = RNG.nextDouble() * Math.PI * 2;
+        double dist = 16 + RNG.nextDouble() * SEARCH_RADIUS;
+
+        int x = (int) (anchor.getX() + Math.cos(angle) * dist);
+        int z = (int) (anchor.getZ() + Math.sin(angle) * dist);
+        int y = marsLevel.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+
+        volcanoPos = new BlockPos(x, y, z);
+        eruptionTicks = DURATION_MIN + RNG.nextInt(DURATION_MAX - DURATION_MIN + 1);
+        eruptionTotalTicks = eruptionTicks;
+        cooldownTimer = 0;
+
+        broadcastState(marsLevel);
+    }
+
+    public static void debugForceCooldown() {
+        ServerLevel marsLevel = findMarsLevel();
+        if (marsLevel == null) return;
+
+        volcanoPos = null;
+        eruptionTicks = 0;
+        eruptionTotalTicks = 0;
+        cooldownTimer = INTERVAL_MIN + RNG.nextInt(INTERVAL_MAX - INTERVAL_MIN + 1);
+
+        broadcastState(marsLevel);
+    }
+
+    private static ServerLevel findMarsLevel() {
+        var server = ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return null;
+        for (ServerLevel level : server.getAllLevels()) {
             if (level.dimension().equals(ModDimensions.MARS_LEVEL_KEY)) {
-                marsLevel = level;
-                break;
+                return level;
             }
         }
+        return null;
+    }
+
+    @SubscribeEvent
+    public static void onServerTick(ServerTickEvent.Post event) {
+        ServerLevel marsLevel = findMarsLevel();
         if (marsLevel == null) {
             volcanoPos = null;
             eruptionTicks = 0;
@@ -64,7 +103,6 @@ public class MarsVolcanoManager {
             return;
         }
 
-        // ---- 状态推进 ----
         if (eruptionTicks > 0 && volcanoPos != null) {
             eruptionTicks--;
             if (eruptionTicks <= 0) {
@@ -77,7 +115,6 @@ public class MarsVolcanoManager {
             startEruption(marsLevel);
         }
 
-        // ---- 定期同步 ----
         syncCounter++;
         if (syncCounter >= SYNC_INTERVAL) {
             syncCounter = 0;
@@ -89,7 +126,7 @@ public class MarsVolcanoManager {
         boolean erupting = volcanoPos != null && eruptionTicks > 0;
         MarsVolcanoPayload payload = new MarsVolcanoPayload(
                 erupting,
-                erupting ? volcanoPos : BlockPos.ZERO,   // 哨兵值，避免 null 编码崩溃
+                erupting ? volcanoPos : BlockPos.ZERO,
                 eruptionTicks,
                 eruptionTotalTicks,
                 cooldownTimer
@@ -115,7 +152,6 @@ public class MarsVolcanoManager {
         eruptionTicks = DURATION_MIN + RNG.nextInt(DURATION_MAX - DURATION_MIN + 1);
         eruptionTotalTicks = eruptionTicks;
 
-        // 立即广播一次，避免客户端等 5 刻
         broadcastState(level);
     }
 }
