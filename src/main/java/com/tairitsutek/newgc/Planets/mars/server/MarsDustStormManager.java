@@ -29,7 +29,7 @@ public class MarsDustStormManager {
     private static final float FALLING_MIN = 0.3f, FALLING_MAX = 0.7f;
 
     // ===== 各阶段持续时间（刻）——比木星更长、更慢 =====
-    private static final int CALM_MIN_TICKS    = 1200, CALM_MAX_TICKS    = 3000;  // 60~150s
+    private static final int CALM_MIN_TICKS    = 3600, CALM_MAX_TICKS    = 9000;
     private static final int RISING_MIN_TICKS  = 600,  RISING_MAX_TICKS  = 1200;  // 30~60s
     private static final int PEAK_MIN_TICKS    = 1200, PEAK_MAX_TICKS    = 2400;  // 60~120s
     private static final int FALLING_MIN_TICKS = 600,  FALLING_MAX_TICKS = 1200;  // 30~60s
