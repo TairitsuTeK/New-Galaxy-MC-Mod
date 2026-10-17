@@ -7,6 +7,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.FallingBlock;
 import net.minecraft.world.level.block.SoundType;
@@ -75,6 +76,11 @@ public final class PlanetsBlock {
     public static final DeferredBlock<Block> JUPITER_STONE = registerBlock("jupiter_stone", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).sound(SoundType.STONE).strength(5f, 6f).requiresCorrectToolForDrops()));
     public static final DeferredBlock<Block> JUPITER_ORE_IRON = registerBlock("jupiter_ore_iron", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).sound(SoundType.STONE).strength(5f, 6f).requiresCorrectToolForDrops()));
     public static final DeferredBlock<Block> JUPITER_ORE_COPPER = registerBlock("jupiter_ore_copper", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).sound(SoundType.STONE).strength(5f, 6f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> SULFUR = registerBlock("sulfur", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).sound(SoundType.GRAVEL).strength(2f, 1f)));
+    public static final DeferredBlock<Block> IO_SUB_SURFACE = registerBlock("io_sub_surface", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).sound(SoundType.STONE).strength(5f, 6f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> IO_STONE = registerBlock("io_stone", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).sound(SoundType.STONE).strength(5f,6f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> IO_ORE_IRON = registerBlock("io_ore_iron", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).sound(SoundType.STONE).strength(5f, 6f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> IO_ORE_COPPER = registerBlock("io_ore_copper", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).sound(SoundType.STONE).strength(5f,6f).requiresCorrectToolForDrops()));
     //endregion
 
     //region 方块物品
@@ -207,6 +213,12 @@ public final class PlanetsBlock {
                         output.accept(JUPITER_STONE_ITEM.get());
                         output.accept(JUPITER_ORE_IRON_ITEM.get());
                         output.accept(JUPITER_ORE_COPPER_ITEM.get());
+
+                        output.accept(SULFUR.get());
+                        output.accept(IO_SUB_SURFACE.get());
+                        output.accept(IO_STONE.get());
+                        output.accept(IO_ORE_IRON.get());
+                        output.accept(IO_ORE_COPPER.get());
                     })
                     .build());
     //endregion

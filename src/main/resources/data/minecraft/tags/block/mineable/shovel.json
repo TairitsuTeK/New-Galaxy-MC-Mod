@@ -1,5 +1,7 @@
 {
   "values": [
-    "newgc:jupiter_gravel"
-  ]
+    "newgc:jupiter_gravel",
+    "newgc:sulfur"
+  ],
+  "replace": false
 }

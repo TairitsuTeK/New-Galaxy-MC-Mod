@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "newgc:block/io_ore_copper"
+    }
+  }
+}

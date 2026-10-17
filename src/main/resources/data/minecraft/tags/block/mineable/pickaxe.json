@@ -47,7 +47,11 @@
     "newgc:aluminum_block",
     "newgc:mechanical_casing",
     "newgc:silver_ore",
-    "newgc:silver_block"
+    "newgc:silver_block",
+    "newgc:io_sub_surface",
+    "newgc:io_stone",
+    "newgc:io_ore_iron",
+    "newgc:io_ore_copper"
   ],
   "replace": false
 }
