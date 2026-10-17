@@ -133,5 +133,8 @@
   "message.newgc.jupiter.no_armor": "Jupiter's raging storm is tearing you apart! Wear a full set of iron-tier or better armor (loses 4 durability every 10 seconds)",
   "message.newgc.mars.volcano": "Warning: A Martian volcano is erupting!",
   "message.newgc.mercury.flare_warning": "Warning: Solar flare incoming, find cover!",
-  "message.newgc.mercury.flare_active": "Solar flare active!"
+  "message.newgc.mercury.flare_active": "Solar flare active!",
+  "item.newgc.magnetometer": "Magnetometer",
+  "tooltip.newgc.magnetometer.usage": "Right-click to view detailed magnetic field info",
+  "tooltip.newgc.magnetometer.hold": "Displays magnetic HUD when held"
 }

@@ -133,5 +133,9 @@
   "message.newgc.jupiter.no_armor": "木星的狂暴风暴正在撕裂你！请穿上铁质及以上的全套盔甲（每10秒损耗4点耐久）",
   "message.newgc.mars.volcano": "警告：火星火山正在喷发！",
   "message.newgc.mercury.flare_warning": "警告：太阳耀斑即将爆发，寻找掩体！",
-  "message.newgc.mercury.flare_active": "太阳耀斑爆发中！"
+  "message.newgc.mercury.flare_active": "太阳耀斑爆发中！",
+  "item.newgc.magnetometer": "磁场计",
+  "tooltip.newgc.magnetometer.usage": "右键查看详细磁场信息",
+  "tooltip.newgc.magnetometer.hold": "手持时显示磁场 HUD"
+
 }

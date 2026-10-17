@@ -26,6 +26,12 @@ public class ToolsItem {
     public static final DeferredItem<Item> OXYGEN_TANK_ADVANCED = ITEMS.register("oxygen_tank_advanced", () -> new OxygenTankItem(new Item.Properties().durability(9000)));
     public static final DeferredItem<Item> OXYGEN_TANK_ULTIMATE = ITEMS.register("oxygen_tank_ultimate", () -> new OxygenTankItem(new Item.Properties().durability(27000)));
     public static final DeferredItem<Item> OXYGEN_TANK_SUPREME = ITEMS.register("oxygen_tank_supreme", () -> new OxygenTankItem(new Item.Properties().durability(81000)));
+
+    // ===== 磁场计 =====
+    public static final DeferredItem<Item> MAGNETOMETER = ITEMS.register(
+            "magnetometer",
+            () -> new MagnetometerItem(new Item.Properties().stacksTo(1))
+    );
     //endregion
 
     //region 注册辅助
@@ -48,6 +54,9 @@ public class ToolsItem {
                         output.accept(OXYGEN_TANK_ADVANCED.get());
                         output.accept(OXYGEN_TANK_ULTIMATE.get());
                         output.accept(OXYGEN_TANK_SUPREME.get());
+
+                        // 磁场计
+                        output.accept(MAGNETOMETER.get());
                     })
                     .build());
     //endregion
