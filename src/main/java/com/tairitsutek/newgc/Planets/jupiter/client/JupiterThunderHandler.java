@@ -23,18 +23,15 @@ public class JupiterThunderHandler {
     private static final int LIGHTNING_RADIUS = 16;
 
     // ===== 冷却范围（刻）=====
-    // 平静期：240~480 刻（12~24 秒一次）
-    // 暴烈期：4~12 刻（0.2~0.6 秒一次，非常密集）
-    private static final int COOLDOWN_MIN_CALM = 240;
-    private static final int COOLDOWN_MAX_CALM = 480;
+    // 平静期：120~240 刻（6~12 秒一次）
+    // 暴烈期：2~8 刻（0.1~0.4 秒一次）
+    private static final int COOLDOWN_MIN_CALM = 120;
+    private static final int COOLDOWN_MAX_CALM = 240;
 
-    private static final int COOLDOWN_MIN_STORM = 4;
-    private static final int COOLDOWN_MAX_STORM = 12;
+    private static final int COOLDOWN_MIN_STORM = 2;
+    private static final int COOLDOWN_MAX_STORM = 8;
 
-    // 每个维度独立的冷却
     private static final Map<ResourceKey<Level>, Integer> COOLDOWNS = new ConcurrentHashMap<>();
-
-    // 每个维度上一次的强度（用于平滑，避免强度突变时闪电突然爆）
     private static final Map<ResourceKey<Level>, Float> LAST_STRENGTH = new ConcurrentHashMap<>();
 
     @SubscribeEvent
@@ -51,24 +48,21 @@ public class JupiterThunderHandler {
             return;
         }
 
-        // ===== 读取真实强度（不再截到 1.0）=====
         float strength = JupiterStormManager.getStormStrength();
         if (Float.isNaN(strength) || Float.isInfinite(strength)) strength = 0f;
         strength = Math.max(0f, Math.min(2.5f, strength));
 
-        // 平滑：避免强度突变时闪电一次性爆
+        // 平滑：0.15 → 0.3，更快跟上
         float last = LAST_STRENGTH.getOrDefault(key, strength);
-        float smoothed = last + (strength - last) * 0.15f;
+        float smoothed = last + (strength - last) * 0.3f;
         LAST_STRENGTH.put(key, smoothed);
 
-        // ===== 归一化：0 = 平静，1 = 暴烈顶点 =====
         float t = smoothed / 2.5f;
 
-        // ===== 非线性曲线：低强度几乎无闪，高强度爆炸式增长 =====
-        // t^2.2 让 0~0.4 区间几乎没闪电，1.0 以上区间闪电密集
-        float curve = (float) Math.pow(t, 2.2);
+        // 曲线：2.2 → 1.5，更线性
+        float curve = (float) Math.pow(t, 1.5);
 
-        // ===== 计算冷却范围 =====
+        // 冷却范围
         int cooldownMin = (int) (COOLDOWN_MIN_STORM + (COOLDOWN_MIN_CALM - COOLDOWN_MIN_STORM) * (1 - curve));
         int cooldownMax = (int) (COOLDOWN_MAX_STORM + (COOLDOWN_MAX_CALM - COOLDOWN_MAX_STORM) * (1 - curve));
         if (cooldownMax <= cooldownMin) cooldownMax = cooldownMin + 1;
@@ -78,11 +72,11 @@ public class JupiterThunderHandler {
 
         if (jupiter.players().isEmpty()) return;
 
-        // ===== 暴烈期：一次可能劈多道闪电 =====
+        // 暴烈期：一次劈多道闪电
         int boltCount = 1;
-        if (curve > 0.7f) {
-            // 0.7~1.0 区间额外加 0~3 道
-            boltCount += jupiter.random.nextInt(1 + (int) ((curve - 0.7f) / 0.3f * 3));
+        if (curve > 0.4f) {
+            // 0.4~1.0 区间额外加 0~3 道
+            boltCount += jupiter.random.nextInt(1 + (int) ((curve - 0.4f) / 0.6f * 3));
         }
 
         for (int i = 0; i < boltCount; i++) {
