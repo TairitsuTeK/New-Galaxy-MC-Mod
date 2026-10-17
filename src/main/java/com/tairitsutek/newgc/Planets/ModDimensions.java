@@ -11,10 +11,7 @@ import net.minecraft.world.level.dimension.LevelStem;
 
 public class ModDimensions {
 
-    // ==================================================
-    // 月球
-    // ==================================================
-
+    // region 月球
     public static final ResourceKey<LevelStem> MOON_KEY =
             ResourceKey.create(Registries.LEVEL_STEM,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "moon"));
@@ -26,11 +23,9 @@ public class ModDimensions {
     public static final ResourceKey<DimensionType> MOON_TYPE_KEY =
             ResourceKey.create(Registries.DIMENSION_TYPE,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "moon_type"));
+    // endregion
 
-    // ==================================================
-    // 水星
-    // ==================================================
-
+    // region 水星
     public static final ResourceKey<LevelStem> MERCURY_KEY =
             ResourceKey.create(Registries.LEVEL_STEM,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "mercury"));
@@ -42,11 +37,9 @@ public class ModDimensions {
     public static final ResourceKey<DimensionType> MERCURY_TYPE_KEY =
             ResourceKey.create(Registries.DIMENSION_TYPE,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "mercury_type"));
+    // endregion
 
-    // ==================================================
-    // 金星
-    // ==================================================
-
+    // region 金星
     public static final ResourceKey<LevelStem> VENUS_KEY =
             ResourceKey.create(Registries.LEVEL_STEM,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "venus"));
@@ -58,11 +51,9 @@ public class ModDimensions {
     public static final ResourceKey<DimensionType> VENUS_TYPE_KEY =
             ResourceKey.create(Registries.DIMENSION_TYPE,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "venus_type"));
+    // endregion
 
-    // ==================================================
-    // 谷神星
-    // ==================================================
-
+    // region 谷神星
     public static final ResourceKey<LevelStem> CERES_KEY =
             ResourceKey.create(Registries.LEVEL_STEM,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "ceres"));
@@ -74,11 +65,9 @@ public class ModDimensions {
     public static final ResourceKey<DimensionType> CERES_TYPE_KEY =
             ResourceKey.create(Registries.DIMENSION_TYPE,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "ceres_type"));
+    // endregion
 
-    // ==================================================
-    // 火星
-    // ==================================================
-
+    // region 火星
     public static final ResourceKey<LevelStem> MARS_KEY =
             ResourceKey.create(Registries.LEVEL_STEM,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "mars"));
@@ -90,11 +79,9 @@ public class ModDimensions {
     public static final ResourceKey<DimensionType> MARS_TYPE_KEY =
             ResourceKey.create(Registries.DIMENSION_TYPE,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "mars_type"));
+    // endregion
 
-    // ==================================================
-    // 火卫一
-    // ==================================================
-
+    // region 火卫一
     public static final ResourceKey<LevelStem> PHOBOS_KEY =
             ResourceKey.create(Registries.LEVEL_STEM,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "phobos"));
@@ -106,11 +93,9 @@ public class ModDimensions {
     public static final ResourceKey<DimensionType> PHOBOS_TYPE_KEY =
             ResourceKey.create(Registries.DIMENSION_TYPE,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "phobos_type"));
+    // endregion
 
-    // ==================================================
-    // 火卫二
-    // ==================================================
-
+    // region 火卫二
     public static final ResourceKey<LevelStem> DEIMOS_KEY =
             ResourceKey.create(Registries.LEVEL_STEM,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "deimos"));
@@ -122,11 +107,9 @@ public class ModDimensions {
     public static final ResourceKey<DimensionType> DEIMOS_TYPE_KEY =
             ResourceKey.create(Registries.DIMENSION_TYPE,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "deimos_type"));
+    // endregion
 
-    // ==================================================
-    // 木星
-    // ==================================================
-
+    // region 木星
     public static final ResourceKey<LevelStem> JUPITER_KEY =
             ResourceKey.create(Registries.LEVEL_STEM,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "jupiter"));
@@ -138,13 +121,12 @@ public class ModDimensions {
     public static final ResourceKey<DimensionType> JUPITER_TYPE_KEY =
             ResourceKey.create(Registries.DIMENSION_TYPE,
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "jupiter_type"));
+    // endregion
 
-    // ==================================================
-    // 注册入口
-    // ==================================================
-
+    // region 注册入口
     public static void register() {
         NewGalaxyMain.LOGGER.info(
                 "Registering dimension keys for {}", NewGalaxyMain.MODID);
     }
+    // endregion
 }
