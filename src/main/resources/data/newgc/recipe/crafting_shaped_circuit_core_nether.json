@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "NRN",
+    "RDR",
+    "NRN"
+  ],
+  "key": {
+    "D": {
+      "item": "newgc:circuit_core_diamond"
+    },
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "newgc:circuit_core_nether",
+    "count": 1
+  }
+}

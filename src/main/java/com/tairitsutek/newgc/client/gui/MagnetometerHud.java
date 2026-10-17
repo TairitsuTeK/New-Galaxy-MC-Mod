@@ -16,8 +16,8 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 public class MagnetometerHud {
 
     // ===== 布局 =====
-    private static final int WIDTH  = 170;
-    private static final int HEIGHT = 80;
+    private static final int WIDTH  = 150;
+    private static final int HEIGHT = 66;
     private static final int MARGIN_LEFT   = 10;
     private static final int MARGIN_BOTTOM = 90;
 
@@ -58,7 +58,6 @@ public class MagnetometerHud {
         GuiGraphics g = event.getGuiGraphics();
         int screenH = mc.getWindow().getGuiScaledHeight();
 
-        // ===== 左下角 =====
         int x0 = MARGIN_LEFT;
         int y0 = screenH - HEIGHT - MARGIN_BOTTOM;
         int x1 = x0 + WIDTH;
@@ -79,21 +78,23 @@ public class MagnetometerHud {
         // 四角装饰
         drawCornerBrackets(g, x0, y0, x1, y1, COLOR_ACCENT);
 
-        // 标题栏
-        g.fill(x0 + 1, y0 + 1, x1 - 1, y0 + 14, COLOR_TITLE_BG);
-        g.fill(x0 + 1, y0 + 13, x1 - 1, y0 + 14, COLOR_SEPARATOR);
+        // ===== 标题行（0~12）=====
+        g.fill(x0 + 1, y0 + 1, x1 - 1, y0 + 12, COLOR_TITLE_BG);
+        g.fill(x0 + 1, y0 + 11, x1 - 1, y0 + 12, COLOR_SEPARATOR);
 
-        g.drawString(mc.font, "⧗ 磁场计", x0 + 6, y0 + 4, COLOR_TITLE, false);
+        g.drawString(mc.font, "⧗ 磁场计", x0 + 6, y0 + 3, COLOR_TITLE, false);
 
         float strength = MagnetometerClientCache.getStrength();
+
+        // 强度等级（右上角，短文字）
         String level = MagnetometerData.levelText(strength);
         int lvlW = mc.font.width(level);
-        g.drawString(mc.font, level, x1 - 6 - lvlW, y0 + 4,
+        g.drawString(mc.font, level, x1 - 6 - lvlW, y0 + 3,
                 MagnetometerClientCache.getStatusColor(), false);
 
-        // 强度条
+        // ===== 强度条（14~21）=====
         int barX = x0 + 6;
-        int barY = y0 + 18;
+        int barY = y0 + 14;
         int barW = WIDTH - 12;
         int barH = 7;
 
@@ -109,6 +110,7 @@ public class MagnetometerHud {
             g.fill(barX, barY + barH - 1, barX + fillW, barY + barH, darken(fillColor, 0x40));
         }
 
+        // 刻度
         for (int i = 1; i <= 5; i++) {
             int tickX = barX + barW * i / 6;
             g.fill(tickX, barY, tickX + 1, barY + barH, 0x50FFFFFF);
@@ -116,66 +118,76 @@ public class MagnetometerHud {
 
         drawRect2(g, barX, barY, barX + barW, barY + barH, COLOR_BAR_BORDER);
 
-        // 数值行
+        // ===== 数值行（24~32）=====
         int valueY = barY + barH + 3;
         String strengthStr = String.format("%.2f", strength);
         g.drawString(mc.font, strengthStr, barX, valueY, COLOR_VALUE, false);
 
-        String noiseStr = String.format("噪声 %.2f", MagnetometerClientCache.getNoise());
+        // 右侧显示"噪声"（小字）
+        String noiseStr = String.format("n=%.2f", MagnetometerClientCache.getNoise());
         int noiseW = mc.font.width(noiseStr);
         g.drawString(mc.font, noiseStr, barX + barW - noiseW, valueY, COLOR_LABEL, false);
 
-        // 下半部分
-        int halfY = y0 + 42;
+        // ===== 下半部分（36~64）=====
+        int halfY = y0 + 36;
 
-        int compassCX = x0 + 24;
-        int compassCY = halfY + 14;
-        int compassR = 15;
+        // 罗盘（半径缩到 11）
+        int compassCX = x0 + 20;
+        int compassCY = halfY + 10;
+        int compassR = 11;
         drawCompassRose(g, compassCX, compassCY, compassR);
 
-        int infoX = x0 + 50;
+        // 右侧文字
+        int infoX = x0 + 42;
         int infoY = halfY;
         int infoRight = x1 - 6;
 
+        // 朝向
         float angle = MagnetometerClientCache.getAngle();
         String arrow = angleToArrow(angle);
         String angleStr = String.format("%s %d°", arrow, (int) angle);
         drawRow(g, mc, infoX, infoY, infoRight, "朝向", angleStr, COLOR_VALUE);
-        infoY += 12;
+        infoY += 11;
 
+        // 状态
         drawRow(g, mc, infoX, infoY, infoRight, "状态",
                 MagnetometerClientCache.getStatus(),
                 MagnetometerClientCache.getStatusColor());
-        infoY += 12;
 
+        // 矿脉提示（如果检测到，放最下方一行）
         if (MagnetometerClientCache.isIronNearby()) {
-            g.drawString(mc.font, "🜨 检测到铁矿", infoX, infoY, 0xFFC89650, false);
+            g.drawString(mc.font, "🜨 铁矿", infoX, infoY + 12, 0xFFC89650, false);
         }
 
         g.pose().popPose();
     }
 
-    // ================= 罗盘 =================
+    // ================= 罗盘（简化版）=================
     private static void drawCompassRose(GuiGraphics g, int cx, int cy, int r) {
         Minecraft mc = Minecraft.getInstance();
+
+        // 外圈
         drawCircleOutline(g, cx, cy, r, COLOR_BORDER);
-        drawCircleOutline(g, cx, cy, r - 1, 0x604AD8FF);
+
+        // 十字线
         g.fill(cx - r, cy, cx + r, cy + 1, 0x40FFFFFF);
         g.fill(cx, cy - r, cx + 1, cy + r, 0x40FFFFFF);
 
-        g.drawString(mc.font, "N", cx - 2, cy - r - 9, 0xFFFF8080, false);
-        g.drawString(mc.font, "S", cx - 2, cy + r + 2,  COLOR_LABEL, false);
-        g.drawString(mc.font, "W", cx - r - 8, cy - 3, COLOR_LABEL, false);
-        g.drawString(mc.font, "E", cx + r + 3, cy - 3, COLOR_LABEL, false);
+        // 方位标记（用点代替字母，更紧凑）
+        g.fill(cx - 1, cy - r - 2, cx + 1, cy - r, 0xFFFF8080);  // N（红点）
+        g.fill(cx - 1, cy + r, cx + 1, cy + r + 2, 0xFF8898B0);  // S（灰点）
+        g.fill(cx - r - 2, cy - 1, cx - r, cy + 1, 0xFF8898B0);  // W（灰点）
+        g.fill(cx + r, cy - 1, cx + r + 2, cy + 1, 0xFF8898B0);  // E（灰点）
 
+        // 指针
         float angle = MagnetometerClientCache.getAngle();
         double rad = Math.toRadians(angle - 90);
-        int px = cx + (int) (Math.cos(rad) * (r - 4));
-        int py = cy + (int) (Math.sin(rad) * (r - 4));
+        int px = cx + (int) (Math.cos(rad) * (r - 3));
+        int py = cy + (int) (Math.sin(rad) * (r - 3));
         drawLine(g, cx, cy, px, py, 0xFFFF4040);
 
-        g.fill(cx - 2, cy - 2, cx + 2, cy + 2, 0xFFFFFFFF);
-        g.fill(cx - 1, cy - 1, cx + 1, cy + 1, 0xFF404040);
+        // 中心点
+        g.fill(cx - 1, cy - 1, cx + 1, cy + 1, 0xFFFFFFFF);
     }
 
     // ================= 工具 =================
@@ -206,7 +218,7 @@ public class MagnetometerHud {
     }
 
     private static void drawCircleOutline(GuiGraphics g, int cx, int cy, int r, int color) {
-        int segments = 64;
+        int segments = 48;
         for (int i = 0; i < segments; i++) {
             double t0 = (i / (double) segments) * Math.PI * 2;
             int px = cx + (int) Math.round(Math.cos(t0) * r);

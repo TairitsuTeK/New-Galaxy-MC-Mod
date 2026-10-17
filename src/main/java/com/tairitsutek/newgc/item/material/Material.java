@@ -37,9 +37,14 @@ public class Material {
     public static final DeferredItem<Item> SILVER_INGOT = registerItem("silver_ingot");
     //endregion
 
-    //region 金属板
+    //region 板材
     public static final DeferredItem<Item> IRON_PLATE = registerItem("iron_plate");
     public static final DeferredItem<Item> COPPER_PLATE = registerItem("copper_plate");
+    public static final DeferredItem<Item> GOLD_PLATE = registerItem("gold_plate");
+    public static final DeferredItem<Item> DIAMOND_PLATE = registerItem("diamond_plate");
+    public static final DeferredItem<Item> LAPIS_PLATE = registerItem("lapis_plate");
+    public static final DeferredItem<Item> EMERALD_PLATE = registerItem("emerald_plate");
+    public static final DeferredItem<Item> NETHERITE_PLATE = registerItem("netherite_plate");
     public static final DeferredItem<Item> TIN_PLATE = registerItem("tin_plate");
     public static final DeferredItem<Item> ALUMINUM_PLATE = registerItem("aluminum_plate");
     public static final DeferredItem<Item> SILVER_PLATE = registerItem("silver_plate");
@@ -55,6 +60,14 @@ public class Material {
     public static final DeferredItem<BlockItem> ALUMINUM_BLOCK_ITEM = registerBlockItem("aluminum_block", ALUMINUM_BLOCK);
     public static final DeferredItem<BlockItem> TIN_BLOCK_ITEM = registerBlockItem("tin_block", TIN_BLOCK);
     public static final DeferredItem<BlockItem> SILVER_BLOCK_ITEM = registerBlockItem("silver_block", SILVER_BLOCK);
+    //endregion
+
+    //region 电路材料
+    public static final DeferredItem<Item> CIRCUIT_CORE_COPPER = registerItem("circuit_core_copper");
+    public static final DeferredItem<Item> CIRCUIT_CORE_IRON = registerItem("circuit_core_iron");
+    public static final DeferredItem<Item> CIRCUIT_CORE_GOLD = registerItem("circuit_core_golden");
+    public static final DeferredItem<Item> CIRCUIT_CORE_DIAMOND = registerItem("circuit_core_diamond");
+    public static final DeferredItem<Item> CIRCUIT_CORE_NETHER = registerItem("circuit_core_nether");
     //endregion
 
     //region 注册辅助
@@ -93,6 +106,18 @@ public class Material {
                         output.accept(TIN_PLATE.get());
                         output.accept(ALUMINUM_PLATE.get());
                         output.accept(SILVER_PLATE.get());
+                        output.accept(GOLD_PLATE.get());
+                        output.accept(DIAMOND_PLATE.get());
+                        output.accept(LAPIS_PLATE.get());
+                        output.accept(EMERALD_PLATE.get());
+                        output.accept(NETHERITE_PLATE.get());
+
+                        // 电路之心
+                        output.accept(CIRCUIT_CORE_COPPER.get());
+                        output.accept(CIRCUIT_CORE_IRON.get());
+                        output.accept(CIRCUIT_CORE_GOLD.get());
+                        output.accept(CIRCUIT_CORE_DIAMOND.get());
+                        output.accept(CIRCUIT_CORE_NETHER.get());
 
                         // 矿物块
                         output.accept(ALUMINUM_BLOCK_ITEM.get());
