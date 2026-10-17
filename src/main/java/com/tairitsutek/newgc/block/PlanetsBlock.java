@@ -128,6 +128,11 @@ public final class PlanetsBlock {
     public static final DeferredItem<BlockItem> JUPITER_STONE_ITEM = registerItem("jupiter_stone", JUPITER_STONE);
     public static final DeferredItem<BlockItem> JUPITER_ORE_IRON_ITEM = registerItem("jupiter_ore_iron", JUPITER_ORE_IRON);
     public static final DeferredItem<BlockItem> JUPITER_ORE_COPPER_ITEM = registerItem("jupiter_ore_copper", JUPITER_ORE_COPPER);
+    public static final DeferredItem<BlockItem> SULFUR_ITEM = registerItem("sulfur", SULFUR);
+    public static final DeferredItem<BlockItem> IO_SUB_SURFACE_ITEM = registerItem("io_sub_surface", IO_SUB_SURFACE);
+    public static final DeferredItem<BlockItem> IO_STONE_ITEM = registerItem("io_stone", IO_STONE);
+    public static final DeferredItem<BlockItem> IO_ORE_IRON_ITEM = registerItem("io_ore_iron", IO_ORE_IRON);
+    public static final DeferredItem<BlockItem> IO_ORE_COPPER_ITEM = registerItem("io_ore_copper", IO_ORE_COPPER);
     //endregion
 
     //region 注册辅助
@@ -214,11 +219,11 @@ public final class PlanetsBlock {
                         output.accept(JUPITER_ORE_IRON_ITEM.get());
                         output.accept(JUPITER_ORE_COPPER_ITEM.get());
 
-                        output.accept(SULFUR.get());
-                        output.accept(IO_SUB_SURFACE.get());
-                        output.accept(IO_STONE.get());
-                        output.accept(IO_ORE_IRON.get());
-                        output.accept(IO_ORE_COPPER.get());
+                        output.accept(SULFUR_ITEM.get());
+                        output.accept(IO_SUB_SURFACE_ITEM.get());
+                        output.accept(IO_STONE_ITEM.get());
+                        output.accept(IO_ORE_IRON_ITEM.get());
+                        output.accept(IO_ORE_COPPER_ITEM.get());
                     })
                     .build());
     //endregion
