@@ -19,26 +19,36 @@ public class JupiterStormManager {
     }
 
     // ===== 各阶段强度范围 =====
-    private static final float CALM_MIN = 0.0f, CALM_MAX = 0.15f;
+    private static final float CALM_MIN = 0.0f,   CALM_MAX = 0.15f;
     private static final float RISING_MIN = 0.2f, RISING_MAX = 0.7f;
-    private static final float PEAK_MIN = 1.0f, PEAK_MAX = 1.5f;
-    // 改动 1：SUDDEN 更强
+    private static final float PEAK_MIN = 1.0f,   PEAK_MAX = 1.5f;
     private static final float SUDDEN_MIN = 2.0f, SUDDEN_MAX = 3.0f;
     private static final float FALLING_MIN = 0.3f, FALLING_MAX = 0.8f;
 
-    // ===== 各阶段持续时间 =====
+    // ===== 对外暴露的峰值常量（供 JupiterThunderHandler 归一化使用） =====
+    /** PEAK 阶段理论上限，也是“有效闪电强度”的参考峰值 */
+    public static final float PEAK_REFERENCE = PEAK_MAX;
+    /** SUDDEN 阶段理论上限 */
+    public static final float SUDDEN_REFERENCE = SUDDEN_MAX;
+
+    // ===== 各阶段持续时间（tick） =====
     private static final int CALM_MIN_TICKS = 300, CALM_MAX_TICKS = 600;
     private static final int RISING_MIN_TICKS = 200, RISING_MAX_TICKS = 400;
     private static final int PEAK_MIN_TICKS = 300, PEAK_MAX_TICKS = 600;
-    // 改动 2：SUDDEN 持续更久
     private static final int SUDDEN_MIN_TICKS = 600, SUDDEN_MAX_TICKS = 1200;
     private static final int FALLING_MIN_TICKS = 300, FALLING_MAX_TICKS = 600;
 
-    // 改动 3：SMOOTH 从 0.01 → 0.05（爬坡速度快 5 倍）
-    private static final float SMOOTH = 0.05f;
+    // ===== 平滑与波动参数 =====
+    private static final float SMOOTH = 0.20f;
+    /** 阶段切换时直接 snap 到新目标的比例（0.7 = 一步到位 70%，剩余靠 SMOOTH 补） */
+    private static final float PHASE_SNAP = 0.7f;
+    /** 阶段内 baseTarget 重随机间隔（tick），让阶段内也有起伏 */
+    private static final int BASE_TARGET_REROLL_INTERVAL = 100;
+    /** 叠加在 baseTarget 上的正弦波动幅度与周期 */
     private static final float WAVE_AMPLITUDE = 0.1f;
     private static final float WAVE_PERIOD = 0.01f;
 
+    /** 网络同步间隔（tick） */
     private static final int SYNC_INTERVAL = 10;
 
     private static Phase currentPhase = Phase.CALM;
@@ -51,6 +61,12 @@ public class JupiterStormManager {
     private static int syncCounter = 0;
 
     private static final RandomSource RNG = RandomSource.create();
+
+    // ===== 强制劈雷调试开关 =====
+    private static boolean forceThunder = false;
+
+    public static boolean isForceThunder() { return forceThunder; }
+    public static void setForceThunder(boolean value) { forceThunder = value; }
 
     public static float getStormStrength() { return stormStrength; }
     public static Phase getCurrentPhase()  { return currentPhase; }
@@ -77,29 +93,37 @@ public class JupiterStormManager {
 
         globalTick++;
 
+        // ===== 阶段推进 =====
         phaseTimer--;
         if (phaseTimer <= 0) {
             switchToNextPhase();
             baseTarget = getRandomStrengthForPhase(currentPhase);
+            // 阶段突变：一步到位 snap 到新目标的 70%，剩余 30% 交给 SMOOTH
+            stormStrength += (baseTarget - stormStrength) * PHASE_SNAP;
+        } else if (globalTick % BASE_TARGET_REROLL_INTERVAL == 0) {
+            // 阶段内每 100 tick 重随机一次 baseTarget，让阶段内也有起伏
+            baseTarget = getRandomStrengthForPhase(currentPhase);
         }
 
+        // ===== 正弦波动 + 平滑 =====
         float wave = (float) Math.sin(globalTick * WAVE_PERIOD) * WAVE_AMPLITUDE;
         targetStrength = baseTarget + wave;
         stormStrength += (targetStrength - stormStrength) * SMOOTH;
 
+        // ===== 安全钳制 =====
         if (Float.isNaN(stormStrength) || Float.isInfinite(stormStrength)) {
             stormStrength = CALM_MIN;
         }
         stormStrength = Math.max(0.0f, Math.min(SUDDEN_MAX, stormStrength));
 
-        // ===== 调试日志：每秒打印一次 =====
+        // ===== 调试日志（每 20 tick 一次） =====
         if (globalTick % 20 == 0) {
             System.out.println("[Storm] phase=" + currentPhase
                     + " strength=" + String.format("%.2f", stormStrength)
                     + " target=" + String.format("%.2f", targetStrength));
         }
 
-        // ===== 定期同步 =====
+        // ===== 网络同步 =====
         syncCounter++;
         if (syncCounter >= SYNC_INTERVAL) {
             syncCounter = 0;

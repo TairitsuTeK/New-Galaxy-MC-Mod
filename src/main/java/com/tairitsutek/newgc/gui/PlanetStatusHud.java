@@ -3,6 +3,7 @@ package com.tairitsutek.newgc.gui;
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.Planets.ModDimensions;
 import com.tairitsutek.newgc.Planets.jupiter.client.JupiterStormClientCache;
+import com.tairitsutek.newgc.Planets.jupiter.server.JupiterStormManager;
 import com.tairitsutek.newgc.Planets.mars.client.MarsDustStormClientCache;
 import com.tairitsutek.newgc.Planets.mars.client.MarsVolcanoClientCache;
 import com.tairitsutek.newgc.Planets.mars.network.MarsVolcanoDebugPayload;
@@ -24,7 +25,6 @@ import net.neoforged.neoforge.network.PacketDistributor;
 @EventBusSubscriber(modid = NewGalaxyMain.MODID, value = Dist.CLIENT)
 public class PlanetStatusHud {
 
-    // ===== 布局 =====
     private static final int WIDTH      = 210;
     private static final int PADDING    = 10;
     private static final int HEADER_H   = 20;
@@ -34,7 +34,6 @@ public class PlanetStatusHud {
     private static final int MARGIN_RIGHT = 10;
     private static final int CARD_3ROW  = ROW_H * 3 + PADDING * 2;
 
-    // ===== 主色 =====
     private static final int BG          = 0xE00A121E;
     private static final int BG_INNER    = 0x90142436;
     private static final int BORDER_OUT  = 0xFF3A5570;
@@ -465,17 +464,25 @@ public class PlanetStatusHud {
         int btnY = y;
 
         if (inJupiter) {
-            String[] names = {"平静", "增强", "峰值", "暴烈", "恢复"};
+            // 平静 / 增强 / 峰值 / 暴烈 / 恢复 / 劈雷
+            String[] names = {"平静", "增强", "峰值", "暴烈", "恢复", "劈雷"};
             int[] phases = {
                     DebugState.JUPITER_CALM,
                     DebugState.JUPITER_RISING,
                     DebugState.JUPITER_PEAK,
                     DebugState.JUPITER_SUDDEN,
-                    DebugState.JUPITER_NONE
+                    DebugState.JUPITER_NONE,
+                    -999
             };
             int current = DebugState.getJupiterPhase();
             for (int i = 0; i < names.length; i++) {
-                drawDebugButton(g, mc, btnX, btnY, names[i], phases[i] == current);
+                boolean active;
+                if (phases[i] == -999) {
+                    active = JupiterStormManager.isForceThunder();
+                } else {
+                    active = phases[i] == current;
+                }
+                drawDebugButton(g, mc, btnX, btnY, names[i], active);
                 btnX += DEBUG_BTN_W + DEBUG_BTN_GAP;
             }
         } else if (inMars) {
@@ -566,11 +573,17 @@ public class PlanetStatusHud {
                     DebugState.JUPITER_RISING,
                     DebugState.JUPITER_PEAK,
                     DebugState.JUPITER_SUDDEN,
-                    DebugState.JUPITER_NONE
+                    DebugState.JUPITER_NONE,
+                    -999
             };
-            for (int phase : phases) {
+            for (int i = 0; i < phases.length; i++) {
                 if (isHover(mouseX, mouseY, btnX, btnY, DEBUG_BTN_W, DEBUG_BTN_H)) {
-                    DebugState.setJupiterPhase(phase);
+                    if (phases[i] == -999) {
+                        // 切换强制劈雷
+                        JupiterStormManager.setForceThunder(!JupiterStormManager.isForceThunder());
+                    } else {
+                        DebugState.setJupiterPhase(phases[i]);
+                    }
                     event.setCanceled(true);
                     return;
                 }

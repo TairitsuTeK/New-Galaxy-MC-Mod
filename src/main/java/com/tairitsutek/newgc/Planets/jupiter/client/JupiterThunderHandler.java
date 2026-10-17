@@ -22,17 +22,20 @@ public class JupiterThunderHandler {
 
     private static final int LIGHTNING_RADIUS = 16;
 
-    // ===== 冷却范围（刻）=====
-    // 平静期：120~240 刻（6~12 秒一次）
-    // 暴烈期：2~8 刻（0.1~0.4 秒一次）
-    private static final int COOLDOWN_MIN_CALM = 120;
-    private static final int COOLDOWN_MAX_CALM = 240;
-
+    private static final int COOLDOWN_MIN_CALM  = 120;
+    private static final int COOLDOWN_MAX_CALM  = 240;
     private static final int COOLDOWN_MIN_STORM = 2;
     private static final int COOLDOWN_MAX_STORM = 8;
 
+    private static final float NORM_PEAK = JupiterStormManager.PEAK_REFERENCE;
+    private static final float CURVE_EXPONENT = 1.2f;
+
+    /** 风暴时冷却最大加速倍数（curve=1 时，每 tick 消耗 5 点冷却） */
+    private static final int MAX_COOLDOWN_ACCEL = 4;
+
+    private static final int DEBUG_LOG_INTERVAL = 20;
+
     private static final Map<ResourceKey<Level>, Integer> COOLDOWNS = new ConcurrentHashMap<>();
-    private static final Map<ResourceKey<Level>, Float> LAST_STRENGTH = new ConcurrentHashMap<>();
 
     @SubscribeEvent
     public static void onLevelTick(LevelTickEvent.Post event) {
@@ -42,49 +45,74 @@ public class JupiterThunderHandler {
         ServerLevel jupiter = (ServerLevel) event.getLevel();
         ResourceKey<Level> key = jupiter.dimension();
 
-        int cooldown = COOLDOWNS.getOrDefault(key, 0);
-        if (cooldown > 0) {
-            COOLDOWNS.put(key, cooldown - 1);
+        // ===== 强制劈雷调试 =====
+        if (JupiterStormManager.isForceThunder()) {
+            if (jupiter.players().isEmpty()) return;
+            ServerPlayer player = jupiter.players().get(jupiter.random.nextInt(jupiter.players().size()));
+            double x = player.getX() + (jupiter.random.nextDouble() * 2 - 1) * LIGHTNING_RADIUS;
+            double z = player.getZ() + (jupiter.random.nextDouble() * 2 - 1) * LIGHTNING_RADIUS;
+            int y = jupiter.getHeight(Heightmap.Types.MOTION_BLOCKING, (int) x, (int) z);
+            LightningBolt bolt = new LightningBolt(EntityType.LIGHTNING_BOLT, jupiter);
+            bolt.moveTo(x, y, z);
+            bolt.setVisualOnly(true);
+            jupiter.addFreshEntity(bolt);
+            System.out.println("[Thunder] FORCED bolt at " + (int) x + "," + y + "," + (int) z);
             return;
         }
 
+        // ===== 读取风暴强度（只读一次，冷却和劈雷共用） =====
         float strength = JupiterStormManager.getStormStrength();
         if (Float.isNaN(strength) || Float.isInfinite(strength)) strength = 0f;
-        strength = Math.max(0f, Math.min(2.5f, strength));
+        strength = Math.max(0f, Math.min(JupiterStormManager.SUDDEN_REFERENCE, strength));
 
-        // 平滑：0.15 → 0.3，更快跟上
-        float last = LAST_STRENGTH.getOrDefault(key, strength);
-        float smoothed = last + (strength - last) * 0.3f;
-        LAST_STRENGTH.put(key, smoothed);
+        float t = Math.min(1f, strength / NORM_PEAK);
+        float curve = (float) Math.pow(t, CURVE_EXPONENT);
 
-        float t = smoothed / 2.5f;
+        // ===== 冷却：风暴越强，消耗越快（解决体感延迟） =====
+        int cooldown = COOLDOWNS.getOrDefault(key, 0);
+        if (cooldown > 0) {
+            int decrement = 1 + Math.round(curve * MAX_COOLDOWN_ACCEL);
+            cooldown -= decrement;
+            if (cooldown > 0) {
+                COOLDOWNS.put(key, cooldown);
+                return;
+            }
+            // 冷却被压缩到 0 以下，本 tick 直接劈
+        }
 
-        // 曲线：2.2 → 1.5，更线性
-        float curve = (float) Math.pow(t, 1.5);
-
-        // 冷却范围
-        int cooldownMin = (int) (COOLDOWN_MIN_STORM + (COOLDOWN_MIN_CALM - COOLDOWN_MIN_STORM) * (1 - curve));
-        int cooldownMax = (int) (COOLDOWN_MAX_STORM + (COOLDOWN_MAX_CALM - COOLDOWN_MAX_STORM) * (1 - curve));
+        // ===== 计算新冷却 =====
+        int cooldownMin = Math.round(COOLDOWN_MIN_STORM
+                + (COOLDOWN_MIN_CALM - COOLDOWN_MIN_STORM) * (1 - curve));
+        int cooldownMax = Math.round(COOLDOWN_MAX_STORM
+                + (COOLDOWN_MAX_CALM - COOLDOWN_MAX_STORM) * (1 - curve));
         if (cooldownMax <= cooldownMin) cooldownMax = cooldownMin + 1;
-
         int newCooldown = cooldownMin + jupiter.random.nextInt(cooldownMax - cooldownMin + 1);
         COOLDOWNS.put(key, newCooldown);
 
-        if (jupiter.players().isEmpty()) return;
-
-        // 暴烈期：一次劈多道闪电
-        int boltCount = 1;
-        if (curve > 0.4f) {
-            // 0.4~1.0 区间额外加 0~3 道
-            boltCount += jupiter.random.nextInt(1 + (int) ((curve - 0.4f) / 0.6f * 3));
+        // ===== 调试日志 =====
+        if (jupiter.getGameTime() % DEBUG_LOG_INTERVAL == 0) {
+            System.out.println("[Thunder] strength=" + String.format("%.2f", strength)
+                    + " curve=" + String.format("%.2f", curve)
+                    + " cooldown=" + newCooldown
+                    + " players=" + jupiter.players().size());
         }
 
+        if (jupiter.players().isEmpty()) return;
+
+        // ===== 闪电数量 =====
+        int extra = 0;
+        if (curve > 0.5f) {
+            int maxExtra = 1 + (int) ((curve - 0.5f) / 0.5f * 4);
+            extra = jupiter.random.nextInt(maxExtra + 1);
+        }
+        int boltCount = 1 + extra;
+
+        // ===== 生成闪电 =====
         for (int i = 0; i < boltCount; i++) {
             ServerPlayer player = jupiter.players().get(jupiter.random.nextInt(jupiter.players().size()));
             double x = player.getX() + (jupiter.random.nextDouble() * 2 - 1) * LIGHTNING_RADIUS;
             double z = player.getZ() + (jupiter.random.nextDouble() * 2 - 1) * LIGHTNING_RADIUS;
             int y = jupiter.getHeight(Heightmap.Types.MOTION_BLOCKING, (int) x, (int) z);
-
             LightningBolt bolt = new LightningBolt(EntityType.LIGHTNING_BOLT, jupiter);
             bolt.moveTo(x, y, z);
             bolt.setVisualOnly(true);
