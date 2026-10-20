@@ -23,20 +23,16 @@ public class JupiterThunderHandler {
     private static final int LIGHTNING_RADIUS = 16;
 
     // ===== 冷却范围（tick）=====
-    private static final int COOLDOWN_MIN_CALM = 120;   // 6s
-    private static final int COOLDOWN_MAX_CALM = 240;   // 12s
-    private static final int COOLDOWN_MIN_STORM = 2;    // 0.1s
-    private static final int COOLDOWN_MAX_STORM = 8;    // 0.4s
+    // 平静期：6~12 秒劈一次
+    private static final int COOLDOWN_MIN_CALM = 120;
+    private static final int COOLDOWN_MAX_CALM = 240;
+    // 风暴期：0.1~0.4 秒劈一次
+    private static final int COOLDOWN_MIN_STORM = 2;
+    private static final int COOLDOWN_MAX_STORM = 8;
 
     // ===== 归一化参考值 =====
     private static final float NORM_PEAK = JupiterStormManager.PEAK_REFERENCE;
     private static final float NORM_SUDDEN = JupiterStormManager.SUDDEN_REFERENCE;
-
-    /** 线性曲线（curve = t），让中等强度也能有较密的闪电 */
-    private static final float CURVE_EXPONENT = 1.0f;
-
-    /** 风暴时冷却最大加速倍数：curve=1 时每 tick 消耗 5 点冷却 */
-    private static final int MAX_COOLDOWN_ACCEL = 4;
 
     private static final int DEBUG_LOG_INTERVAL = 20;
 
@@ -45,7 +41,6 @@ public class JupiterThunderHandler {
 
     @SubscribeEvent
     public static void onLevelTick(LevelTickEvent.Post event) {
-        // 严格过滤：只处理服务端 + 木星维度
         if (event.getLevel().isClientSide()) return;
         if (!event.getLevel().dimension().equals(ModDimensions.JUPITER_LEVEL_KEY)) return;
 
@@ -78,26 +73,18 @@ public class JupiterThunderHandler {
 
         // 归一化到 0~1
         float t = Math.min(1f, smoothed / NORM_PEAK);
-        float curve = (float) Math.pow(t, CURVE_EXPONENT);
 
-        // ===== 冷却连续耗散 =====
+        // ===== 冷却倒计时 =====
         int cooldown = COOLDOWNS.getOrDefault(key, 0);
         if (cooldown > 0) {
-            // 每 tick 按强度扣冷却，加速风暴爆发
-            int decrement = 1 + Math.round(curve * MAX_COOLDOWN_ACCEL);
-            cooldown -= decrement;
-            if (cooldown > 0) {
-                COOLDOWNS.put(key, cooldown);
-                return;
-            }
-            // 本 tick 冷却归零，直接劈雷
+            COOLDOWNS.put(key, cooldown - 1);
+            return; // 冷却没结束，本 tick 不劈雷
         }
 
-        // ===== 计算新冷却范围（依据当前 curve） =====
-        int cooldownMin = Math.round(COOLDOWN_MIN_STORM
-                + (COOLDOWN_MIN_CALM - COOLDOWN_MIN_STORM) * (1 - curve));
-        int cooldownMax = Math.round(COOLDOWN_MAX_STORM
-                + (COOLDOWN_MAX_CALM - COOLDOWN_MAX_STORM) * (1 - curve));
+        // ===== 冷却归零，准备劈雷 =====
+        // 根据当前强度计算下一次的冷却时间
+        int cooldownMin = Math.round(COOLDOWN_MIN_STORM + (COOLDOWN_MIN_CALM - COOLDOWN_MIN_STORM) * (1 - t));
+        int cooldownMax = Math.round(COOLDOWN_MAX_STORM + (COOLDOWN_MAX_CALM - COOLDOWN_MAX_STORM) * (1 - t));
 
         if (cooldownMax <= cooldownMin) {
             cooldownMax = cooldownMin + 1;
@@ -110,7 +97,7 @@ public class JupiterThunderHandler {
         if (jupiter.getGameTime() % DEBUG_LOG_INTERVAL == 0) {
             System.out.println("[Thunder] strength=" + String.format("%.2f", strength)
                     + " smoothed=" + String.format("%.2f", smoothed)
-                    + " curve=" + String.format("%.2f", curve)
+                    + " t=" + String.format("%.2f", t)
                     + " cooldown=" + newCooldown
                     + " players=" + jupiter.players().size());
         }
@@ -119,9 +106,9 @@ public class JupiterThunderHandler {
 
         // ===== 决定劈雷数量 =====
         int extra = 0;
-        if (curve > 0.5f) {
-            // curve 0.5 -> 最多 2 道; curve 1.0 -> 最多 6 道
-            int maxExtra = 1 + (int) ((curve - 0.5f) / 0.5f * 5);
+        if (t > 0.5f) {
+            // t 0.5 -> 最多 2 道; t 1.0 -> 最多 6 道
+            int maxExtra = 1 + (int) ((t - 0.5f) / 0.5f * 5);
             extra = jupiter.random.nextInt(maxExtra + 1);
         }
         int boltCount = 1 + extra;
