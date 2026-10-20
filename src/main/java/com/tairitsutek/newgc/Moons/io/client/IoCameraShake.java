@@ -3,7 +3,9 @@ package com.tairitsutek.newgc.Moons.io.client;
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.Planets.ModDimensions;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -14,60 +16,101 @@ public class IoCameraShake {
 
     private static final RandomSource RNG = RandomSource.create();
 
-    // 响应速度（因为有包络线，可以稍微快一点）
-    private static final float SMOOTH = 0.1f;
+    // ===== 地震参数 =====
+    private static final float QUAKE_SMOOTH = 0.1f;
+    private static final float QUAKE_SHAKE_AMPLITUDE = 3.5f;
+    private static final float QUAKE_SHAKE_FREQUENCY = 0.35f;
+    private static final float QUAKE_ROLL_AMPLITUDE = 1.5f;
 
-    // 震动幅度：地震的幅度通常比风暴大
-    private static final float SHAKE_AMPLITUDE = 3.5f;
+    private static float quakeSmoothedStrength = 0.0f;
 
-    // 震动频率：地震的抖动频率更高、更急促
-    private static final float SHAKE_FREQUENCY = 0.35f;
+    // ===== 火山参数 =====
+    private static final float VOLCANO_SMOOTH = 0.08f;
+    private static final float VOLCANO_MAX_AMPLITUDE = 2.5f;
+    private static final double VOLCANO_MAX_DISTANCE = 72.0;
 
-    // 滚转（Roll）幅度，模拟地面倾斜感
-    private static final float ROLL_AMPLITUDE = 1.5f;
+    private static float volcanoSmoothedAmplitude = 0f;
 
-    private static float smoothedStrength = 0.0f;
+    // 共享时间
     private static float shakeTime = 0f;
 
     @SubscribeEvent
     public static void onComputeCameraAngles(ViewportEvent.ComputeCameraAngles event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) return;
+        if (mc.level == null || mc.player == null) return;
 
-        // TODO: 这里请确保替换为你项目里木卫一的真实维度 Key
         if (!mc.level.dimension().equals(ModDimensions.IO_LEVEL_KEY)) return;
 
-        // 【关键修改】直接调用你写好的 Cache 类获取强度
-        float strength = IoQuakeClientCache.getQuakeIntensity();
-
-        // 容错处理
-        if (Float.isNaN(strength) || Float.isInfinite(strength)) strength = 0.0f;
-        strength = Math.max(0.0f, Math.min(2.5f, strength));
-
-        smoothedStrength += (strength - smoothedStrength) * SMOOTH;
-        if (Float.isNaN(smoothedStrength)) smoothedStrength = 0.0f;
-
-        // 如果强度极低（没地震或已经结束），直接跳过
-        if (smoothedStrength < 0.05f) return;
-
-        // 每次触发累加时间
+        // 只要在震动，时间就累加
         shakeTime += 1.0f;
 
-        // 木卫一的地震：主要是上下颠簸（Pitch）和倾斜（Roll）
-        // 使用不同的频率倍数，让运动轨迹看起来不规则
+        // 基础偏移量（累加地震和火山）
+        float finalPitchAdd = 0f;
+        float finalRollAdd = 0f;
 
-        // 倾斜（Roll） - 模拟地震时地面歪斜
-        float waveRoll = (float) Math.sin(shakeTime * SHAKE_FREQUENCY * 0.8f) * smoothedStrength * ROLL_AMPLITUDE;
+        // ==========================================
+        // 1. 处理地震 (Earthquake)
+        // ==========================================
+        float quakeStrength = IoQuakeClientCache.getQuakeIntensity();
+        if (Float.isNaN(quakeStrength) || Float.isInfinite(quakeStrength)) quakeStrength = 0.0f;
+        quakeStrength = Math.max(0.0f, Math.min(2.5f, quakeStrength));
 
-        // 俯仰（Pitch） - 上下颠簸
-        float wavePitch = (float) Math.cos(shakeTime * SHAKE_FREQUENCY * 1.7f) * smoothedStrength * SHAKE_AMPLITUDE;
+        quakeSmoothedStrength += (quakeStrength - quakeSmoothedStrength) * QUAKE_SMOOTH;
+        if (Float.isNaN(quakeSmoothedStrength)) quakeSmoothedStrength = 0.0f;
 
-        // 高频随机抖动（模拟岩石碎裂的震感）
-        float jitterPitch = (RNG.nextFloat() - 0.5f) * smoothedStrength * 1.5f;
-        float jitterRoll = (RNG.nextFloat() - 0.5f) * smoothedStrength * 1.5f;
+        if (quakeSmoothedStrength >= 0.05f) {
+            float waveRoll = (float) Math.sin(shakeTime * QUAKE_SHAKE_FREQUENCY * 0.8f) * quakeSmoothedStrength * QUAKE_ROLL_AMPLITUDE;
+            float wavePitch = (float) Math.cos(shakeTime * QUAKE_SHAKE_FREQUENCY * 1.7f) * quakeSmoothedStrength * QUAKE_SHAKE_AMPLITUDE;
+            float jitterPitch = (RNG.nextFloat() - 0.5f) * quakeSmoothedStrength * 1.5f;
+            float jitterRoll = (RNG.nextFloat() - 0.5f) * quakeSmoothedStrength * 1.5f;
 
-        // 应用修改
-        event.setPitch(event.getPitch() + wavePitch + jitterPitch);
-        event.setRoll(event.getRoll() + waveRoll + jitterRoll);
+            finalPitchAdd += wavePitch + jitterPitch;
+            finalRollAdd += waveRoll + jitterRoll;
+        }
+
+        // ==========================================
+        // 2. 处理火山 (Volcano)
+        // ==========================================
+        float volcanoTargetAmplitude = 0f;
+        BlockPos vp = IoVolcanoClientCache.getVolcanoPos();
+        float volcanoIntensity = IoVolcanoClientCache.getEruptionIntensity();
+
+        if (vp != null && volcanoIntensity > 0f) {
+            Vec3 p = mc.player.position();
+            double dx = p.x - (vp.getX() + 0.5);
+            double dy = p.y - (vp.getY() + 0.5);
+            double dz = p.z - (vp.getZ() + 0.5);
+            double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+            // 距离衰减计算
+            if (dist < VOLCANO_MAX_DISTANCE) {
+                double t = dist / VOLCANO_MAX_DISTANCE;
+                double distanceFactor = 1.0 - t * t;
+                volcanoTargetAmplitude = (float) (VOLCANO_MAX_AMPLITUDE * volcanoIntensity * distanceFactor);
+            }
+        }
+
+        volcanoSmoothedAmplitude += (volcanoTargetAmplitude - volcanoSmoothedAmplitude) * VOLCANO_SMOOTH;
+        if (Float.isNaN(volcanoSmoothedAmplitude)) volcanoSmoothedAmplitude = 0f;
+
+        if (volcanoSmoothedAmplitude >= 0.05f) {
+            // 火山是持续、低沉的咆哮感
+            float vJitterPitch = (RNG.nextFloat() - 0.5f) * volcanoSmoothedAmplitude;
+            float vJitterRoll = (RNG.nextFloat() - 0.5f) * volcanoSmoothedAmplitude * 1.5f;
+
+            float vWavePitch = (float) Math.cos(shakeTime * 0.45f) * volcanoSmoothedAmplitude * 0.5f;
+            float vWaveRoll = (float) Math.sin(shakeTime * 0.35f) * volcanoSmoothedAmplitude * 0.4f;
+
+            finalPitchAdd += vJitterPitch + vWavePitch;
+            finalRollAdd += vJitterRoll + vWaveRoll;
+        }
+
+        // ==========================================
+        // 3. 应用综合震动
+        // ==========================================
+        if (finalPitchAdd != 0f || finalRollAdd != 0f) {
+            event.setPitch(event.getPitch() + finalPitchAdd);
+            event.setRoll(event.getRoll() + finalRollAdd);
+        }
     }
 }

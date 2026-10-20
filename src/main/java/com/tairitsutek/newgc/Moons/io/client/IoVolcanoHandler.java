@@ -5,8 +5,10 @@ import com.tairitsutek.newgc.Planets.ModDimensions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -34,6 +36,8 @@ public class IoVolcanoHandler {
 
         Vec3 playerPos = mc.player.position();
         double distSqr = playerPos.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
+
+        // 距离剔除：96格外不生成
         if (distSqr > 96 * 96) {
             return;
         }
@@ -74,15 +78,24 @@ public class IoVolcanoHandler {
             double pz = cz + (RNG.nextDouble() - 0.5) * 1.5;
 
             if (heightFactor < 0.35) {
-                if (RNG.nextFloat() < 0.3f) {
+                // 恢复根部的方块粒子和原版粒子混合
+                float roll = RNG.nextFloat();
+                if (roll < 0.2f) {
                     level.addParticle(ParticleTypes.LAVA, px, py, pz, vx * 0.6, vy * 0.7, vz * 0.6);
-                } else if (RNG.nextFloat() < 0.6f) {
+                } else if (roll < 0.5f) {
                     level.addParticle(ParticleTypes.FLAME, px, py, pz, vx, vy, vz);
+                } else if (roll < 0.7f) {
+                    // 硫磺粉尘方块
+                    level.addParticle(new BlockParticleOption(ParticleTypes.FALLING_DUST, Blocks.YELLOW_CONCRETE.defaultBlockState()), px, py, pz, vx, vy * 0.8, vz);
                 } else {
-                    level.addParticle(ParticleTypes.ASH, px, py, pz, vx, vy * 0.8, vz);
+                    // 黑曜石碎屑
+                    level.addParticle(new BlockParticleOption(ParticleTypes.FALLING_DUST, Blocks.BLACK_CONCRETE.defaultBlockState()), px, py, pz, vx, vy * 0.8, vz);
                 }
             } else if (heightFactor < 0.75) {
                 level.addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, px, py, pz, vx * 1.2, vy * 0.8, vz * 1.2);
+                if (RNG.nextFloat() < 0.3f) {
+                    level.addParticle(ParticleTypes.LARGE_SMOKE, px, py, pz, vx, vy * 0.7, vz);
+                }
             } else {
                 if (RNG.nextFloat() < 0.3f) {
                     level.addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, px, py, pz, vx * 1.5, vy * 0.5, vz * 1.5);
@@ -113,10 +126,14 @@ public class IoVolcanoHandler {
             double vz = Math.sin(angle) * (0.8 + intensity);
             double vy = 0.5 + RNG.nextDouble() * 1.0;
 
-            if (RNG.nextFloat() < 0.6f) {
+            float roll = RNG.nextFloat();
+            if (roll < 0.5f) {
                 level.addParticle(ParticleTypes.ASH, px, py, pz, vx, vy, vz);
-            } else {
+            } else if (roll < 0.8f) {
                 level.addParticle(ParticleTypes.SMOKE, px, py, pz, vx * 1.5, vy, vz * 1.5);
+            } else {
+                // 冲击波带出的岩浆星点
+                level.addParticle(ParticleTypes.LAVA, px, py, pz, vx * 0.5, vy * 0.5, vz * 0.5);
             }
         }
     }

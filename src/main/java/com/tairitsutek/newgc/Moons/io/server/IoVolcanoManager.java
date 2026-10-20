@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -19,17 +20,12 @@ public class IoVolcanoManager {
 
     private static final RandomSource RNG = RandomSource.create();
 
-    // ===== ★ 增强：冷却时间大幅缩短 (3秒 ~ 15秒) =====
     private static final int INTERVAL_MIN = 60;
     private static final int INTERVAL_MAX = 300;
-
-    // ===== ★ 增强：喷发时长大幅增加 (15秒 ~ 40秒) =====
     private static final int DURATION_MIN = 300;
     private static final int DURATION_MAX = 800;
 
     private static final int SEARCH_RADIUS = 48;
-
-    // ===== ★ 增强：同步频率加快 (每 2 tick 同步一次，让震动更连贯) =====
     private static final int SYNC_INTERVAL = 2;
 
     private static int cooldownTimer = 0;
@@ -37,6 +33,9 @@ public class IoVolcanoManager {
     private static int eruptionTotalTicks = 0;
     private static BlockPos volcanoPos = null;
     private static int syncCounter = 0;
+
+    // 用于生成岩浆的计时器
+    private static int lavaSpawnTimer = 0;
 
     public static BlockPos getVolcanoPos()     { return volcanoPos; }
     public static boolean isErupting()         { return volcanoPos != null && eruptionTicks > 0; }
@@ -48,7 +47,6 @@ public class IoVolcanoManager {
         if (!isErupting() || eruptionTotalTicks <= 0) return 0f;
         float progress = 1f - (float) eruptionTicks / eruptionTotalTicks;
         float envelope = 4f * progress * (1f - progress);
-        // ★ 增强：基础强度从 0.25 提高到 0.4，让爆发更加剧烈
         return 0.4f + 0.6f * envelope;
     }
 
@@ -68,6 +66,7 @@ public class IoVolcanoManager {
         eruptionTicks = DURATION_MIN + RNG.nextInt(DURATION_MAX - DURATION_MIN + 1);
         eruptionTotalTicks = eruptionTicks;
         cooldownTimer = 0;
+        lavaSpawnTimer = 0;
 
         broadcastState(ioLevel);
     }
@@ -108,6 +107,14 @@ public class IoVolcanoManager {
 
         if (eruptionTicks > 0 && volcanoPos != null) {
             eruptionTicks--;
+
+            // 每 10 tick 尝试生成一次岩浆池
+            lavaSpawnTimer++;
+            if (lavaSpawnTimer >= 10) {
+                lavaSpawnTimer = 0;
+                generateLavaAtVent(ioLevel, volcanoPos);
+            }
+
             if (eruptionTicks <= 0) {
                 volcanoPos = null;
                 cooldownTimer = INTERVAL_MIN + RNG.nextInt(INTERVAL_MAX - INTERVAL_MIN + 1);
@@ -122,6 +129,25 @@ public class IoVolcanoManager {
         if (syncCounter >= SYNC_INTERVAL) {
             syncCounter = 0;
             broadcastState(ioLevel);
+        }
+    }
+
+    // 在根部生成岩浆
+    private static void generateLavaAtVent(ServerLevel level, BlockPos center) {
+        // 在中心点附近 3x3 范围随机生成岩浆
+        for (int i = 0; i < 4; i++) {
+            int dx = RNG.nextInt(3) - 1;
+            int dz = RNG.nextInt(3) - 1;
+            BlockPos pos = center.offset(dx, 0, dz);
+
+            // 寻找合适的地表高度
+            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
+            BlockPos targetPos = new BlockPos(pos.getX(), y - 1, pos.getZ());
+
+            // 避免把基岩变成岩浆，或者替换空气
+            if (!level.isEmptyBlock(targetPos) && level.getBlockState(targetPos).getDestroySpeed(level, targetPos) >= 0) {
+                level.setBlockAndUpdate(targetPos, Blocks.LAVA.defaultBlockState());
+            }
         }
     }
 
@@ -153,6 +179,7 @@ public class IoVolcanoManager {
         volcanoPos = new BlockPos(x, y, z);
         eruptionTicks = DURATION_MIN + RNG.nextInt(DURATION_MAX - DURATION_MIN + 1);
         eruptionTotalTicks = eruptionTicks;
+        lavaSpawnTimer = 0;
 
         broadcastState(level);
     }
