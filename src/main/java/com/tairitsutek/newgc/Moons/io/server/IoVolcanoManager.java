@@ -6,6 +6,7 @@ import com.tairitsutek.newgc.Planets.ModDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -20,12 +21,17 @@ public class IoVolcanoManager {
 
     private static final RandomSource RNG = RandomSource.create();
 
+    // ===== 冷却时间大幅缩短 (3秒 ~ 15秒) =====
     private static final int INTERVAL_MIN = 60;
     private static final int INTERVAL_MAX = 300;
+
+    // ===== 喷发时长大幅增加 (15秒 ~ 40秒) =====
     private static final int DURATION_MIN = 300;
     private static final int DURATION_MAX = 800;
 
     private static final int SEARCH_RADIUS = 48;
+
+    // ===== 同步频率加快 (每 2 tick 同步一次，让震动更连贯) =====
     private static final int SYNC_INTERVAL = 2;
 
     private static int cooldownTimer = 0;
@@ -47,6 +53,7 @@ public class IoVolcanoManager {
         if (!isErupting() || eruptionTotalTicks <= 0) return 0f;
         float progress = 1f - (float) eruptionTicks / eruptionTotalTicks;
         float envelope = 4f * progress * (1f - progress);
+        // 基础强度从 0.4 开始，爆发更加剧烈
         return 0.4f + 0.6f * envelope;
     }
 
@@ -108,11 +115,11 @@ public class IoVolcanoManager {
         if (eruptionTicks > 0 && volcanoPos != null) {
             eruptionTicks--;
 
-            // 每 10 tick 尝试生成一次岩浆池
+            // 每 5 tick 尝试生成一次岩浆
             lavaSpawnTimer++;
-            if (lavaSpawnTimer >= 10) {
+            if (lavaSpawnTimer >= 5) {
                 lavaSpawnTimer = 0;
-                generateLavaAtVent(ioLevel, volcanoPos);
+                spawnLavaBlocks(ioLevel, volcanoPos);
             }
 
             if (eruptionTicks <= 0) {
@@ -132,21 +139,42 @@ public class IoVolcanoManager {
         }
     }
 
-    // 在根部生成岩浆
-    private static void generateLavaAtVent(ServerLevel level, BlockPos center) {
-        // 在中心点附近 3x3 范围随机生成岩浆
-        for (int i = 0; i < 4; i++) {
-            int dx = RNG.nextInt(3) - 1;
-            int dz = RNG.nextInt(3) - 1;
-            BlockPos pos = center.offset(dx, 0, dz);
+    // 核心逻辑：生成向外抛射的岩浆方块
+    private static void spawnLavaBlocks(ServerLevel level, BlockPos center) {
+        float intensity = getEruptionIntensity();
 
-            // 寻找合适的地表高度
-            int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
-            BlockPos targetPos = new BlockPos(pos.getX(), y - 1, pos.getZ());
+        // 每次触发尝试在 3~5 个随机位置生成岩浆
+        int attempts = 3 + RNG.nextInt(3);
 
-            // 避免把基岩变成岩浆，或者替换空气
-            if (!level.isEmptyBlock(targetPos) && level.getBlockState(targetPos).getDestroySpeed(level, targetPos) >= 0) {
+        for (int i = 0; i < attempts; i++) {
+            // 随机角度和抛射距离 (3~12格)
+            double angle = RNG.nextDouble() * Math.PI * 2;
+            double distance = 3.0 + RNG.nextDouble() * 9.0 * intensity;
+
+            int dx = (int) (Math.cos(angle) * distance);
+            int dz = (int) (Math.sin(angle) * distance);
+
+            // 寻找该位置的地表
+            int targetY = level.getHeight(Heightmap.Types.MOTION_BLOCKING, center.getX() + dx, center.getZ() + dz);
+            BlockPos targetPos = new BlockPos(center.getX() + dx, targetY - 1, center.getZ() + dz);
+
+            var state = level.getBlockState(targetPos);
+
+            // 直接判断方块是否是基岩或黑曜石，防止被岩浆替换
+            if (state.is(Blocks.BEDROCK) || state.is(Blocks.OBSIDIAN)) {
+                continue;
+            }
+
+            // 安全检查：必须是固体方块，且不是空气
+            if (!state.isAir() && state.isSolid()) {
+                // 把目标方块变成岩浆
                 level.setBlockAndUpdate(targetPos, Blocks.LAVA.defaultBlockState());
+
+                // 如果岩浆上方的方块是可替换的（比如草、树叶），把它烧掉
+                BlockPos abovePos = targetPos.above();
+                if (level.getBlockState(abovePos).is(BlockTags.REPLACEABLE)) {
+                    level.setBlockAndUpdate(abovePos, Blocks.FIRE.defaultBlockState());
+                }
             }
         }
     }
