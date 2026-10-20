@@ -17,14 +17,10 @@ public class IoQuakeManager {
 
     private static final RandomSource RNG = RandomSource.create();
 
-    // ===== 地震间隔（刻） =====
-    private static final int INTERVAL_MIN = 100;    // 5 秒
-    private static final int INTERVAL_MAX = 600;    // 30 秒
-
-    // ===== 持续时间（刻） =====
-    private static final int DURATION_MIN = 40;     // 2 秒
-    private static final int DURATION_MAX = 120;    // 6 秒
-
+    private static final int INTERVAL_MIN = 100;
+    private static final int INTERVAL_MAX = 600;
+    private static final int DURATION_MIN = 40;
+    private static final int DURATION_MAX = 120;
     private static final int SYNC_INTERVAL = 5;
 
     private static int cooldownTimer = 0;
@@ -32,7 +28,6 @@ public class IoQuakeManager {
     private static int quakeTotalTicks = 0;
     private static int syncCounter = 0;
 
-    // ===== Getter =====
     public static boolean isQuaking()          { return quakeTicks > 0; }
     public static int getQuakeTicks()          { return quakeTicks; }
     public static int getQuakeTotalTicks()     { return quakeTotalTicks; }
@@ -45,7 +40,6 @@ public class IoQuakeManager {
         return 0.25f + 0.75f * envelope;
     }
 
-    // ===== 调试 =====
     public static void debugForceQuake() {
         ServerLevel ioLevel = findIoLevel();
         if (ioLevel == null) return;
@@ -58,18 +52,6 @@ public class IoQuakeManager {
     }
 
     public static void debugForceCalm() {
-        ServerLevel ioLevel = findIoLevel();
-        if (ioLevel == null) return;
-
-        quakeTicks = 0;
-        quakeTotalTicks = 0;
-        cooldownTimer = INTERVAL_MIN + RNG.nextInt(INTERVAL_MAX - INTERVAL_MIN + 1);
-
-        broadcastState(ioLevel);
-    }
-
-    // 新增：恢复自然状态
-    public static void debugForceReset() {
         ServerLevel ioLevel = findIoLevel();
         if (ioLevel == null) return;
 
@@ -104,7 +86,6 @@ public class IoQuakeManager {
         if (quakeTicks > 0) {
             quakeTicks--;
             if (quakeTicks <= 0) {
-                // 地震结束，进入冷却
                 cooldownTimer = INTERVAL_MIN + RNG.nextInt(INTERVAL_MAX - INTERVAL_MIN + 1);
             }
         } else if (cooldownTimer > 0) {
@@ -122,13 +103,11 @@ public class IoQuakeManager {
 
     private static void startQuake(ServerLevel level) {
         if (level.players().isEmpty()) {
-            cooldownTimer = 100; // 没人时5秒后再检查
+            cooldownTimer = 100;
             return;
         }
-
         quakeTicks = DURATION_MIN + RNG.nextInt(DURATION_MAX - DURATION_MIN + 1);
         quakeTotalTicks = quakeTicks;
-
         broadcastState(level);
     }
 

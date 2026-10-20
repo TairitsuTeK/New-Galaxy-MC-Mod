@@ -11,13 +11,12 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * C2S 调试包：客户端请求服务端切换地震状态。
- * mode: 0 = 强制地震，1 = 强制平静，2 = 恢复自然循环
+ * mode: 0 = 强制地震，1 = 强制平静
  */
 public record IoQuakeDebugPayload(int mode) implements CustomPacketPayload {
 
     public static final int MODE_QUAKE = 0;
     public static final int MODE_CALM = 1;
-    public static final int MODE_RESET = 2; // 新增：恢复
 
     public static final CustomPacketPayload.Type<IoQuakeDebugPayload> TYPE =
             new CustomPacketPayload.Type<>(
@@ -40,8 +39,6 @@ public record IoQuakeDebugPayload(int mode) implements CustomPacketPayload {
                 IoQuakeManager.debugForceQuake();
             } else if (payload.mode() == MODE_CALM) {
                 IoQuakeManager.debugForceCalm();
-            } else if (payload.mode() == MODE_RESET) {
-                IoQuakeManager.debugForceReset();
             }
         });
     }
