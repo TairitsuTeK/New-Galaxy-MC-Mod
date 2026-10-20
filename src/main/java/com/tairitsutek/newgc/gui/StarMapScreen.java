@@ -361,7 +361,7 @@ public class StarMapScreen extends Screen {
                 tex("jupiter_icon.png"), 16, PLANET_ICON_DISPLAY,
                 false,
                 List.of(new Moon("gui.newgc.moon.io", 16, 11, 3.0f, 0f,
-                                16, 6, tex("io_icon.png"), null),
+                                16, 6, tex("io_icon.png"), ModDimensions.IO_LEVEL_KEY),
                         new Moon("gui.newgc.moon.europa", 24, 16, 2.2f, (float) (Math.PI / 2),
                                 16, 6, tex("europa_icon.png"), null),
                         new Moon("gui.newgc.moon.ganymede", 33, 22, 1.6f, (float) Math.PI,

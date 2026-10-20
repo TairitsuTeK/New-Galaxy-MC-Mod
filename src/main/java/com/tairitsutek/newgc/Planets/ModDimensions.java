@@ -123,6 +123,21 @@ public class ModDimensions {
                     ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "jupiter_type"));
     // endregion
 
+    // region 木卫一
+    public static final ResourceKey<LevelStem> IO_KEY =
+            ResourceKey.create(Registries.LEVEL_STEM,
+                    ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "io"));
+
+    public static final ResourceKey<Level> IO_LEVEL_KEY =
+            ResourceKey.create(Registries.DIMENSION,
+                    ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "io"));
+
+    public static final ResourceKey<DimensionType> IO_TYPE_KEY =
+            ResourceKey.create(Registries.DIMENSION_TYPE,
+                    ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "io_type"));
+
+    // endregion
+
     // region 注册入口
     public static void register() {
         NewGalaxyMain.LOGGER.info(
