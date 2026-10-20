@@ -22,7 +22,9 @@
   "carvers": {},
   "features": [
     [],
-    [],
+    [
+      "newgc:io_lava_lake"
+    ],
     [],
     [],
     [],

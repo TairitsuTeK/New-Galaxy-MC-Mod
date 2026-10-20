@@ -50,7 +50,7 @@ public class IoSkyRenderer {
 
     // ★ 木星：木卫一看木星视角直径 ≈ 19.5°（满月约 0.5°，39 倍）
     // 这是木卫一天空最震撼的景观
-    private static final float JUPITER_ANGULAR_REAL = 19.5f;
+    private static final float JUPITER_ANGULAR_REAL = 26.0f;
 
     private static final float SUN_SIZE     = sizeFromAngularDiameter(SUN_ANGULAR_REAL * ANGULAR_SCALE, SKY_DISTANCE);
     private static final float EARTH_SIZE   = sizeFromAngularDiameter(EARTH_ANGULAR_REAL * ANGULAR_SCALE, SKY_DISTANCE);

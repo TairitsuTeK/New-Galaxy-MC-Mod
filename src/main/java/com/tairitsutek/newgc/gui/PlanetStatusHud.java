@@ -8,6 +8,8 @@ import com.tairitsutek.newgc.Planets.mars.client.MarsDustStormClientCache;
 import com.tairitsutek.newgc.Planets.mars.client.MarsVolcanoClientCache;
 import com.tairitsutek.newgc.Planets.mars.network.MarsVolcanoDebugPayload;
 import com.tairitsutek.newgc.Planets.mercury.client.MercurySolarFlareClientCache;
+import com.tairitsutek.newgc.Moons.io.client.IoQuakeClientCache;
+import com.tairitsutek.newgc.Moons.io.network.IoQuakeDebugPayload;
 import com.tairitsutek.newgc.client.debug.DebugState;
 import com.tairitsutek.newgc.client.debug.HudInteractionState;
 import com.tairitsutek.newgc.config.NewGalaxyConfig;
@@ -54,6 +56,7 @@ public class PlanetStatusHud {
     private static final int MARS_DOT    = 0xFFE06B4B;
     private static final int DUST_DOT    = 0xFFC89650;
     private static final int FLARE_DOT   = 0xFFE0EEFF;
+    private static final int IO_DOT      = 0xFFD4C84B; // 硫磺黄
 
     private static final int DEBUG_BTN_W = 40;
     private static final int DEBUG_BTN_H = 16;
@@ -78,7 +81,9 @@ public class PlanetStatusHud {
         boolean inJupiter = mc.level.dimension().equals(ModDimensions.JUPITER_LEVEL_KEY);
         boolean inMars    = mc.level.dimension().equals(ModDimensions.MARS_LEVEL_KEY);
         boolean inMercury = mc.level.dimension().equals(ModDimensions.MERCURY_LEVEL_KEY);
-        if (!inJupiter && !inMars && !inMercury) {
+        boolean inIo      = mc.level.dimension().equals(ModDimensions.IO_LEVEL_KEY);
+
+        if (!inJupiter && !inMars && !inMercury && !inIo) {
             debugButtonsVisible = false;
             return;
         }
@@ -92,8 +97,10 @@ public class PlanetStatusHud {
         int jupiterH = inJupiter ? CARD_3ROW : 0;
         int marsH = inMars ? CARD_3ROW * 2 : 0;
         int mercuryH = inMercury ? CARD_3ROW : 0;
-        int cardCount = (inJupiter ? 1 : 0) + (inMars ? 2 : 0) + (inMercury ? 1 : 0);
-        int totalH = HEADER_H + jupiterH + marsH + mercuryH
+        int ioH = inIo ? CARD_3ROW : 0;
+
+        int cardCount = (inJupiter ? 1 : 0) + (inMars ? 2 : 0) + (inMercury ? 1 : 0) + (inIo ? 1 : 0);
+        int totalH = HEADER_H + jupiterH + marsH + mercuryH + ioH
                 + Math.max(0, cardCount - 1) * CARD_GAP
                 + PADDING + 2;
 
@@ -107,12 +114,12 @@ public class PlanetStatusHud {
         String planetName;
         if (inJupiter)      planetName = "木星 · 风暴";
         else if (inMars)    planetName = "火星 · 地表";
-        else                planetName = "水星 · 耀斑";
+        else if (inMercury) planetName = "水星 · 耀斑";
+        else                planetName = "木卫一 · 地震";
 
         g.drawString(mc.font, "◈ 星球状态", x + PADDING, y + 6, TITLE, false);
         int nameW = mc.font.width(planetName);
-        g.drawString(mc.font, planetName,
-                x + WIDTH - PADDING - nameW, y + 6, TITLE, false);
+        g.drawString(mc.font, planetName, x + WIDTH - PADDING - nameW, y + 6, TITLE, false);
 
         g.fill(x + PADDING, y + HEADER_H - 3, x + WIDTH - PADDING, y + HEADER_H - 2, SEPARATOR);
 
@@ -123,6 +130,7 @@ public class PlanetStatusHud {
             cy = drawDustStormCard(g, mc, x, cy);
         }
         if (inMercury) cy = drawSolarFlareCard(g, mc, x, cy);
+        if (inIo)      cy = drawIoQuakeCard(g, mc, x, cy);
 
         lastHudX = x;
         lastHudY = y;
@@ -131,7 +139,7 @@ public class PlanetStatusHud {
 
         if (NewGalaxyConfig.CLIENT.debugMode.get()) {
             debugButtonsVisible = true;
-            drawDebugButtons(g, mc, x, y + totalH + 6, inJupiter, inMars, inMercury);
+            drawDebugButtons(g, mc, x, y + totalH + 6, inJupiter, inMars, inMercury, inIo);
         } else {
             debugButtonsVisible = false;
         }
@@ -166,53 +174,12 @@ public class PlanetStatusHud {
         ty += ROW_H;
         drawRow(g, mc, tx, ty, rightEdge, "阶段剩余", formatTicks(remain), VALUE);
         ty += ROW_H;
-        drawRow(g, mc, tx, ty, rightEdge, "风暴强度",
-                String.format("%.2f", strength), VALUE);
+        drawRow(g, mc, tx, ty, rightEdge, "风暴强度", String.format("%.2f", strength), VALUE);
 
         drawStormBar(g, x + PADDING + 9, ty + ROW_H - 5,
                 WIDTH - PADDING * 2 - 17 - 8, strength, phaseColor);
 
         return y + CARD_3ROW + CARD_GAP;
-    }
-
-    private static void drawStormBar(GuiGraphics g, int x, int y, int w,
-                                     float strength, int phaseColor) {
-        int h = 7;
-        g.fill(x, y, x + w, y + h / 2, BAR_BG_TOP);
-        g.fill(x, y + h / 2, x + w, y + h, BAR_BG_BOT);
-
-        float t = Math.max(0f, Math.min(1f, strength / 2.5f));
-        int fillW = (int) (w * t);
-
-        int fillColor;
-        if (strength > 1.8f)      fillColor = 0xFFFF4A2A;
-        else if (strength > 1.0f) fillColor = 0xFFFF8A3A;
-        else if (strength > 0.5f) fillColor = 0xFFE0A050;
-        else                      fillColor = phaseColor;
-
-        g.fill(x, y, x + fillW, y + h, fillColor);
-        g.fill(x, y, x + fillW, y + 1, lighten(fillColor, 0x40));
-        g.fill(x, y + h - 1, x + fillW, y + h, darken(fillColor, 0x40));
-
-        for (float tick : new float[]{0.2f, 0.4f, 0.6f, 0.8f}) {
-            int tx = x + (int) (w * tick);
-            g.fill(tx, y, tx + 1, y + h, BAR_TICK);
-        }
-
-        drawBorder(g, x, y, w, h, 0xFF1A2A3C);
-        if (fillW > 0 && fillW < w) {
-            g.fill(x + fillW, y - 1, x + fillW + 1, y + h + 1, 0xFFFFFFFF);
-        }
-    }
-
-    private static String phaseName(JupiterStormClientCache.Phase p) {
-        return switch (p) {
-            case CALM    -> "平静";
-            case RISING  -> "增强";
-            case PEAK    -> "峰值";
-            case SUDDEN  -> "暴烈";
-            case FALLING -> "衰退";
-        };
     }
 
     // ================= 火星 · 火山 =================
@@ -298,60 +265,12 @@ public class PlanetStatusHud {
         ty += ROW_H;
         drawRow(g, mc, tx, ty, rightEdge, "阶段剩余", formatTicks(phaseTimer), VALUE);
         ty += ROW_H;
-        drawRow(g, mc, tx, ty, rightEdge, "沙尘强度",
-                String.format("%.2f", strength), VALUE);
+        drawRow(g, mc, tx, ty, rightEdge, "沙尘强度", String.format("%.2f", strength), VALUE);
 
         drawDustStormBar(g, x + PADDING + 9, ty + ROW_H - 5,
                 WIDTH - PADDING * 2 - 17 - 8, strength, phaseColor);
 
         return y + CARD_3ROW + CARD_GAP;
-    }
-
-    private static String dustPhaseName(MarsDustStormClientCache.Phase p) {
-        return switch (p) {
-            case CALM    -> "平静";
-            case RISING  -> "扬尘";
-            case PEAK    -> "沙暴";
-            case FALLING -> "消退";
-        };
-    }
-
-    private static int dustPhaseColor(MarsDustStormClientCache.Phase p) {
-        return switch (p) {
-            case CALM    -> 0xFF6A5830;
-            case RISING  -> 0xFFA8823C;
-            case PEAK    -> 0xFFC89650;
-            case FALLING -> 0xFF8A7040;
-        };
-    }
-
-    private static void drawDustStormBar(GuiGraphics g, int x, int y, int w,
-                                         float strength, int phaseColor) {
-        int h = 7;
-        g.fill(x, y, x + w, y + h / 2, BAR_BG_TOP);
-        g.fill(x, y + h / 2, x + w, y + h, BAR_BG_BOT);
-
-        float t = Math.max(0f, Math.min(1f, strength / 1.5f));
-        int fillW = (int) (w * t);
-
-        int fillColor;
-        if (strength > 1.0f)      fillColor = 0xFFC89650;
-        else if (strength > 0.5f) fillColor = 0xFFA8823C;
-        else                      fillColor = phaseColor;
-
-        g.fill(x, y, x + fillW, y + h, fillColor);
-        g.fill(x, y, x + fillW, y + 1, lighten(fillColor, 0x40));
-        g.fill(x, y + h - 1, x + fillW, y + h, darken(fillColor, 0x40));
-
-        for (float tick : new float[]{1f / 3f, 2f / 3f}) {
-            int tx = x + (int) (w * tick);
-            g.fill(tx, y, tx + 1, y + h, BAR_TICK);
-        }
-
-        drawBorder(g, x, y, w, h, 0xFF1A2A3C);
-        if (fillW > 0 && fillW < w) {
-            g.fill(x + fillW, y - 1, x + fillW + 1, y + h + 1, 0xFFFFFFFF);
-        }
     }
 
     // ================= 水星 · 太阳耀斑 =================
@@ -384,8 +303,7 @@ public class PlanetStatusHud {
         ty += ROW_H;
         drawRow(g, mc, tx, ty, rightEdge, "阶段剩余", formatTicks(phaseTimer), VALUE);
         ty += ROW_H;
-        drawRow(g, mc, tx, ty, rightEdge, "耀斑强度",
-                String.format("%.2f", intensity), VALUE);
+        drawRow(g, mc, tx, ty, rightEdge, "耀斑强度", String.format("%.2f", intensity), VALUE);
 
         drawSolarFlareBar(g, x + PADDING + 9, ty + ROW_H - 5,
                 WIDTH - PADDING * 2 - 17 - 8, intensity, phaseColor);
@@ -393,26 +311,111 @@ public class PlanetStatusHud {
         return y + CARD_3ROW + CARD_GAP;
     }
 
-    private static String flarePhaseName(MercurySolarFlareClientCache.Phase p) {
-        return switch (p) {
-            case CALM    -> "平静";
-            case BUILDUP -> "预警";
-            case FLARE   -> "爆发";
-            case DECAY   -> "消退";
-        };
+    // ================= 木卫一 · 地震 =================
+    private static int drawIoQuakeCard(GuiGraphics g, Minecraft mc, int x, int y) {
+        boolean quaking = IoQuakeClientCache.isQuaking();
+        int quakeTicks = IoQuakeClientCache.getQuakeTicks();
+        int totalTicks = IoQuakeClientCache.getQuakeTotalTicks();
+        int cooldown = IoQuakeClientCache.getCooldownTimer();
+        float intensity = IoQuakeClientCache.getQuakeIntensity();
+
+        int dotColor = quaking ? IO_DOT : 0xFF4A5A6E;
+
+        g.fill(x + PADDING, y, x + WIDTH - PADDING, y + CARD_3ROW, BG_INNER);
+        g.fill(x + PADDING - 1, y, x + PADDING + 4, y + CARD_3ROW, 0x40FFFFFF & dotColor | 0x40000000);
+        g.fill(x + PADDING, y, x + PADDING + 3, y + CARD_3ROW, dotColor);
+
+        int tx = x + PADDING + 9;
+        int ty = y + PADDING;
+        int rightEdge = x + WIDTH - PADDING - 8;
+
+        g.drawString(mc.font, "■ 木卫一地震", tx, ty, TITLE, false);
+
+        String state = quaking ? "震动中" : "平静";
+        int sW = mc.font.width(state);
+        int pillPad = 4;
+        int pillX = rightEdge - sW - pillPad * 2;
+        int pillY = ty - 1;
+        g.fill(pillX, pillY, rightEdge, pillY + 10, 0x60000000 | (dotColor & 0x00FFFFFF));
+        g.drawString(mc.font, state, pillX + pillPad, ty, 0xFFFFFFFF, false);
+
+        ty += ROW_H;
+
+        if (quaking) {
+            drawRow(g, mc, tx, ty, rightEdge, "震动剩余", formatTicks(quakeTicks), VALUE);
+            ty += ROW_H;
+            drawRow(g, mc, tx, ty, rightEdge, "地震烈度", String.format("%.2f", intensity), VALUE);
+            float progress = totalTicks > 0 ? (float) quakeTicks / totalTicks : 0f;
+            drawProgressBar(g, x + PADDING + 9, ty + ROW_H - 5, WIDTH - PADDING * 2 - 17 - 8, progress, IO_DOT);
+        } else {
+            drawRow(g, mc, tx, ty, rightEdge, "地质平静", "—", VALUE);
+            ty += ROW_H;
+            drawRow(g, mc, tx, ty, rightEdge, "下次地震预估", formatTicks(cooldown), VALUE);
+            drawProgressBar(g, x + PADDING + 9, ty + ROW_H - 5, WIDTH - PADDING * 2 - 17 - 8, 0f, IO_DOT);
+        }
+
+        return y + CARD_3ROW + CARD_GAP;
     }
 
-    private static int flarePhaseColor(MercurySolarFlareClientCache.Phase p) {
-        return switch (p) {
-            case CALM    -> 0xFF7A8FA6;
-            case BUILDUP -> 0xFFE0A050;
-            case FLARE   -> 0xFFFF4040;
-            case DECAY   -> 0xFFB07040;
-        };
+    // ================= 进度条与工具 =================
+    private static void drawStormBar(GuiGraphics g, int x, int y, int w, float strength, int phaseColor) {
+        int h = 7;
+        g.fill(x, y, x + w, y + h / 2, BAR_BG_TOP);
+        g.fill(x, y + h / 2, x + w, y + h, BAR_BG_BOT);
+
+        float t = Math.max(0f, Math.min(1f, strength / 2.5f));
+        int fillW = (int) (w * t);
+
+        int fillColor;
+        if (strength > 1.8f)      fillColor = 0xFFFF4A2A;
+        else if (strength > 1.0f) fillColor = 0xFFFF8A3A;
+        else if (strength > 0.5f) fillColor = 0xFFE0A050;
+        else                      fillColor = phaseColor;
+
+        g.fill(x, y, x + fillW, y + h, fillColor);
+        g.fill(x, y, x + fillW, y + 1, lighten(fillColor, 0x40));
+        g.fill(x, y + h - 1, x + fillW, y + h, darken(fillColor, 0x40));
+
+        for (float tick : new float[]{0.2f, 0.4f, 0.6f, 0.8f}) {
+            int tx = x + (int) (w * tick);
+            g.fill(tx, y, tx + 1, y + h, BAR_TICK);
+        }
+
+        drawBorder(g, x, y, w, h, 0xFF1A2A3C);
+        if (fillW > 0 && fillW < w) {
+            g.fill(x + fillW, y - 1, x + fillW + 1, y + h + 1, 0xFFFFFFFF);
+        }
     }
 
-    private static void drawSolarFlareBar(GuiGraphics g, int x, int y, int w,
-                                          float intensity, int phaseColor) {
+    private static void drawDustStormBar(GuiGraphics g, int x, int y, int w, float strength, int phaseColor) {
+        int h = 7;
+        g.fill(x, y, x + w, y + h / 2, BAR_BG_TOP);
+        g.fill(x, y + h / 2, x + w, y + h, BAR_BG_BOT);
+
+        float t = Math.max(0f, Math.min(1f, strength / 1.5f));
+        int fillW = (int) (w * t);
+
+        int fillColor;
+        if (strength > 1.0f)      fillColor = 0xFFC89650;
+        else if (strength > 0.5f) fillColor = 0xFFA8823C;
+        else                      fillColor = phaseColor;
+
+        g.fill(x, y, x + fillW, y + h, fillColor);
+        g.fill(x, y, x + fillW, y + 1, lighten(fillColor, 0x40));
+        g.fill(x, y + h - 1, x + fillW, y + h, darken(fillColor, 0x40));
+
+        for (float tick : new float[]{1f / 3f, 2f / 3f}) {
+            int tx = x + (int) (w * tick);
+            g.fill(tx, y, tx + 1, y + h, BAR_TICK);
+        }
+
+        drawBorder(g, x, y, w, h, 0xFF1A2A3C);
+        if (fillW > 0 && fillW < w) {
+            g.fill(x + fillW, y - 1, x + fillW + 1, y + h + 1, 0xFFFFFFFF);
+        }
+    }
+
+    private static void drawSolarFlareBar(GuiGraphics g, int x, int y, int w, float intensity, int phaseColor) {
         int h = 7;
         g.fill(x, y, x + w, y + h / 2, BAR_BG_TOP);
         g.fill(x, y + h / 2, x + w, y + h, BAR_BG_BOT);
@@ -440,8 +443,7 @@ public class PlanetStatusHud {
         }
     }
 
-    private static void drawProgressBar(GuiGraphics g, int x, int y, int w,
-                                        float progress, int color) {
+    private static void drawProgressBar(GuiGraphics g, int x, int y, int w, float progress, int color) {
         int h = 7;
         progress = Math.max(0f, Math.min(1f, progress));
 
@@ -456,15 +458,60 @@ public class PlanetStatusHud {
         drawBorder(g, x, y, w, h, 0xFF1A2A3C);
     }
 
+    private static String phaseName(JupiterStormClientCache.Phase p) {
+        return switch (p) {
+            case CALM    -> "平静";
+            case RISING  -> "增强";
+            case PEAK    -> "峰值";
+            case SUDDEN  -> "暴烈";
+            case FALLING -> "衰退";
+        };
+    }
+
+    private static String dustPhaseName(MarsDustStormClientCache.Phase p) {
+        return switch (p) {
+            case CALM    -> "平静";
+            case RISING  -> "扬尘";
+            case PEAK    -> "沙暴";
+            case FALLING -> "消退";
+        };
+    }
+
+    private static int dustPhaseColor(MarsDustStormClientCache.Phase p) {
+        return switch (p) {
+            case CALM    -> 0xFF6A5830;
+            case RISING  -> 0xFFA8823C;
+            case PEAK    -> 0xFFC89650;
+            case FALLING -> 0xFF8A7040;
+        };
+    }
+
+    private static String flarePhaseName(MercurySolarFlareClientCache.Phase p) {
+        return switch (p) {
+            case CALM    -> "平静";
+            case BUILDUP -> "预警";
+            case FLARE   -> "爆发";
+            case DECAY   -> "消退";
+        };
+    }
+
+    private static int flarePhaseColor(MercurySolarFlareClientCache.Phase p) {
+        return switch (p) {
+            case CALM    -> 0xFF7A8FA6;
+            case BUILDUP -> 0xFFE0A050;
+            case FLARE   -> 0xFFFF4040;
+            case DECAY   -> 0xFFB07040;
+        };
+    }
+
     // ================= 调试按钮 =================
     private static void drawDebugButtons(GuiGraphics g, Minecraft mc,
                                          int x, int y,
-                                         boolean inJupiter, boolean inMars, boolean inMercury) {
+                                         boolean inJupiter, boolean inMars, boolean inMercury, boolean inIo) {
         int btnX = x;
         int btnY = y;
 
         if (inJupiter) {
-            // 平静 / 增强 / 峰值 / 暴烈 / 恢复 / 劈雷
             String[] names = {"平静", "增强", "峰值", "暴烈", "恢复", "劈雷"};
             int[] phases = {
                     DebugState.JUPITER_CALM,
@@ -476,12 +523,7 @@ public class PlanetStatusHud {
             };
             int current = DebugState.getJupiterPhase();
             for (int i = 0; i < names.length; i++) {
-                boolean active;
-                if (phases[i] == -999) {
-                    active = JupiterStormManager.isForceThunder();
-                } else {
-                    active = phases[i] == current;
-                }
+                boolean active = (phases[i] == -999) ? JupiterStormManager.isForceThunder() : phases[i] == current;
                 drawDebugButton(g, mc, btnX, btnY, names[i], active);
                 btnX += DEBUG_BTN_W + DEBUG_BTN_GAP;
             }
@@ -506,8 +548,7 @@ public class PlanetStatusHud {
             drawDebugButton(g, mc, btnX2, row2Y, "喷发", erupting);
             btnX2 += DEBUG_BTN_W + DEBUG_BTN_GAP;
 
-            drawDebugButton(g, mc, btnX2, row2Y, "冷却",
-                    !erupting && MarsVolcanoClientCache.getCooldownTimer() > 0);
+            drawDebugButton(g, mc, btnX2, row2Y, "冷却", !erupting && MarsVolcanoClientCache.getCooldownTimer() > 0);
         } else if (inMercury) {
             String[] names = {"平静", "预警", "爆发", "消退", "恢复"};
             int[] phases = {
@@ -522,6 +563,14 @@ public class PlanetStatusHud {
                 drawDebugButton(g, mc, btnX, btnY, names[i], phases[i] == current);
                 btnX += DEBUG_BTN_W + DEBUG_BTN_GAP;
             }
+        } else if (inIo) {
+            // 这里增加了“恢复”按钮
+            boolean quaking = IoQuakeClientCache.isQuaking();
+            drawDebugButton(g, mc, btnX, btnY, "地震", quaking);
+            btnX += DEBUG_BTN_W + DEBUG_BTN_GAP;
+            drawDebugButton(g, mc, btnX, btnY, "平静", !quaking);
+            btnX += DEBUG_BTN_W + DEBUG_BTN_GAP;
+            drawDebugButton(g, mc, btnX, btnY, "恢复", false);
         }
     }
 
@@ -538,10 +587,7 @@ public class PlanetStatusHud {
         g.fill(x + DEBUG_BTN_W - 1, y, x + DEBUG_BTN_W, y + DEBUG_BTN_H, borderColor);
 
         int textW = mc.font.width(label);
-        g.drawString(mc.font, label,
-                x + (DEBUG_BTN_W - textW) / 2,
-                y + (DEBUG_BTN_H - 8) / 2,
-                textColor, false);
+        g.drawString(mc.font, label, x + (DEBUG_BTN_W - textW) / 2, y + (DEBUG_BTN_H - 8) / 2, textColor, false);
     }
 
     // ================= 点击判定 =================
@@ -555,31 +601,25 @@ public class PlanetStatusHud {
         Minecraft mc = Minecraft.getInstance();
         if (mc.level == null || mc.screen != null) return;
 
-        double mouseX = mc.mouseHandler.xpos()
-                * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getWidth();
-        double mouseY = mc.mouseHandler.ypos()
-                * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getHeight();
+        double mouseX = mc.mouseHandler.xpos() * mc.getWindow().getGuiScaledWidth() / mc.getWindow().getWidth();
+        double mouseY = mc.mouseHandler.ypos() * mc.getWindow().getGuiScaledHeight() / mc.getWindow().getHeight();
 
         boolean inJupiter = mc.level.dimension().equals(ModDimensions.JUPITER_LEVEL_KEY);
         boolean inMars    = mc.level.dimension().equals(ModDimensions.MARS_LEVEL_KEY);
         boolean inMercury = mc.level.dimension().equals(ModDimensions.MERCURY_LEVEL_KEY);
+        boolean inIo      = mc.level.dimension().equals(ModDimensions.IO_LEVEL_KEY);
 
         int btnY = lastHudY + lastHudH + 6;
         int btnX = lastHudX;
 
         if (inJupiter) {
             int[] phases = {
-                    DebugState.JUPITER_CALM,
-                    DebugState.JUPITER_RISING,
-                    DebugState.JUPITER_PEAK,
-                    DebugState.JUPITER_SUDDEN,
-                    DebugState.JUPITER_NONE,
-                    -999
+                    DebugState.JUPITER_CALM, DebugState.JUPITER_RISING, DebugState.JUPITER_PEAK,
+                    DebugState.JUPITER_SUDDEN, DebugState.JUPITER_NONE, -999
             };
             for (int i = 0; i < phases.length; i++) {
                 if (isHover(mouseX, mouseY, btnX, btnY, DEBUG_BTN_W, DEBUG_BTN_H)) {
                     if (phases[i] == -999) {
-                        // 切换强制劈雷
                         JupiterStormManager.setForceThunder(!JupiterStormManager.isForceThunder());
                     } else {
                         DebugState.setJupiterPhase(phases[i]);
@@ -591,10 +631,8 @@ public class PlanetStatusHud {
             }
         } else if (inMars) {
             int[] dustPhases = {
-                    DebugState.MARS_DUST_CALM,
-                    DebugState.MARS_DUST_RISING,
-                    DebugState.MARS_DUST_PEAK,
-                    DebugState.MARS_DUST_NONE
+                    DebugState.MARS_DUST_CALM, DebugState.MARS_DUST_RISING,
+                    DebugState.MARS_DUST_PEAK, DebugState.MARS_DUST_NONE
             };
             for (int phase : dustPhases) {
                 if (isHover(mouseX, mouseY, btnX, btnY, DEBUG_BTN_W, DEBUG_BTN_H)) {
@@ -609,26 +647,21 @@ public class PlanetStatusHud {
             int btnX2 = lastHudX;
 
             if (isHover(mouseX, mouseY, btnX2, row2Y, DEBUG_BTN_W, DEBUG_BTN_H)) {
-                PacketDistributor.sendToServer(
-                        new MarsVolcanoDebugPayload(MarsVolcanoDebugPayload.MODE_ERUPT));
+                PacketDistributor.sendToServer(new MarsVolcanoDebugPayload(MarsVolcanoDebugPayload.MODE_ERUPT));
                 event.setCanceled(true);
                 return;
             }
             btnX2 += DEBUG_BTN_W + DEBUG_BTN_GAP;
 
             if (isHover(mouseX, mouseY, btnX2, row2Y, DEBUG_BTN_W, DEBUG_BTN_H)) {
-                PacketDistributor.sendToServer(
-                        new MarsVolcanoDebugPayload(MarsVolcanoDebugPayload.MODE_COOLDOWN));
+                PacketDistributor.sendToServer(new MarsVolcanoDebugPayload(MarsVolcanoDebugPayload.MODE_COOLDOWN));
                 event.setCanceled(true);
                 return;
             }
         } else if (inMercury) {
             int[] phases = {
-                    DebugState.MERCURY_FLARE_CALM,
-                    DebugState.MERCURY_FLARE_BUILDUP,
-                    DebugState.MERCURY_FLARE_FLARE,
-                    DebugState.MERCURY_FLARE_DECAY,
-                    DebugState.MERCURY_FLARE_NONE
+                    DebugState.MERCURY_FLARE_CALM, DebugState.MERCURY_FLARE_BUILDUP,
+                    DebugState.MERCURY_FLARE_FLARE, DebugState.MERCURY_FLARE_DECAY, DebugState.MERCURY_FLARE_NONE
             };
             for (int phase : phases) {
                 if (isHover(mouseX, mouseY, btnX, btnY, DEBUG_BTN_W, DEBUG_BTN_H)) {
@@ -638,6 +671,32 @@ public class PlanetStatusHud {
                 }
                 btnX += DEBUG_BTN_W + DEBUG_BTN_GAP;
             }
+        } else if (inIo) {
+            // 这里增加了“恢复”的点击判定
+            int btnX2 = lastHudX;
+
+            // 地震按钮
+            if (isHover(mouseX, mouseY, btnX2, btnY, DEBUG_BTN_W, DEBUG_BTN_H)) {
+                PacketDistributor.sendToServer(new IoQuakeDebugPayload(IoQuakeDebugPayload.MODE_QUAKE));
+                event.setCanceled(true);
+                return;
+            }
+            btnX2 += DEBUG_BTN_W + DEBUG_BTN_GAP;
+
+            // 平静按钮
+            if (isHover(mouseX, mouseY, btnX2, btnY, DEBUG_BTN_W, DEBUG_BTN_H)) {
+                PacketDistributor.sendToServer(new IoQuakeDebugPayload(IoQuakeDebugPayload.MODE_CALM));
+                event.setCanceled(true);
+                return;
+            }
+            btnX2 += DEBUG_BTN_W + DEBUG_BTN_GAP;
+
+            // 恢复按钮
+            if (isHover(mouseX, mouseY, btnX2, btnY, DEBUG_BTN_W, DEBUG_BTN_H)) {
+                PacketDistributor.sendToServer(new IoQuakeDebugPayload(IoQuakeDebugPayload.MODE_RESET));
+                event.setCanceled(true);
+                return;
+            }
         }
     }
 
@@ -645,9 +704,7 @@ public class PlanetStatusHud {
         return mx >= x && mx <= x + w && my >= y && my <= y + h;
     }
 
-    // ================= 工具 =================
-    private static void drawRow(GuiGraphics g, Minecraft mc, int x, int y, int rightEdge,
-                                String label, String value, int valueColor) {
+    private static void drawRow(GuiGraphics g, Minecraft mc, int x, int y, int rightEdge, String label, String value, int valueColor) {
         g.drawString(mc.font, label, x, y, LABEL, false);
         int vW = mc.font.width(value);
         g.drawString(mc.font, value, rightEdge - vW, y, valueColor, false);

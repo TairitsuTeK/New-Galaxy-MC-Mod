@@ -1,6 +1,7 @@
 package com.tairitsutek.newgc;
 
 import com.mojang.logging.LogUtils;
+import com.tairitsutek.newgc.Moons.io.network.IoQuakePayload;
 import com.tairitsutek.newgc.Planets.ModDimensions;
 import com.tairitsutek.newgc.Planets.jupiter.network.JupiterStormPayload;
 import com.tairitsutek.newgc.Planets.mars.network.MarsDustStormPayload;
@@ -77,14 +78,13 @@ public class NewGalaxyMain {
                 MarsDustStormPayload.STREAM_CODEC,
                 MarsDustStormPayload::handle
         );
-        // ===== 水星太阳耀斑 =====
+
         registrar.playToClient(
                 MercurySolarFlarePayload.TYPE,
                 MercurySolarFlarePayload.STREAM_CODEC,
                 MercurySolarFlarePayload::handle
         );
 
-        // ========== C2S ==========
         registrar.playToServer(
                 ResetTankPacket.TYPE,
                 ResetTankPacket.STREAM_CODEC,
@@ -94,6 +94,12 @@ public class NewGalaxyMain {
                 MarsVolcanoDebugPayload.TYPE,
                 MarsVolcanoDebugPayload.STREAM_CODEC,
                 MarsVolcanoDebugPayload::handle
+        );
+
+        registrar.playToClient(
+                IoQuakePayload.TYPE,
+                IoQuakePayload.STREAM_CODEC,
+                IoQuakePayload::handle
         );
     }
 
