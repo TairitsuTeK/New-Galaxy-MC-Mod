@@ -19,16 +19,18 @@ public class IoVolcanoManager {
 
     private static final RandomSource RNG = RandomSource.create();
 
-    // 木卫一火山极其频繁，冷却时间比火星短很多 (10秒 ~ 40秒)
-    private static final int INTERVAL_MIN = 200;
-    private static final int INTERVAL_MAX = 800;
+    // ===== ★ 增强：冷却时间大幅缩短 (3秒 ~ 15秒) =====
+    private static final int INTERVAL_MIN = 60;
+    private static final int INTERVAL_MAX = 300;
 
-    // 喷发时长 (5秒 ~ 12秒)
-    private static final int DURATION_MIN = 100;
-    private static final int DURATION_MAX = 240;
+    // ===== ★ 增强：喷发时长大幅增加 (15秒 ~ 40秒) =====
+    private static final int DURATION_MIN = 300;
+    private static final int DURATION_MAX = 800;
 
     private static final int SEARCH_RADIUS = 48;
-    private static final int SYNC_INTERVAL = 5;
+
+    // ===== ★ 增强：同步频率加快 (每 2 tick 同步一次，让震动更连贯) =====
+    private static final int SYNC_INTERVAL = 2;
 
     private static int cooldownTimer = 0;
     private static int eruptionTicks = 0;
@@ -46,7 +48,8 @@ public class IoVolcanoManager {
         if (!isErupting() || eruptionTotalTicks <= 0) return 0f;
         float progress = 1f - (float) eruptionTicks / eruptionTotalTicks;
         float envelope = 4f * progress * (1f - progress);
-        return 0.25f + 0.75f * envelope;
+        // ★ 增强：基础强度从 0.25 提高到 0.4，让爆发更加剧烈
+        return 0.4f + 0.6f * envelope;
     }
 
     public static void debugForceErupt() {
