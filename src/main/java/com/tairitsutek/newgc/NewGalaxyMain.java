@@ -2,12 +2,14 @@ package com.tairitsutek.newgc;
 
 import com.mojang.logging.LogUtils;
 import com.tairitsutek.newgc.Moons.io.network.IoQuakePayload;
+import com.tairitsutek.newgc.Moons.io.network.IoVolcanoDebugPayload; // ★ 新增
+import com.tairitsutek.newgc.Moons.io.network.IoVolcanoPayload;      // ★ 新增
 import com.tairitsutek.newgc.Planets.ModDimensions;
 import com.tairitsutek.newgc.Planets.jupiter.network.JupiterStormPayload;
 import com.tairitsutek.newgc.Planets.mars.network.MarsDustStormPayload;
 import com.tairitsutek.newgc.Planets.mars.network.MarsVolcanoDebugPayload;
 import com.tairitsutek.newgc.Planets.mars.network.MarsVolcanoPayload;
-import com.tairitsutek.newgc.Planets.mercury.network.MercurySolarFlarePayload;   // ← 新增
+import com.tairitsutek.newgc.Planets.mercury.network.MercurySolarFlarePayload;
 import com.tairitsutek.newgc.block.PlanetsBlock;
 import com.tairitsutek.newgc.block.entity.ModBlockEntities;
 import com.tairitsutek.newgc.config.NewGalaxyConfig;
@@ -85,6 +87,18 @@ public class NewGalaxyMain {
                 MercurySolarFlarePayload::handle
         );
 
+        registrar.playToClient(
+                IoQuakePayload.TYPE,
+                IoQuakePayload.STREAM_CODEC,
+                IoQuakePayload::handle
+        );
+
+        registrar.playToClient(
+                IoVolcanoPayload.TYPE,
+                IoVolcanoPayload.STREAM_CODEC,
+                IoVolcanoPayload::handle
+        );
+
         registrar.playToServer(
                 ResetTankPacket.TYPE,
                 ResetTankPacket.STREAM_CODEC,
@@ -96,10 +110,10 @@ public class NewGalaxyMain {
                 MarsVolcanoDebugPayload::handle
         );
 
-        registrar.playToClient(
-                IoQuakePayload.TYPE,
-                IoQuakePayload.STREAM_CODEC,
-                IoQuakePayload::handle
+        registrar.playToServer(
+                IoVolcanoDebugPayload.TYPE,
+                IoVolcanoDebugPayload.STREAM_CODEC,
+                IoVolcanoDebugPayload::handle
         );
     }
 
