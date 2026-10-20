@@ -25,8 +25,11 @@ crash-reports/
 .DS_Store
 Thumbs.db
 *.swp
-*.py
 *~
 
 # ===== 本地配置 =====
 local.properties
+
+# ===== 根目录下的汇总脚本与临时文本（防止误传源码数据）=====
+/*.txt
+/*.py
