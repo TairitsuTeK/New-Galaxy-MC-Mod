@@ -13,8 +13,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class WireBlockEntity extends BlockEntity {
 
-    public static final int CAPACITY = 5000;
-    public static final int TRANSFER_PER_TICK = 500;
+    public static final int CAPACITY = 10000;
+    public static final int TRANSFER_PER_TICK = 2000; // 提高单次传输上限
 
     private final SimpleEnergyStorage energy =
             new SimpleEnergyStorage(CAPACITY, TRANSFER_PER_TICK, TRANSFER_PER_TICK);
@@ -30,6 +30,8 @@ public class WireBlockEntity extends BlockEntity {
     public void tick() {
         if (level == null || level.isClientSide()) return;
 
+        // 1. 从相邻的发电机/其他电线接收能量
+        // 注意：这里不加 canExtract 判断，直接让对面尝试 receive，如果对面是电线，它会自己处理
         for (Direction dir : Direction.values()) {
             if (energy.getEnergyStored() >= energy.getMaxEnergyStored()) break;
 
@@ -39,19 +41,20 @@ public class WireBlockEntity extends BlockEntity {
                     neighborPos,
                     dir.getOpposite()
             );
-            if (other == null || !other.canExtract()) continue;
 
-            int space = energy.getMaxEnergyStored() - energy.getEnergyStored();
-            int want = Math.min(TRANSFER_PER_TICK, space);
-            int got = other.extractEnergy(want, true);   // simulate
-            if (got <= 0) continue;
-            got = other.extractEnergy(got, false);
-            if (got > 0) {
-                energy.receiveEnergy(got, false);
-                setChanged();
+            // 如果对方是输出端（比如发电机），就抽它的电
+            if (other != null && other.canExtract()) {
+                int space = energy.getMaxEnergyStored() - energy.getEnergyStored();
+                int want = Math.min(TRANSFER_PER_TICK, space);
+                int got = other.extractEnergy(want, false);
+                if (got > 0) {
+                    energy.receiveEnergy(got, false);
+                    setChanged();
+                }
             }
         }
 
+        // 2. 把自身的能量推给相邻的机器
         if (energy.getEnergyStored() <= 0) return;
 
         for (Direction dir : Direction.values()) {
@@ -63,16 +66,21 @@ public class WireBlockEntity extends BlockEntity {
                     neighborPos,
                     dir.getOpposite()
             );
-            if (other == null || !other.canReceive()) continue;
 
-            int available = energy.getEnergyStored();
-            int want = Math.min(TRANSFER_PER_TICK, available);
-            int sent = other.receiveEnergy(want, true);  // simulate
-            if (sent <= 0) continue;
-            sent = other.receiveEnergy(sent, false);
-            if (sent > 0) {
-                energy.extractEnergy(sent, false);
-                setChanged();
+            if (other != null && other.canReceive()) {
+                int available = energy.getEnergyStored();
+                int want = Math.min(TRANSFER_PER_TICK, available);
+
+                // 模拟推送，看对方能收多少
+                int sent = other.receiveEnergy(want, true);
+                if (sent > 0) {
+                    // 正式推送
+                    sent = other.receiveEnergy(sent, false);
+                    if (sent > 0) {
+                        energy.extractEnergy(sent, false);
+                        setChanged();
+                    }
+                }
             }
         }
     }

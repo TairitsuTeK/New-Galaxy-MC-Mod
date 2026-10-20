@@ -5,7 +5,6 @@ import com.tairitsutek.newgc.menu.CompressorMenu;
 import com.tairitsutek.newgc.recipe.CompressorRecipe;
 import com.tairitsutek.newgc.recipe.ModRecipes;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -25,7 +24,6 @@ import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
@@ -112,8 +110,6 @@ public class CompressorBlockEntity extends BlockEntity implements MenuProvider {
     public void tick() {
         if (level == null || level.isClientSide()) return;
 
-        pullEnergy();
-
         ItemStack input = items.getStackInSlot(INPUT_SLOT);
         CompressorRecipe recipe = findRecipe(level, input);
         boolean canCompress = recipe != null
@@ -153,29 +149,6 @@ public class CompressorBlockEntity extends BlockEntity implements MenuProvider {
         if (changed) setChanged();
         if (level.getGameTime() % 20 == 0) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-        }
-    }
-
-    private void pullEnergy() {
-        if (level == null) return;
-        if (energy.getEnergyStored() >= energy.getMaxEnergyStored()) return;
-
-        for (Direction dir : Direction.values()) {
-            BlockPos neighbor = worldPosition.relative(dir);
-            IEnergyStorage other = level.getCapability(
-                    Capabilities.EnergyStorage.BLOCK,
-                    neighbor,
-                    dir.getOpposite()
-            );
-            if (other != null && other.canExtract()) {
-                int space = energy.getMaxEnergyStored() - energy.getEnergyStored();
-                int want = Math.min(ENERGY_RECEIVE, space);
-                int got = other.extractEnergy(want, false);
-                if (got > 0) {
-                    energy.receiveEnergy(got, false);
-                    setChanged();
-                }
-            }
         }
     }
 

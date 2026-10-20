@@ -6,7 +6,6 @@ import com.tairitsutek.newgc.event.oxygen.OxygenData;
 import com.tairitsutek.newgc.item.ToolsItem;
 import com.tairitsutek.newgc.menu.OxygenExtractorMenu;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -27,7 +26,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
@@ -143,8 +141,6 @@ public class OxygenExtractorBlockEntity extends BlockEntity implements MenuProvi
         if (level == null || level.isClientSide()) return;
         if (!(level instanceof ServerLevel serverLevel)) return;
 
-        pullEnergy();
-
         ItemStack stack = items.getStackInSlot(0);
         boolean hasTank = isOxygenTank(stack) && stack.isDamageableItem() && stack.getDamageValue() > 0;
         boolean hasPlant = isPlant(stack);
@@ -198,30 +194,6 @@ public class OxygenExtractorBlockEntity extends BlockEntity implements MenuProvi
         if (changed) setChanged();
         if (level.getGameTime() % 20 == 0) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
-        }
-    }
-
-    // 能量拉取
-    private void pullEnergy() {
-        if (level == null) return;
-        if (energy.getEnergyStored() >= energy.getMaxEnergyStored()) return;
-
-        for (Direction dir : Direction.values()) {
-            BlockPos neighbor = worldPosition.relative(dir);
-            IEnergyStorage other = level.getCapability(
-                    Capabilities.EnergyStorage.BLOCK,
-                    neighbor,
-                    dir.getOpposite()
-            );
-            if (other != null && other.canExtract()) {
-                int space = energy.getMaxEnergyStored() - energy.getEnergyStored();
-                int want = Math.min(ENERGY_RECEIVE, space);
-                int got = other.extractEnergy(want, false);
-                if (got > 0) {
-                    energy.receiveEnergy(got, false);
-                    setChanged();
-                }
-            }
         }
     }
 

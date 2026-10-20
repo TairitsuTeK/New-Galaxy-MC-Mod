@@ -3,6 +3,7 @@ package com.tairitsutek.newgc.block.entity;
 import com.tairitsutek.newgc.energy.SimpleEnergyStorage;
 import com.tairitsutek.newgc.menu.SolidFuelGeneratorMenu;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
@@ -21,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
@@ -29,13 +31,15 @@ public class SolidFuelGeneratorBlockEntity extends BlockEntity implements MenuPr
 
     public static final int CAPACITY = 100_000;
     public static final int GENERATE_PER_TICK = 40;
+    // 发电机向外输出的最大速度
+    public static final int EXTRACT_PER_TICK = 1000;
 
     private int burnTime = 0;
     private int maxBurnTime = 0;
     private int syncCooldown = 0;
 
     private final SimpleEnergyStorage energy =
-            new SimpleEnergyStorage(CAPACITY, CAPACITY, CAPACITY);
+            new SimpleEnergyStorage(CAPACITY, CAPACITY, EXTRACT_PER_TICK);
 
     private final ItemStackHandler items = new ItemStackHandler(1) {
         @Override
@@ -98,12 +102,14 @@ public class SolidFuelGeneratorBlockEntity extends BlockEntity implements MenuPr
         boolean changed = false;
         boolean energyFull = energy.getEnergyStored() >= energy.getMaxEnergyStored();
 
+        // 1. 燃烧并发电
         if (burnTime > 0 && !energyFull) {
             burnTime--;
             energy.generate(GENERATE_PER_TICK);
             changed = true;
         }
 
+        // 2. 尝试消耗燃料
         if (burnTime <= 0) {
             ItemStack fuel = items.getStackInSlot(0);
             int burn = getBurnTime(fuel);
@@ -118,6 +124,38 @@ public class SolidFuelGeneratorBlockEntity extends BlockEntity implements MenuPr
             }
         }
 
+        // 3. 主动向外推送能量
+        if (energy.getEnergyStored() > 0) {
+            boolean pushed = false;
+            for (Direction dir : Direction.values()) {
+                if (energy.getEnergyStored() <= 0) break;
+
+                BlockPos neighborPos = worldPosition.relative(dir);
+                IEnergyStorage other = level.getCapability(
+                        Capabilities.EnergyStorage.BLOCK,
+                        neighborPos,
+                        dir.getOpposite()
+                );
+
+                if (other != null && other.canReceive()) {
+                    int available = energy.getEnergyStored();
+                    int want = Math.min(EXTRACT_PER_TICK, available);
+
+                    // 模拟推送
+                    int sent = other.receiveEnergy(want, true);
+                    if (sent > 0) {
+                        sent = other.receiveEnergy(sent, false);
+                        if (sent > 0) {
+                            energy.extractEnergy(sent, false);
+                            pushed = true;
+                        }
+                    }
+                }
+            }
+            if (pushed) changed = true;
+        }
+
+        // 4. 状态同步
         if (changed) {
             setChanged();
 

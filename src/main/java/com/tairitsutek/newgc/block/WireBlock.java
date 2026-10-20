@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,11 +57,19 @@ public class WireBlock extends BaseEntityBlock {
         builder.add(UP, DOWN, NORTH, SOUTH, EAST, WEST);
     }
 
+    // 修复：由于 BlockGetter 没有 getCapability，需要强转为 Level 或 LevelAccessor
     private boolean canConnect(BlockGetter level, BlockPos pos, Direction dir) {
-        Block block = level.getBlockState(pos.relative(dir)).getBlock();
-        return block instanceof WireBlock
-                || block instanceof SolidFuelGeneratorBlock
-                || block instanceof OxygenExtractorBlock;
+        BlockPos neighborPos = pos.relative(dir);
+        Block block = level.getBlockState(neighborPos).getBlock();
+
+        if (block instanceof WireBlock) return true;
+
+        // 如果是 Level，则检测对方是否有能量 Capability
+        if (level instanceof Level actualLevel) {
+            return actualLevel.getCapability(Capabilities.EnergyStorage.BLOCK, neighborPos, dir.getOpposite()) != null;
+        }
+
+        return false;
     }
 
     @Nullable

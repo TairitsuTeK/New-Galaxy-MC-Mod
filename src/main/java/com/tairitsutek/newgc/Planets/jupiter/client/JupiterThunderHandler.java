@@ -23,12 +23,12 @@ public class JupiterThunderHandler {
     private static final int LIGHTNING_RADIUS = 16;
 
     // ===== 冷却时间范围（tick）=====
-    // 平静时（烈度0）：10~20秒劈一次
-    private static final int COOLDOWN_MAX_CALM = 400;
-    private static final int COOLDOWN_MIN_CALM = 200;
+    // 平静期（t=0）：20~30秒劈一次（雷击极少）
+    private static final int COOLDOWN_MAX_CALM = 600;
+    private static final int COOLDOWN_MIN_CALM = 400;
 
-    // 暴烈时（烈度最高）：0.1~0.5秒劈一次
-    private static final int COOLDOWN_MAX_STORM = 10;
+    // 暴烈期（t=1）：0.1~0.4秒劈一次（狂轰滥炸）
+    private static final int COOLDOWN_MAX_STORM = 8;
     private static final int COOLDOWN_MIN_STORM = 2;
 
     // ===== 归一化参考值 =====
@@ -65,11 +65,10 @@ public class JupiterThunderHandler {
         strength = Math.max(0f, Math.min(NORM_SUDDEN, strength));
 
         float last = LAST_STRENGTH.getOrDefault(key, strength);
-        // 平滑处理，避免强度突变导致闪电频率瞬间跳变
         float smoothed = last + (strength - last) * 0.1f;
         LAST_STRENGTH.put(key, smoothed);
 
-        // 归一化到 0~1 (0 = 平静, 1 = 最暴烈)
+        // 归一化到 0~1
         float t = Math.min(1f, smoothed / NORM_SUDDEN);
 
         // ===== 冷却倒计时 =====
@@ -81,15 +80,15 @@ public class JupiterThunderHandler {
 
         // ===== 冷却结束，执行劈雷 =====
         if (jupiter.players().isEmpty()) {
-            COOLDOWNS.put(key, 20); // 没玩家时随便给个短冷却
+            COOLDOWNS.put(key, 20);
             return;
         }
 
-        // 1. 决定劈雷数量
-        // 平静时(t=0)最多1道，暴烈时(t=1)最多6道
+        // 1. 决定劈雷数量 (t=0时最多1道，t=1时最多7道)
         int extra = 0;
-        if (t > 0.3f) {
-            extra = jupiter.random.nextInt((int)(t * 5) + 1);
+        if (t > 0.2f) {
+            // 线性增长，烈度只要稍微上去一点，就会开始多劈
+            extra = jupiter.random.nextInt((int)(t * 6) + 1);
         }
         int boltCount = 1 + extra;
 
@@ -107,13 +106,10 @@ public class JupiterThunderHandler {
         }
 
         // 3. 根据当前烈度，计算下一次劈雷的冷却时间
-        // 使用 Math.pow(t, 2) 可以让平静期冷却极长，而到了高强度区域冷却骤减
-        float curve = (float) Math.pow(t, 2.0);
+        // ★ 修改：改为纯线性插值（去掉 Math.pow），让中等强度也能有高频雷击
+        int nextMin = Math.round(COOLDOWN_MIN_CALM + (COOLDOWN_MIN_STORM - COOLDOWN_MIN_CALM) * t);
+        int nextMax = Math.round(COOLDOWN_MAX_CALM + (COOLDOWN_MAX_STORM - COOLDOWN_MAX_CALM) * t);
 
-        int nextMin = Math.round(COOLDOWN_MIN_CALM + (COOLDOWN_MIN_STORM - COOLDOWN_MIN_CALM) * curve);
-        int nextMax = Math.round(COOLDOWN_MAX_CALM + (COOLDOWN_MAX_STORM - COOLDOWN_MAX_CALM) * curve);
-
-        // 纠正可能倒挂的最值
         if (nextMax <= nextMin) nextMax = nextMin + 1;
 
         int newCooldown = nextMin + jupiter.random.nextInt(nextMax - nextMin + 1);
