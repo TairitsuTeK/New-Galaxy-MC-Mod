@@ -9,10 +9,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-/**
- * C2S 调试包：客户端请求服务端切换地震状态。
- * mode: 0 = 强制地震，1 = 强制平静
- */
 public record IoQuakeDebugPayload(int mode) implements CustomPacketPayload {
 
     public static final int MODE_QUAKE = 0;

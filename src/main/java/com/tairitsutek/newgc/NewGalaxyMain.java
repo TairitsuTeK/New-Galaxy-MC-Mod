@@ -1,9 +1,10 @@
 package com.tairitsutek.newgc;
 
 import com.mojang.logging.LogUtils;
+import com.tairitsutek.newgc.Moons.io.network.IoQuakeDebugPayload; // ★ 补充的 Import
 import com.tairitsutek.newgc.Moons.io.network.IoQuakePayload;
-import com.tairitsutek.newgc.Moons.io.network.IoVolcanoDebugPayload; // ★ 新增
-import com.tairitsutek.newgc.Moons.io.network.IoVolcanoPayload;      // ★ 新增
+import com.tairitsutek.newgc.Moons.io.network.IoVolcanoDebugPayload;
+import com.tairitsutek.newgc.Moons.io.network.IoVolcanoPayload;
 import com.tairitsutek.newgc.Planets.ModDimensions;
 import com.tairitsutek.newgc.Planets.jupiter.network.JupiterStormPayload;
 import com.tairitsutek.newgc.Planets.mars.network.MarsDustStormPayload;
@@ -80,25 +81,23 @@ public class NewGalaxyMain {
                 MarsDustStormPayload.STREAM_CODEC,
                 MarsDustStormPayload::handle
         );
-
         registrar.playToClient(
                 MercurySolarFlarePayload.TYPE,
                 MercurySolarFlarePayload.STREAM_CODEC,
                 MercurySolarFlarePayload::handle
         );
-
         registrar.playToClient(
                 IoQuakePayload.TYPE,
                 IoQuakePayload.STREAM_CODEC,
                 IoQuakePayload::handle
         );
-
         registrar.playToClient(
                 IoVolcanoPayload.TYPE,
                 IoVolcanoPayload.STREAM_CODEC,
                 IoVolcanoPayload::handle
         );
 
+        // ========== C2S ==========
         registrar.playToServer(
                 ResetTankPacket.TYPE,
                 ResetTankPacket.STREAM_CODEC,
@@ -108,6 +107,13 @@ public class NewGalaxyMain {
                 MarsVolcanoDebugPayload.TYPE,
                 MarsVolcanoDebugPayload.STREAM_CODEC,
                 MarsVolcanoDebugPayload::handle
+        );
+
+        // ★ 补充：木卫一地震调试包注册
+        registrar.playToServer(
+                IoQuakeDebugPayload.TYPE,
+                IoQuakeDebugPayload.STREAM_CODEC,
+                IoQuakeDebugPayload::handle
         );
 
         registrar.playToServer(

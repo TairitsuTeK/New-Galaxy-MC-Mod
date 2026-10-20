@@ -31,9 +31,9 @@ public final class HudInteractionState {
         active = false;
 
         Minecraft mc = Minecraft.getInstance();
-        // 断开连接 / 有 GUI 时不调 grabMouse
-        if (mc.screen != null) return;
+        // ★ 修复：如果正在断开连接或退出，直接跳过，防止崩溃
         if (mc.level == null) return;
+        if (mc.screen != null) return;
 
         mc.mouseHandler.grabMouse();
     }
