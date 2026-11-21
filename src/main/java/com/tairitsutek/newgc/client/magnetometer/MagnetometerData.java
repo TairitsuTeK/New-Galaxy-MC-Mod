@@ -1,6 +1,7 @@
 package com.tairitsutek.newgc.client.magnetometer;
 
 import com.tairitsutek.newgc.Planets.ModDimensions;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
@@ -27,6 +28,8 @@ public final class MagnetometerData {
         if (dim.equals(ModDimensions.PHOBOS_LEVEL_KEY))        return 0.03f;
         if (dim.equals(ModDimensions.DEIMOS_LEVEL_KEY))        return 0.03f;
         if (dim.equals(ModDimensions.CERES_LEVEL_KEY))         return 0.06f;
+        if (dim.equals(ModDimensions.PROXIMA_B_LEVEL_KEY))     return 0.55f;
+        if (dim.equals(ModDimensions.SPACE_LEVEL_KEY))         return 0.0f;
         return 0.5f;
     }
 
@@ -40,6 +43,8 @@ public final class MagnetometerData {
         if (dim.equals(ModDimensions.JUPITER_LEVEL_KEY))       return 1.00f;
         if (dim.equals(ModDimensions.MERCURY_LEVEL_KEY))       return 0.15f;
         if (dim.equals(ModDimensions.VENUS_LEVEL_KEY))         return 0.80f;
+        if (dim.equals(ModDimensions.PROXIMA_B_LEVEL_KEY))     return 0.18f;
+        if (dim.equals(ModDimensions.SPACE_LEVEL_KEY))         return 0.0f;
         return 0.30f;
     }
 
@@ -55,13 +60,15 @@ public final class MagnetometerData {
         return Math.max(0f, Math.min(1f, strength / STRENGTH_MAX));
     }
 
-    /** 磁场等级描述 */
+    /** 磁场等级描述（从语言文件读取） */
     public static String levelText(float strength) {
-        if (strength < 0.05f) return "极弱";
-        if (strength < 0.3f)  return "弱";
-        if (strength < 0.8f)  return "中等";
-        if (strength < 1.5f)  return "正常";
-        if (strength < 2.2f)  return "强";
-        return "极强";
+        String key;
+        if (strength < 0.05f) key = "very_weak";
+        else if (strength < 0.3f) key = "weak";
+        else if (strength < 0.8f) key = "medium";
+        else if (strength < 1.5f) key = "normal";
+        else if (strength < 2.2f) key = "strong";
+        else key = "extreme";
+        return Component.translatable("gui.newgc.magnetometer.level." + key).getString();
     }
 }

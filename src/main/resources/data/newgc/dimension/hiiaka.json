@@ -1,0 +1,11 @@
+{
+  "type": "newgc:hiiaka_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:hiiaka_plains"
+    },
+    "settings": "newgc:hiiaka_overworld"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "type": "newgc:saturn_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:saturn_plains"
+    },
+    "settings": "newgc:saturn_overworld"
+  }
+}

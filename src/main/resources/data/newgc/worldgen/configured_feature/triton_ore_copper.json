@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:ore",
+  "config": {
+    "size": 9,
+    "discard_chance_on_air_exposure": 0.0,
+    "targets": [
+      {
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "newgc:triton_stone"
+        },
+        "state": {
+          "Name": "newgc:triton_ore_copper"
+        }
+      },
+      {
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "newgc:triton_sub_surface"
+        },
+        "state": {
+          "Name": "newgc:triton_ore_copper"
+        }
+      },
+      {
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "newgc:triton_surface"
+        },
+        "state": {
+          "Name": "newgc:triton_ore_copper"
+        }
+      }
+    ]
+  }
+}

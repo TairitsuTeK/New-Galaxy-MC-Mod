@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IPI",
+    "CMC",
+    "IRI"
+  ],
+  "key": {
+    "I": {
+      "item": "newgc:tin_plate"
+    },
+    "P": {
+      "item": "newgc:circuit_core_golden"
+    },
+    "C": {
+      "item": "newgc:copper_plate"
+    },
+    "M": {
+      "item": "newgc:mechanical_casing"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "newgc:energy_cell",
+    "count": 1
+  }
+}

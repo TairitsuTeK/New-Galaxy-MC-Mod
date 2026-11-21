@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 public class MoonSkyEffects extends DimensionSpecialEffects {
 
     public MoonSkyEffects() {
-        super(0.0f, false, SkyType.NONE, false, false);
+        super(Float.NaN, false, SkyType.NONE, false, false);
     }
 
     @Override

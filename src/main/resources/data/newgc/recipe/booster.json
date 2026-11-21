@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ALA",
+    "LGL",
+    "ALA"
+  ],
+  "key": {
+    "A": { "item": "newgc:aluminum_plate" },
+    "L": { "item": "newgc:steel_plate" },
+    "G": { "item": "minecraft:gunpowder" }
+  },
+  "result": {
+    "id": "newgc:booster",
+    "count": 1
+  }
+}

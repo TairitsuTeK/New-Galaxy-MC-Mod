@@ -9,6 +9,7 @@ out/
 *.ipr
 *.iws
 .vscode/
+.eclipse/
 .settings/
 .classpath
 .project
@@ -26,6 +27,9 @@ crash-reports/
 Thumbs.db
 *.swp
 *~
+__pycache__/
+*.pyc
+preview/textures_backup.zip
 
 # ===== 本地配置 =====
 local.properties

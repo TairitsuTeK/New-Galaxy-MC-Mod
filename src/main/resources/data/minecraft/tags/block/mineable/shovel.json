@@ -1,7 +1,8 @@
 {
   "values": [
     "newgc:jupiter_gravel",
-    "newgc:sulfur"
+    "newgc:sulfur",
+    "newgc:moon_soil"
   ],
   "replace": false
 }

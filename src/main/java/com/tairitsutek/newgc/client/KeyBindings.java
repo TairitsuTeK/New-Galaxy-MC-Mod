@@ -3,9 +3,11 @@ package com.tairitsutek.newgc.client;
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.client.debug.HudInteractionState;
 import com.tairitsutek.newgc.config.NewGalaxyConfig;
+import com.tairitsutek.newgc.entity.RocketEntity;
 import com.tairitsutek.newgc.event.oxygen.ResetTankPacket;
 import com.tairitsutek.newgc.item.ToolsItem;
 import com.tairitsutek.newgc.gui.StarMapScreen;
+import com.tairitsutek.newgc.network.OpenRocketStoragePacket;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -49,17 +51,38 @@ public class KeyBindings {
             "key.categories.newgc"
     );
 
+    /** 骑乘火箭时打开储物舱。 */
+    public static final KeyMapping OPEN_ROCKET_STORAGE = new KeyMapping(
+            "key.newgc.rocket_storage",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_F,
+            "key.categories.newgc"
+    );
+
     @SubscribeEvent
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(OPEN_STAR_MAP);
         event.register(RESET_TANK);
         event.register(TOGGLE_HUD_MOUSE);   // ← 新增
+        event.register(OPEN_ROCKET_STORAGE);
     }
 
     @SubscribeEvent
     public static void onKeyInput(InputEvent.Key event) {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
+
+        // 骑乘火箭：F 打开储物舱，M 在轨道状态下重新打开星图
+        if (mc.player.getVehicle() instanceof RocketEntity rocket) {
+            if (OPEN_ROCKET_STORAGE.consumeClick()) {
+                PacketDistributor.sendToServer(new OpenRocketStoragePacket());
+            }
+            if (rocket.getState() == RocketEntity.STATE_ORBIT && OPEN_STAR_MAP.consumeClick()) {
+                mc.setScreen(new StarMapScreen(true));
+            }
+            return;
+        }
 
         if (OPEN_STAR_MAP.consumeClick()) {
             ItemStack mainHand = mc.player.getMainHandItem();

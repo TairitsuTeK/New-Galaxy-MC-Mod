@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 public class PhobosSkyEffects extends DimensionSpecialEffects {
 
     public PhobosSkyEffects() {
-        super(0.0f, false, SkyType.NONE, false, false);
+        super(Float.NaN, false, SkyType.NONE, false, false);
     }
 
     @Override

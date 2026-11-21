@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "NNN",
+    "NNN",
+    "NNN"
+  ],
+  "key": {
+    "N": {
+      "item": "newgc:titanium_nugget"
+    }
+  },
+  "result": {
+    "id": "newgc:titanium_ingot",
+    "count": 1
+  }
+}

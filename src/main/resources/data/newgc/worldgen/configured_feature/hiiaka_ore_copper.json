@@ -1,0 +1,36 @@
+{
+  "type": "minecraft:ore",
+  "config": {
+    "size": 9,
+    "discard_chance_on_air_exposure": 0.0,
+    "targets": [
+      {
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "newgc:hiiaka_stone"
+        },
+        "state": {
+          "Name": "newgc:hiiaka_ore_copper"
+        }
+      },
+      {
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "newgc:hiiaka_sub_surface"
+        },
+        "state": {
+          "Name": "newgc:hiiaka_ore_copper"
+        }
+      },
+      {
+        "target": {
+          "predicate_type": "minecraft:block_match",
+          "block": "newgc:hiiaka_surface"
+        },
+        "state": {
+          "Name": "newgc:hiiaka_ore_copper"
+        }
+      }
+    ]
+  }
+}

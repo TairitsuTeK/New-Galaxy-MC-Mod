@@ -1,0 +1,11 @@
+{
+  "type": "newgc:pluto_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:pluto_plains"
+    },
+    "settings": "newgc:pluto_overworld"
+  }
+}

@@ -44,9 +44,10 @@ public class ToolsItem {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> TOOLS_TAB =
             CREATIVE_MODE_TABS.register("tools_tab", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.newgc.tools"))
-                    .icon(() -> new ItemStack(TELEPORTER.get()))
+                    .icon(() -> new ItemStack(MAGNETOMETER.get()))
                     .displayItems((parameters, output) -> {
-                        output.accept(TELEPORTER.get());
+                        // 传送器已转为内部测试物品，不再出现在创造模式物品栏，
+                        // 只能用 /give newgc:teleporter 获取。
                         output.accept(IRON_HAMMER.get());
 
                         output.accept(OXYGEN_TANK_BASIC.get());

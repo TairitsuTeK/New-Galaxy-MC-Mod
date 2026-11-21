@@ -1,0 +1,11 @@
+{
+  "type": "newgc:compressing",
+  "ingredient": {
+    "item": "newgc:lead_ingot"
+  },
+  "inputCount": 2,
+  "result": {
+    "id": "newgc:lead_plate",
+    "count": 1
+  }
+}

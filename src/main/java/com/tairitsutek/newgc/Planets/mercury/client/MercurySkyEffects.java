@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 public class MercurySkyEffects extends DimensionSpecialEffects {
 
     public MercurySkyEffects() {
-        super(0.0f, false, SkyType.NONE, false, false);
+        super(Float.NaN, false, SkyType.NONE, false, false);
     }
 
     @Override

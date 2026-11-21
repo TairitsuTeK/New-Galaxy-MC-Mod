@@ -1,0 +1,12 @@
+{
+  "type": "newgc:alloy_smelting",
+  "ingredients": [
+    { "item": "newgc:iron_plate" },
+    { "item": "newgc:aluminum_plate" }
+  ],
+  "inputCount": 5,
+  "result": {
+    "id": "newgc:heavy_alloy",
+    "count": 1
+  }
+}

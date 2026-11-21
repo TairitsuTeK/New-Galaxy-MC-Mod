@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "STS",
+    "SCS",
+    "III"
+  ],
+  "key": {
+    "S": {
+      "item": "newgc:steel_plate"
+    },
+    "T": {
+      "item": "newgc:titanium_plate"
+    },
+    "C": {
+      "item": "newgc:circuit_core_iron"
+    },
+    "I": {
+      "item": "newgc:iron_plate"
+    }
+  },
+  "result": {
+    "id": "newgc:launch_pad",
+    "count": 4
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "type": "newgc:ceres_type",
+  "type": "newgc:phobos_type",
   "generator": {
     "type": "minecraft:noise",
     "biome_source": {

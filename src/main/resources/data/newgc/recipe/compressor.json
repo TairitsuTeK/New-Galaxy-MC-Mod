@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IPI",
+    "CMC",
+    "IRI"
+  ],
+  "key": {
+    "I": {
+      "item": "newgc:iron_plate"
+    },
+    "P": {
+      "item": "newgc:circuit_core_copper"
+    },
+    "C": {
+      "item": "newgc:copper_plate"
+    },
+    "M": {
+      "item": "newgc:mechanical_casing"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "newgc:compressor",
+    "count": 1
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "bonus_rolls": 0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "newgc:solid_fuel_generator"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "newgc:blocks/solid_fuel_generator"
+}

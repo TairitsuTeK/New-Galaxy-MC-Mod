@@ -1,0 +1,11 @@
+{
+  "type": "newgc:europa_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:europa_plains"
+    },
+    "settings": "newgc:europa_overworld"
+  }
+}

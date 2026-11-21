@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 public class JupiterSkyEffects extends DimensionSpecialEffects {
 
     public JupiterSkyEffects() {
-        super(192.0f, false, SkyType.NONE, false, false);
+        super(Float.NaN, false, SkyType.NONE, false, false);
     }
 
     @Override

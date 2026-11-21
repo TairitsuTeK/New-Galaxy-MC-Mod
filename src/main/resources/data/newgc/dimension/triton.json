@@ -1,0 +1,11 @@
+{
+  "type": "newgc:triton_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:triton_plains"
+    },
+    "settings": "newgc:triton_overworld"
+  }
+}

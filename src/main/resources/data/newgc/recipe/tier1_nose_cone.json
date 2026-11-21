@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " T ",
+    "THT",
+    " G "
+  ],
+  "key": {
+    "T": { "item": "newgc:titanium_plate" },
+    "H": { "item": "newgc:heavy_alloy_plate" },
+    "G": { "item": "minecraft:glass" }
+  },
+  "result": {
+    "id": "newgc:tier1_nose_cone",
+    "count": 1
+  }
+}

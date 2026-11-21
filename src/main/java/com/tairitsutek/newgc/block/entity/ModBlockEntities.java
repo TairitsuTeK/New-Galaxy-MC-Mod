@@ -44,6 +44,41 @@ public class ModBlockEntities {
                             CompressorBlockEntity::new,
                             MachinesBlock.COMPRESSOR.get()
                     ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ElectricFurnaceBlockEntity>> ELECTRIC_FURNACE =
+            BLOCK_ENTITIES.register("electric_furnace", () ->
+                    BlockEntityType.Builder.of(
+                            ElectricFurnaceBlockEntity::new,
+                            MachinesBlock.ELECTRIC_FURNACE.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AlloySmelterBlockEntity>> ALLOY_SMELTER =
+            BLOCK_ENTITIES.register("alloy_smelter", () ->
+                    BlockEntityType.Builder.of(
+                            AlloySmelterBlockEntity::new,
+                            MachinesBlock.ALLOY_SMELTER.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<EnergyCellBlockEntity>> ENERGY_CELL =
+            BLOCK_ENTITIES.register("energy_cell", () ->
+                    BlockEntityType.Builder.of(
+                            EnergyCellBlockEntity::new,
+                            MachinesBlock.ENERGY_CELL.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<LaunchPadBlockEntity>> LAUNCH_PAD =
+            BLOCK_ENTITIES.register("launch_pad", () ->
+                    BlockEntityType.Builder.of(
+                            LaunchPadBlockEntity::new,
+                            MachinesBlock.LAUNCH_PAD.get()
+                    ).build(null));
+
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RocketAssemblerBlockEntity>> ROCKET_ASSEMBLER =
+            BLOCK_ENTITIES.register("rocket_assembler", () ->
+                    BlockEntityType.Builder.of(
+                            RocketAssemblerBlockEntity::new,
+                            MachinesBlock.ROCKET_ASSEMBLER.get()
+                    ).build(null));
     //endregion
 
     //region 注册入口

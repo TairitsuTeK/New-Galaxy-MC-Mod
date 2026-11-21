@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "MTM",
+    "TCT",
+    "III"
+  ],
+  "key": {
+    "M": {
+      "item": "newgc:mechanical_casing"
+    },
+    "T": {
+      "item": "newgc:titanium_plate"
+    },
+    "C": {
+      "item": "newgc:circuit_core_golden"
+    },
+    "I": {
+      "item": "newgc:iron_plate"
+    }
+  },
+  "result": {
+    "id": "newgc:rocket_assembler",
+    "count": 1
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "ICI",
+    "CMC",
+    "IRI"
+  ],
+  "key": {
+    "I": {
+      "item": "newgc:iron_plate"
+    },
+    "C": {
+      "item": "newgc:copper_plate"
+    },
+    "M": {
+      "item": "newgc:mechanical_casing"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    }
+  },
+  "result": {
+    "id": "newgc:electric_furnace",
+    "count": 1
+  }
+}

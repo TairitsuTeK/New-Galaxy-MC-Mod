@@ -1,0 +1,11 @@
+{
+  "type": "newgc:compressing",
+  "ingredient": {
+    "item": "newgc:platinum_ingot"
+  },
+  "inputCount": 2,
+  "result": {
+    "id": "newgc:platinum_plate",
+    "count": 1
+  }
+}

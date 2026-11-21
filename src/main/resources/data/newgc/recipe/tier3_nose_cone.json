@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " N ",
+    "THT",
+    " D "
+  ],
+  "key": {
+    "N": { "item": "newgc:netherite_plate" },
+    "T": { "item": "newgc:titanium_plate" },
+    "H": { "item": "newgc:heavy_alloy_plate" },
+    "D": { "item": "newgc:diamond_plate" }
+  },
+  "result": {
+    "id": "newgc:tier3_nose_cone",
+    "count": 1
+  }
+}

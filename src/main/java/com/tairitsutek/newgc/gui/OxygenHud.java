@@ -5,6 +5,7 @@ import com.tairitsutek.newgc.event.oxygen.ModAttachments;
 import com.tairitsutek.newgc.event.oxygen.OxygenData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -226,7 +227,8 @@ public class OxygenHud {
         g.drawString(mc.font, status, x + width / 2 - mc.font.width(status) / 2, statusY + 4, statusColor, true);
 
         if (!hasTank) {
-            String hint = "← 使用氧气罐扩展";
+            String hint = Component.translatable(
+                    "gui.newgc.oxygen.hint.expand").getString();
             int hw = mc.font.width(hint);
             g.drawString(mc.font, hint,
                     x + width / 2 - hw / 2, statusY + 16,

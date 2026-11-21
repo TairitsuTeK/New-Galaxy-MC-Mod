@@ -25,6 +25,26 @@ public class ModMenus {
             MENUS.register("compressor", () ->
                     IMenuTypeExtension.create(CompressorMenu::new));
 
+    public static final DeferredHolder<MenuType<?>, MenuType<ElectricFurnaceMenu>> ELECTRIC_FURNACE =
+            MENUS.register("electric_furnace", () ->
+                    IMenuTypeExtension.create(ElectricFurnaceMenu::new));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<AlloySmelterMenu>> ALLOY_SMELTER =
+            MENUS.register("alloy_smelter", () ->
+                    IMenuTypeExtension.create(AlloySmelterMenu::new));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<EnergyCellMenu>> ENERGY_CELL =
+            MENUS.register("energy_cell", () ->
+                    IMenuTypeExtension.create(EnergyCellMenu::new));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<RocketStorageMenu>> ROCKET_STORAGE =
+            MENUS.register("rocket_storage", () ->
+                    IMenuTypeExtension.create(RocketStorageMenu::new));
+
+    public static final DeferredHolder<MenuType<?>, MenuType<RocketAssemblerMenu>> ROCKET_ASSEMBLER =
+            MENUS.register("rocket_assembler", () ->
+                    IMenuTypeExtension.create(RocketAssemblerMenu::new));
+
     public static void register(IEventBus bus) {
         MENUS.register(bus);
     }

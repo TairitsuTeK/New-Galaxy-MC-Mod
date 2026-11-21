@@ -1,0 +1,16 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": [
+    "newgc:lead_ore",
+    "newgc:nickel_ore",
+    "newgc:platinum_ore",
+    "newgc:titanium_ore",
+    "newgc:uranium_ore",
+    "newgc:zinc_ore",
+    "newgc:tin_ore",
+    "newgc:aluminum_ore",
+    "newgc:silver_ore"
+  ],
+  "step": "underground_ores"
+}

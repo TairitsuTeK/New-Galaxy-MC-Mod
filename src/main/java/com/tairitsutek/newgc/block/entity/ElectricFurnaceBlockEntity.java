@@ -1,0 +1,216 @@
+package com.tairitsutek.newgc.block.entity;
+
+import com.tairitsutek.newgc.energy.ExternalEnergyStorage;
+import com.tairitsutek.newgc.energy.SimpleEnergyStorage;
+import com.tairitsutek.newgc.menu.ElectricFurnaceMenu;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.Connection;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.Containers;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * 电力熔炉：使用原版熔炉配方，但不需要燃料，改由 FE 驱动。
+ */
+public class ElectricFurnaceBlockEntity extends BlockEntity implements MenuProvider {
+
+    public static final int ENERGY_CAPACITY = 50_000;
+    public static final int ENERGY_RECEIVE = 200;
+    public static final int ENERGY_EXTRACT = 50_000;
+    public static final int FE_PER_SMELT = 4_000;
+    public static final int SMELT_TICKS = 100;
+
+    public static final int INPUT_SLOT = 0;
+    public static final int OUTPUT_SLOT = 1;
+
+    private int progress = 0;
+
+    private final SimpleEnergyStorage energy =
+            new SimpleEnergyStorage(ENERGY_CAPACITY, ENERGY_RECEIVE, ENERGY_EXTRACT);
+
+    private final IEnergyStorage externalEnergy =
+            new ExternalEnergyStorage(energy, ExternalEnergyStorage.Mode.RECEIVE_ONLY);
+
+    private final ItemStackHandler items = new ItemStackHandler(2) {
+        @Override
+        protected void onContentsChanged(int slot) {
+            setChanged();
+            if (level != null && !level.isClientSide()) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            }
+        }
+
+        @Override
+        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+            if (slot != INPUT_SLOT) return false;
+            if (stack.isEmpty() || level == null) return false;
+            return findRecipe(level, stack) != null;
+        }
+    };
+
+    private final ContainerData data = new ContainerData() {
+        @Override
+        public int get(int index) {
+            return switch (index) {
+                case 0 -> progress;
+                case 1 -> SMELT_TICKS;
+                case 2 -> energy.getEnergyStored();
+                case 3 -> energy.getMaxEnergyStored();
+                default -> 0;
+            };
+        }
+
+        @Override
+        public void set(int index, int value) {
+            switch (index) {
+                case 0 -> progress = value;
+                case 2 -> energy.setEnergy(value);
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return 4;
+        }
+    };
+
+    public ElectricFurnaceBlockEntity(BlockPos pos, BlockState state) {
+        super(ModBlockEntities.ELECTRIC_FURNACE.get(), pos, state);
+    }
+
+    public ItemStackHandler getItems() { return items; }
+    public IEnergyStorage getEnergyStorage() { return externalEnergy; }
+    public ContainerData getData() { return data; }
+
+    private static SmeltingRecipe findRecipe(Level level, ItemStack stack) {
+        if (stack.isEmpty()) return null;
+        return level.getRecipeManager()
+                .getRecipeFor(RecipeType.SMELTING, new SingleRecipeInput(stack), level)
+                .map(RecipeHolder::value)
+                .orElse(null);
+    }
+
+    public void tick() {
+        if (level == null || level.isClientSide()) return;
+
+        ItemStack input = items.getStackInSlot(INPUT_SLOT);
+        SmeltingRecipe recipe = findRecipe(level, input);
+        boolean canSmelt = recipe != null && energy.getEnergyStored() >= FE_PER_SMELT;
+        boolean changed = false;
+
+        if (canSmelt) {
+            ItemStack result = recipe.getResultItem(level.registryAccess());
+            ItemStack output = items.getStackInSlot(OUTPUT_SLOT);
+            boolean outputOk = output.isEmpty()
+                    || (ItemStack.isSameItemSameComponents(output, result)
+                    && output.getCount() + result.getCount() <= output.getMaxStackSize());
+
+            if (outputOk) {
+                progress++;
+                if (progress >= SMELT_TICKS) {
+                    progress = 0;
+                    energy.extractEnergy(FE_PER_SMELT, false);
+                    items.extractItem(INPUT_SLOT, 1, false);
+                    if (output.isEmpty()) {
+                        items.setStackInSlot(OUTPUT_SLOT, result.copy());
+                    } else {
+                        output.grow(result.getCount());
+                    }
+                }
+                changed = true;
+            }
+        }
+
+        if (!canSmelt && progress != 0) {
+            progress = 0;
+            changed = true;
+        }
+
+        if (changed) setChanged();
+        if (level.getGameTime() % 20 == 0) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+        }
+    }
+
+    public void drops() {
+        if (level == null) return;
+        for (int i = 0; i < items.getSlots(); i++) {
+            ItemStack stack = items.getStackInSlot(i);
+            if (!stack.isEmpty()) {
+                Containers.dropItemStack(level,
+                        worldPosition.getX() + 0.5,
+                        worldPosition.getY() + 0.5,
+                        worldPosition.getZ() + 0.5,
+                        stack.copy());
+                items.setStackInSlot(i, ItemStack.EMPTY);
+            }
+        }
+    }
+
+    @Override
+    public @NotNull Component getDisplayName() {
+        return Component.translatable("block.newgc.electric_furnace");
+    }
+
+    @Override
+    public AbstractContainerMenu createMenu(int id, @NotNull Inventory playerInv, @NotNull Player player) {
+        return new ElectricFurnaceMenu(id, playerInv, this, data);
+    }
+
+    @Override
+    protected void saveAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.put("Items", items.serializeNBT(registries));
+        tag.putInt("Energy", energy.getEnergyStored());
+        tag.putInt("Progress", progress);
+    }
+
+    @Override
+    protected void loadAdditional(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registries) {
+        super.loadAdditional(tag, registries);
+        if (tag.contains("Items")) {
+            items.deserializeNBT(registries, tag.getCompound("Items"));
+        }
+        energy.setEnergy(tag.getInt("Energy"));
+        progress = tag.getInt("Progress");
+    }
+
+    @Override
+    public @NotNull CompoundTag getUpdateTag(HolderLookup.@NotNull Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        saveAdditional(tag, registries);
+        return tag;
+    }
+
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    public void onDataPacket(@NotNull Connection net, ClientboundBlockEntityDataPacket pkt,
+                             HolderLookup.@NotNull Provider registries) {
+        CompoundTag tag = pkt.getTag();
+        loadAdditional(tag, registries);
+    }
+}

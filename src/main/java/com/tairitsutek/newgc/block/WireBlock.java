@@ -3,8 +3,10 @@ package com.tairitsutek.newgc.block;
 import com.mojang.serialization.MapCodec;
 import com.tairitsutek.newgc.block.entity.ModBlockEntities;
 import com.tairitsutek.newgc.block.entity.WireBlockEntity;
+import com.tairitsutek.newgc.energy.WireNetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -87,6 +89,24 @@ public class WireBlock extends BaseEntityBlock {
     protected @NotNull BlockState updateShape(BlockState state, @NotNull Direction dir, @NotNull BlockState neighborState,
                                               @NotNull LevelAccessor level, @NotNull BlockPos pos, @NotNull BlockPos neighborPos) {
         return state.setValue(propertyFor(dir), canConnect(level, pos, dir));
+    }
+
+    @Override
+    protected void onPlace(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
+                           @NotNull BlockState oldState, boolean isMoving) {
+        super.onPlace(state, level, pos, oldState, isMoving);
+        if (level instanceof ServerLevel serverLevel) {
+            WireNetworkManager.get(serverLevel).invalidateAround(serverLevel, pos);
+        }
+    }
+
+    @Override
+    protected void onRemove(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos,
+                            @NotNull BlockState newState, boolean isMoving) {
+        if (level instanceof ServerLevel serverLevel) {
+            WireNetworkManager.get(serverLevel).invalidateAround(serverLevel, pos);
+        }
+        super.onRemove(state, level, pos, newState, isMoving);
     }
 
     private static BooleanProperty propertyFor(Direction dir) {

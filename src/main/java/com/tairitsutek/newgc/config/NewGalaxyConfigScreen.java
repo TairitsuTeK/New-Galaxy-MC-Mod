@@ -12,7 +12,7 @@ public class NewGalaxyConfigScreen extends Screen {
     private final Screen parent;
 
     public NewGalaxyConfigScreen(Screen parent) {
-        super(Component.literal("新星系 · 设置"));
+        super(Component.translatable("gui.newgc.config.title"));
         this.parent = parent;
     }
 
@@ -26,11 +26,11 @@ public class NewGalaxyConfigScreen extends Screen {
         this.addRenderableWidget(CycleButton.onOffBuilder(
                         NewGalaxyConfig.CLIENT.debugMode.get())
                 .create(cx - w / 2, cy - 30, w, h,
-                        Component.literal("开启调试按钮"),
+                        Component.translatable("gui.newgc.config.debug_mode"),
                         (btn, val) -> NewGalaxyConfig.CLIENT.debugMode.set(val)));
 
         this.addRenderableWidget(Button.builder(
-                        Component.literal("完成"),
+                        Component.translatable("gui.newgc.config.done"),
                         btn -> this.onClose())
                 .bounds(cx - w / 2, cy + 10, w, h)
                 .build());

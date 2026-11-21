@@ -1,0 +1,11 @@
+{
+  "type": "newgc:callisto_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:callisto_plains"
+    },
+    "settings": "newgc:callisto_overworld"
+  }
+}

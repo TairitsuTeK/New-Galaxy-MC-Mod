@@ -5,6 +5,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
@@ -30,6 +31,11 @@ public final class MachinesBlock {
     public static final DeferredBlock<Block> OXYGEN_EXTRACTOR = registerBlock("oxygen_extractor", () -> new OxygenExtractorBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(3.5f, 6f).requiresCorrectToolForDrops()));
     public static final DeferredBlock<Block> WIRE = registerBlock("wire", () -> new WireBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(1f, 3f).requiresCorrectToolForDrops()));
     public static final DeferredBlock<Block> COMPRESSOR = registerBlock("compressor", () -> new CompressorBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(3.5f, 6f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> ELECTRIC_FURNACE = registerBlock("electric_furnace", () -> new ElectricFurnaceBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(3.5f, 6f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> ALLOY_SMELTER = registerBlock("alloy_smelter", () -> new AlloySmelterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(3.5f, 6f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> ENERGY_CELL = registerBlock("energy_cell", () -> new EnergyCellBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(3.5f, 6f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> LAUNCH_PAD = registerBlock("launch_pad", () -> new LaunchPadBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(4f, 8f).requiresCorrectToolForDrops().noOcclusion()));
+    public static final DeferredBlock<Block> ROCKET_ASSEMBLER = registerBlock("rocket_assembler", () -> new RocketAssemblerBlock(BlockBehaviour.Properties.of().mapColor(MapColor.METAL).sound(SoundType.METAL).strength(4f, 8f).requiresCorrectToolForDrops().noOcclusion()));
     //endregion
 
     //region 方块物品
@@ -38,6 +44,23 @@ public final class MachinesBlock {
     public static final DeferredItem<BlockItem> OXYGEN_EXTRACTOR_ITEM = registerItem("oxygen_extractor", OXYGEN_EXTRACTOR);
     public static final DeferredItem<BlockItem> WIRE_ITEM = registerItem("wire", WIRE);
     public static final DeferredItem<BlockItem> COMPRESSOR_ITEM = registerItem("compressor", COMPRESSOR);
+    public static final DeferredItem<BlockItem> ELECTRIC_FURNACE_ITEM = registerItem("electric_furnace", ELECTRIC_FURNACE);
+    public static final DeferredItem<BlockItem> ALLOY_SMELTER_ITEM = registerItem("alloy_smelter", ALLOY_SMELTER);
+    public static final DeferredItem<BlockItem> ENERGY_CELL_ITEM = registerItem("energy_cell", ENERGY_CELL);
+    public static final DeferredItem<BlockItem> LAUNCH_PAD_ITEM = registerItem("launch_pad", LAUNCH_PAD);
+    public static final DeferredItem<BlockItem> ROCKET_ASSEMBLER_ITEM = registerItem("rocket_assembler", ROCKET_ASSEMBLER);
+
+    /** 一阶火箭物品：只能放在发射平台上变成火箭实体。 */
+    public static final DeferredItem<Item> ROCKET_ITEM =
+            ITEMS.registerSimpleItem("rocket", new Item.Properties().stacksTo(16));
+
+    /** 二阶火箭物品：更快的上升速度与更宽一格的跃迁范围。 */
+    public static final DeferredItem<Item> TIER2_ROCKET_ITEM =
+            ITEMS.registerSimpleItem("tier2_rocket", new Item.Properties().stacksTo(16));
+
+    /** 三阶火箭物品：可前往最近行星与当前行星全部卫星。 */
+    public static final DeferredItem<Item> TIER3_ROCKET_ITEM =
+            ITEMS.registerSimpleItem("tier3_rocket", new Item.Properties().stacksTo(16));
     //endregion
 
     //region 注册辅助
@@ -61,6 +84,14 @@ public final class MachinesBlock {
                         output.accept(OXYGEN_EXTRACTOR_ITEM.get());
                         output.accept(WIRE_ITEM.get());
                         output.accept(COMPRESSOR_ITEM.get());
+                        output.accept(ELECTRIC_FURNACE_ITEM.get());
+                        output.accept(ALLOY_SMELTER_ITEM.get());
+                        output.accept(ENERGY_CELL_ITEM.get());
+                        output.accept(LAUNCH_PAD_ITEM.get());
+                        output.accept(ROCKET_ASSEMBLER_ITEM.get());
+                        output.accept(ROCKET_ITEM.get());
+                        output.accept(TIER2_ROCKET_ITEM.get());
+                        output.accept(TIER3_ROCKET_ITEM.get());
                     })
                     .build());
     //endregion

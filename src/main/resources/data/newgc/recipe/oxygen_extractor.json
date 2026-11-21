@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IGI",
+    "GMG",
+    "ICI"
+  ],
+  "key": {
+    "I": {
+      "item": "newgc:tin_plate"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "M": {
+      "item": "newgc:mechanical_casing"
+    },
+    "C": {
+      "item": "newgc:circuit_core_copper"
+    }
+  },
+  "result": {
+    "id": "newgc:oxygen_extractor",
+    "count": 1
+  }
+}

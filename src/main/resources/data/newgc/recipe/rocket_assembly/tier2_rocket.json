@@ -1,0 +1,23 @@
+{
+  "type": "newgc:rocket_assembly",
+  "ingredients": [
+    { "item": "newgc:tier2_nose_cone" },
+    { "item": "newgc:heavy_alloy_plate" },
+    { "item": "newgc:heavy_alloy_plate" },
+    { "item": "newgc:heavy_alloy_plate" },
+    { "item": "newgc:heavy_alloy_plate" },
+    { "item": "newgc:heavy_alloy_plate" },
+    { "item": "newgc:heavy_alloy_plate" },
+    { "item": "newgc:heavy_alloy_plate" },
+    { "item": "newgc:heavy_alloy_plate" },
+    { "item": "newgc:advanced_rocket_engine" },
+    { "item": "newgc:booster" },
+    { "item": "newgc:booster" },
+    { "item": "newgc:booster" },
+    { "item": "newgc:booster" }
+  ],
+  "result": {
+    "id": "newgc:tier2_rocket",
+    "count": 1
+  }
+}

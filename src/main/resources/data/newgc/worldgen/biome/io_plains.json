@@ -22,16 +22,15 @@
   "carvers": {},
   "features": [
     [],
-    [
-      "newgc:io_lava_lake"
-    ],
+    [],
     [],
     [],
     [],
     [],
     [
       "newgc:io_ore_iron",
-      "newgc:io_ore_copper"
+      "newgc:io_ore_copper",
+      "newgc:io_lava_lake"
     ],
     [],
     [],

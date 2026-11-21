@@ -6,6 +6,7 @@ import com.tairitsutek.newgc.Planets.mars.client.MarsVolcanoClientCache;
 import com.tairitsutek.newgc.Planets.mercury.client.MercurySolarFlareClientCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
@@ -21,7 +22,8 @@ public final class MagnetometerClientCache {
     private static float strength = 0f;
     private static float angle = 0f;      // 0~360，指向磁北极
     private static float noise = 0f;
-    private static String status = "正常";
+    private static String status = Component.translatable(
+            "gui.newgc.magnetometer.state.normal").getString();
     private static int statusColor = 0xFF9BB7E0;
     private static float jitterAmount = 0f;
 
@@ -55,14 +57,14 @@ public final class MagnetometerClientCache {
         // 木星风暴
         float jupiterStrength = JupiterStormClientCache.getStormStrength();
         if (jupiterStrength > 0.5f && dim.equals(com.tairitsutek.newgc.Planets.ModDimensions.JUPITER_LEVEL_KEY)) {
-            evt = "⚡ 风暴干扰";
+            evt = Component.translatable("gui.newgc.magnetometer.event.storm").getString();
             evtBoost = jupiterStrength * 0.8f;
             evtColor = 0xFFFF8A3A;
         }
 
         // 火星火山
         if (MarsVolcanoClientCache.isErupting() && dim.equals(com.tairitsutek.newgc.Planets.ModDimensions.MARS_LEVEL_KEY)) {
-            evt = "🌋 局部磁畸变";
+            evt = Component.translatable("gui.newgc.magnetometer.event.volcano").getString();
             evtBoost = MarsVolcanoClientCache.getEruptionIntensity() * 0.5f;
             evtColor = 0xFFE06B4B;
         }
@@ -70,14 +72,14 @@ public final class MagnetometerClientCache {
         // 火星沙尘暴
         float dust = MarsDustStormClientCache.getStormStrength();
         if (dust > 0.5f && dim.equals(com.tairitsutek.newgc.Planets.ModDimensions.MARS_LEVEL_KEY)) {
-            evt = "🌪 沙尘噪声";
+            evt = Component.translatable("gui.newgc.magnetometer.event.dust").getString();
             evtBoost = dust * 0.3f;
             evtColor = 0xFFC89650;
         }
 
         // 水星耀斑
         if (MercurySolarFlareClientCache.isFlaring() && dim.equals(com.tairitsutek.newgc.Planets.ModDimensions.MERCURY_LEVEL_KEY)) {
-            evt = "☀ 耀斑脉冲";
+            evt = Component.translatable("gui.newgc.magnetometer.event.flare").getString();
             evtBoost = MercurySolarFlareClientCache.getIntensity() * 1.0f;
             evtColor = 0xFFFFE0A0;
         }
@@ -107,13 +109,13 @@ public final class MagnetometerClientCache {
             status = evt;
             statusColor = evtColor;
         } else if (base < 0.05f) {
-            status = "磁场失效";
+            status = Component.translatable("gui.newgc.magnetometer.state.dead").getString();
             statusColor = 0xFF8898B0;
         } else if (n > 0.5f) {
-            status = "磁场紊乱";
+            status = Component.translatable("gui.newgc.magnetometer.state.unstable").getString();
             statusColor = 0xFFFFC060;
         } else {
-            status = "正常";
+            status = Component.translatable("gui.newgc.magnetometer.state.normal").getString();
             statusColor = 0xFF9BB7E0;
         }
     }

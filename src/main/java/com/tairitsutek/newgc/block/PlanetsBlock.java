@@ -19,6 +19,9 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public final class PlanetsBlock {
 
     //region 注册器
@@ -31,6 +34,12 @@ public final class PlanetsBlock {
     public static final DeferredBlock<Block> TIN_ORE = registerBlock("tin_ore", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).sound(SoundType.STONE).strength(3f, 4.5f).requiresCorrectToolForDrops()));
     public static final DeferredBlock<Block> ALUMINUM_ORE = registerBlock("aluminum_ore", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).sound(SoundType.STONE).strength(3f, 4.5f).requiresCorrectToolForDrops()));
     public static final DeferredBlock<Block> SILVER_ORE = registerBlock("silver_ore", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.DEEPSLATE).sound(SoundType.STONE).strength(3f, 4.5f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> LEAD_ORE = registerBlock("lead_ore", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).sound(SoundType.STONE).strength(3f, 4.5f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> NICKEL_ORE = registerBlock("nickel_ore", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).sound(SoundType.STONE).strength(3f, 4.5f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> PLATINUM_ORE = registerBlock("platinum_ore", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).sound(SoundType.STONE).strength(4f, 5f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> TITANIUM_ORE = registerBlock("titanium_ore", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).sound(SoundType.STONE).strength(4f, 5f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> URANIUM_ORE = registerBlock("uranium_ore", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).sound(SoundType.STONE).strength(4f, 5f).requiresCorrectToolForDrops()));
+    public static final DeferredBlock<Block> ZINC_ORE = registerBlock("zinc_ore", () -> new Block(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).sound(SoundType.STONE).strength(3f, 4.5f).requiresCorrectToolForDrops()));
     //endregion
 
     //region 星球地形方块
@@ -86,6 +95,12 @@ public final class PlanetsBlock {
     public static final DeferredItem<BlockItem> TIN_ORE_ITEM = registerItem("tin_ore", TIN_ORE);
     public static final DeferredItem<BlockItem> ALUMINUM_ORE_ITEM = registerItem("aluminum_ore", ALUMINUM_ORE);
     public static final DeferredItem<BlockItem> SILVER_ORE_ITEM = registerItem("silver_ore", SILVER_ORE);
+    public static final DeferredItem<BlockItem> LEAD_ORE_ITEM = registerItem("lead_ore", LEAD_ORE);
+    public static final DeferredItem<BlockItem> NICKEL_ORE_ITEM = registerItem("nickel_ore", NICKEL_ORE);
+    public static final DeferredItem<BlockItem> PLATINUM_ORE_ITEM = registerItem("platinum_ore", PLATINUM_ORE);
+    public static final DeferredItem<BlockItem> TITANIUM_ORE_ITEM = registerItem("titanium_ore", TITANIUM_ORE);
+    public static final DeferredItem<BlockItem> URANIUM_ORE_ITEM = registerItem("uranium_ore", URANIUM_ORE);
+    public static final DeferredItem<BlockItem> ZINC_ORE_ITEM = registerItem("zinc_ore", ZINC_ORE);
     public static final DeferredItem<BlockItem> MOON_SOIL_ITEM = registerItem("moon_soil", MOON_SOIL);
     public static final DeferredItem<BlockItem> MOON_SUB_SURFACE_ITEM = registerItem("moon_sub_surface", MOON_SUB_SURFACE);
     public static final DeferredItem<BlockItem> MOON_STONE_ITEM = registerItem("moon_stone", MOON_STONE);
@@ -134,6 +149,48 @@ public final class PlanetsBlock {
     public static final DeferredItem<BlockItem> IO_ORE_COPPER_ITEM = registerItem("io_ore_copper", IO_ORE_COPPER);
     //endregion
 
+    //region 深空天体方块
+    public record PlanetBlockSet(List<DeferredItem<BlockItem>> items) {
+    }
+
+    private static final List<PlanetBlockSet> NEW_PLANET_SETS = new ArrayList<>();
+
+    static {
+        registerPlanetSet("saturn", MapColor.SAND);
+        registerPlanetSet("uranus", MapColor.DIAMOND);
+        registerPlanetSet("neptune", MapColor.COLOR_BLUE);
+        registerPlanetSet("pluto", MapColor.ICE);
+        registerPlanetSet("makemake", MapColor.ICE);
+        registerPlanetSet("haumea", MapColor.ICE);
+        registerPlanetSet("eris", MapColor.ICE);
+        registerPlanetSet("europa", MapColor.ICE);
+        registerPlanetSet("ganymede", MapColor.DEEPSLATE);
+        registerPlanetSet("callisto", MapColor.DEEPSLATE);
+        registerPlanetSet("titan", MapColor.SAND);
+        registerPlanetSet("titania", MapColor.ICE);
+        registerPlanetSet("oberon", MapColor.ICE);
+        registerPlanetSet("triton", MapColor.ICE);
+        registerPlanetSet("charon", MapColor.DEEPSLATE);
+        registerPlanetSet("hiiaka", MapColor.ICE);
+        registerPlanetSet("proxima_b", MapColor.COLOR_RED);
+    }
+
+    private static void registerPlanetSet(String name, MapColor mapColor) {
+        List<DeferredItem<BlockItem>> items = new ArrayList<>();
+        for (String type : List.of("surface", "sub_surface", "stone", "ore_iron", "ore_copper")) {
+            String blockName = name + "_" + type;
+            DeferredBlock<Block> block = registerBlock(blockName, () -> new Block(
+                    BlockBehaviour.Properties.of()
+                            .mapColor(mapColor)
+                            .sound(SoundType.STONE)
+                            .strength(3f, 4.5f)
+                            .requiresCorrectToolForDrops()));
+            items.add(registerItem(blockName, block));
+        }
+        NEW_PLANET_SETS.add(new PlanetBlockSet(List.copyOf(items)));
+    }
+    //endregion
+
     //region 注册辅助
     private static DeferredBlock<Block> registerBlock(String name, java.util.function.Supplier<Block> supplier) {
         return BLOCKS.register(name, supplier);
@@ -168,6 +225,12 @@ public final class PlanetsBlock {
                         output.accept(TIN_ORE_ITEM.get());
                         output.accept(ALUMINUM_ORE_ITEM.get());
                         output.accept(SILVER_ORE_ITEM.get());
+                        output.accept(LEAD_ORE_ITEM.get());
+                        output.accept(NICKEL_ORE_ITEM.get());
+                        output.accept(PLATINUM_ORE_ITEM.get());
+                        output.accept(TITANIUM_ORE_ITEM.get());
+                        output.accept(URANIUM_ORE_ITEM.get());
+                        output.accept(ZINC_ORE_ITEM.get());
 
                         output.accept(MOON_SOIL_ITEM.get());
                         output.accept(MOON_SUB_SURFACE_ITEM.get());
@@ -223,6 +286,12 @@ public final class PlanetsBlock {
                         output.accept(IO_STONE_ITEM.get());
                         output.accept(IO_ORE_IRON_ITEM.get());
                         output.accept(IO_ORE_COPPER_ITEM.get());
+
+                        for (PlanetBlockSet set : NEW_PLANET_SETS) {
+                            for (DeferredItem<BlockItem> item : set.items()) {
+                                output.accept(item.get());
+                            }
+                        }
                     })
                     .build());
     //endregion

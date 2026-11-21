@@ -8,6 +8,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.RandomSource;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -59,6 +60,7 @@ public class JupiterStormManager {
     private static float stormStrength = CALM_MIN;
 
     private static int syncCounter = 0;
+    private static boolean initialized = false;
 
     private static final RandomSource RNG = RandomSource.create();
 
@@ -88,7 +90,21 @@ public class JupiterStormManager {
             baseTarget = CALM_MIN;
             currentPhase = Phase.CALM;
             phaseTimer = 0;
+            globalTick = 0;
+            syncCounter = 0;
+            initialized = false;
             return;
+        }
+
+        if (!initialized) {
+            // Start every Jupiter visit with a real calm phase instead of
+            // immediately rolling a PEAK/SUDDEN storm on the first tick.
+            currentPhase = Phase.CALM;
+            phaseTimer = getRandomDuration(Phase.CALM);
+            baseTarget = CALM_MIN;
+            targetStrength = CALM_MIN;
+            stormStrength = CALM_MIN;
+            initialized = true;
         }
 
         globalTick++;
@@ -116,13 +132,6 @@ public class JupiterStormManager {
         }
         stormStrength = Math.max(0.0f, Math.min(SUDDEN_MAX, stormStrength));
 
-        // ===== 调试日志（每 20 tick 一次） =====
-        if (globalTick % 20 == 0) {
-            System.out.println("[Storm] phase=" + currentPhase
-                    + " strength=" + String.format("%.2f", stormStrength)
-                    + " target=" + String.format("%.2f", targetStrength));
-        }
-
         // ===== 网络同步 =====
         syncCounter++;
         if (syncCounter >= SYNC_INTERVAL) {
@@ -136,6 +145,35 @@ public class JupiterStormManager {
                 PacketDistributor.sendToPlayer(player, payload);
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            syncToPlayer(player);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            syncToPlayer(player);
+        }
+    }
+
+    /**
+     * Push the current storm state immediately when a player enters Jupiter.
+     * Without this the client would show CALM until the next periodic sync,
+     * which is especially noticeable during a PEAK/SUDDEN storm.
+     */
+    private static void syncToPlayer(ServerPlayer player) {
+        if (!initialized) return;
+        if (!player.level().dimension().equals(ModDimensions.JUPITER_LEVEL_KEY)) return;
+        PacketDistributor.sendToPlayer(player, new JupiterStormPayload(
+                currentPhase.ordinal(),
+                phaseTimer,
+                stormStrength
+        ));
     }
 
     private static void switchToNextPhase() {

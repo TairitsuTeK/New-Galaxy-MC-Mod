@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "newgc:silver_ingot"
+    }
+  ],
+  "result": {
+    "id": "newgc:silver_nugget",
+    "count": 9
+  }
+}

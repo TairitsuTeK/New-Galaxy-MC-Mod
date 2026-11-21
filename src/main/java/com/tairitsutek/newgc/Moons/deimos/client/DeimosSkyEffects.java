@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 public class DeimosSkyEffects extends DimensionSpecialEffects {
 
     public DeimosSkyEffects() {
-        super(0.0f, false, SkyType.NONE, false, false);
+        super(Float.NaN, false, SkyType.NONE, false, false);
     }
 
     @Override

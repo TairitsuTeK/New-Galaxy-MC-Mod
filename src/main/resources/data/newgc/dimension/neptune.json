@@ -1,0 +1,11 @@
+{
+  "type": "newgc:neptune_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:neptune_plains"
+    },
+    "settings": "newgc:neptune_overworld"
+  }
+}

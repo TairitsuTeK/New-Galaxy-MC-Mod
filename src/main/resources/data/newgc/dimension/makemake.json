@@ -1,0 +1,11 @@
+{
+  "type": "newgc:makemake_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:makemake_plains"
+    },
+    "settings": "newgc:makemake_overworld"
+  }
+}

@@ -19,13 +19,6 @@ public class CapabilitySetup {
                 (be, side) -> be.getEnergyStorage()
         );
 
-        // 导线
-        event.registerBlockEntity(
-                Capabilities.EnergyStorage.BLOCK,
-                ModBlockEntities.WIRE.get(),
-                (be, side) -> be.getEnergyStorage()
-        );
-
         // 制氧机
         event.registerBlockEntity(
                 Capabilities.EnergyStorage.BLOCK,
@@ -37,6 +30,27 @@ public class CapabilitySetup {
         event.registerBlockEntity(
                 Capabilities.EnergyStorage.BLOCK,
                 ModBlockEntities.COMPRESSOR.get(),
+                (be, side) -> be.getEnergyStorage()
+        );
+
+        // 电力熔炉
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.ELECTRIC_FURNACE.get(),
+                (be, side) -> be.getEnergyStorage()
+        );
+
+        // 合金熔炉
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.ALLOY_SMELTER.get(),
+                (be, side) -> be.getEnergyStorage()
+        );
+
+        // 能量电池
+        event.registerBlockEntity(
+                Capabilities.EnergyStorage.BLOCK,
+                ModBlockEntities.ENERGY_CELL.get(),
                 (be, side) -> be.getEnergyStorage()
         );
     }

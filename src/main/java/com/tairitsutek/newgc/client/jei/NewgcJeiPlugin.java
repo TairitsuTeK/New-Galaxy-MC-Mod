@@ -2,8 +2,10 @@ package com.tairitsutek.newgc.client.jei;
 
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.block.MachinesBlock;
+import com.tairitsutek.newgc.recipe.AlloySmeltingRecipe;
 import com.tairitsutek.newgc.recipe.CompressorRecipe;
 import com.tairitsutek.newgc.recipe.ModRecipes;
+import com.tairitsutek.newgc.recipe.RocketAssemblyRecipe;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
@@ -30,7 +32,9 @@ public class NewgcJeiPlugin implements IModPlugin {
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         registration.addRecipeCategories(
-                new CompressorRecipeCategory(registration.getJeiHelpers().getGuiHelper())
+                new CompressorRecipeCategory(registration.getJeiHelpers().getGuiHelper()),
+                new AlloySmeltingRecipeCategory(registration.getJeiHelpers().getGuiHelper()),
+                new RocketAssemblyRecipeCategory(registration.getJeiHelpers().getGuiHelper())
         );
     }
 
@@ -45,6 +49,20 @@ public class NewgcJeiPlugin implements IModPlugin {
                 .toList();
 
         registration.addRecipes(CompressorRecipeCategory.TYPE, recipes);
+
+        List<AlloySmeltingRecipe> alloyRecipes =
+                manager.getAllRecipesFor(ModRecipes.ALLOY_SMELTING.get())
+                        .stream()
+                        .map(RecipeHolder::value)
+                        .toList();
+        registration.addRecipes(AlloySmeltingRecipeCategory.TYPE, alloyRecipes);
+
+        List<RocketAssemblyRecipe> assemblyRecipes =
+                manager.getAllRecipesFor(ModRecipes.ROCKET_ASSEMBLY.get())
+                        .stream()
+                        .map(RecipeHolder::value)
+                        .toList();
+        registration.addRecipes(RocketAssemblyRecipeCategory.TYPE, assemblyRecipes);
     }
 
     @Override
@@ -52,6 +70,14 @@ public class NewgcJeiPlugin implements IModPlugin {
         registration.addRecipeCatalyst(
                 new ItemStack(MachinesBlock.COMPRESSOR_ITEM.get()),
                 CompressorRecipeCategory.TYPE
+        );
+        registration.addRecipeCatalyst(
+                new ItemStack(MachinesBlock.ALLOY_SMELTER_ITEM.get()),
+                AlloySmeltingRecipeCategory.TYPE
+        );
+        registration.addRecipeCatalyst(
+                new ItemStack(MachinesBlock.ROCKET_ASSEMBLER_ITEM.get()),
+                RocketAssemblyRecipeCategory.TYPE
         );
     }
 

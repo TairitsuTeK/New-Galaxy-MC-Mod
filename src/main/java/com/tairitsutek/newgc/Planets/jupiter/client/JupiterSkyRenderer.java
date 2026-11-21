@@ -2,65 +2,74 @@ package com.tairitsutek.newgc.Planets.jupiter.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.Planets.ModDimensions;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.DimensionSpecialEffects;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4fStack;
+import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.List;
+
 @EventBusSubscriber(modid = NewGalaxyMain.MODID, value = Dist.CLIENT)
-public class JupiterSkyRenderer {
+public final class JupiterSkyRenderer {
 
-    private static final float ROTATION_SPEED = 1.0f;
+    public static final ResourceLocation EFFECT =
+            ResourceLocation.fromNamespaceAndPath("newgc", "jupiter_sky");
 
+    private static final double ORBITAL_AU = 5.203;
+    private static final int STAR_COUNT = 2200;
+    private static final float SKY_DISTANCE = 100.0f;
     private static final ResourceLocation SUN_TEXTURE =
             ResourceLocation.fromNamespaceAndPath("minecraft", "textures/environment/sun.png");
-    private static final ResourceLocation IO_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("newgc", "textures/gui/io_icon.png");
-    private static final ResourceLocation EUROPA_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("newgc", "textures/gui/europa_icon.png");
-    private static final ResourceLocation GANYMEDE_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("newgc", "textures/gui/ganymede_icon.png");
-    private static final ResourceLocation CALLISTO_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("newgc", "textures/gui/callisto_icon.png");
 
-    private static final float SUN_SIZE = 1.0f;
-    private static final float SUN_DISTANCE = 100.0f;
+    private record Nearby(ResourceLocation texture, double radius, double separation) {
+    }
 
-    private static final float IO_SIZE = 1.5f;
-    private static final float IO_DISTANCE = 99.0f;
-    private static final float IO_OFFSET_X = (float) Math.toRadians(30.0f);
-    private static final float IO_OFFSET_Y = (float) Math.toRadians(8.0f);
+    private static final List<Nearby> NEARBY = List.of(
+            new Nearby(icon("io"), 0.28600, 0.002820),
+            new Nearby(icon("europa"), 0.24500, 0.004490),
+            new Nearby(icon("ganymede"), 0.41300, 0.007160),
+            new Nearby(icon("callisto"), 0.37800, 0.012600)
+    );
 
-    private static final float EUROPA_SIZE = 1.0f;
-    private static final float EUROPA_DISTANCE = 99.5f;
-    private static final float EUROPA_OFFSET_X = (float) Math.toRadians(-40.0f);
-    private static final float EUROPA_OFFSET_Y = (float) Math.toRadians(-8.0f);
+    private JupiterSkyRenderer() {
+    }
 
-    private static final float GANYMEDE_SIZE = 1.2f;
-    private static final float GANYMEDE_DISTANCE = 100.0f;
-    private static final float GANYMEDE_OFFSET_X = (float) Math.toRadians(150.0f);
-    private static final float GANYMEDE_OFFSET_Y = (float) Math.toRadians(-6.0f);
+    private static ResourceLocation icon(String id) {
+        return ResourceLocation.fromNamespaceAndPath("newgc", "textures/gui/" + id + "_icon.png");
+    }
 
-    private static final float CALLISTO_SIZE = 0.8f;
-    private static final float CALLISTO_DISTANCE = 100.5f;
-    private static final float CALLISTO_OFFSET_X = (float) Math.toRadians(-150.0f);
-    private static final float CALLISTO_OFFSET_Y = (float) Math.toRadians(12.0f);
+    @SubscribeEvent
+    public static void registerEffects(RegisterDimensionSpecialEffectsEvent event) {
+        event.register(EFFECT, new JupiterSkyEffects());
+    }
 
     @SubscribeEvent
     public static void onRenderSky(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_SKY) return;
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null) return;
-        if (!mc.level.dimension().equals(ModDimensions.JUPITER_LEVEL_KEY)) return;
+        if (mc.level == null || !mc.level.dimension().equals(ModDimensions.JUPITER_LEVEL_KEY)) {
+            return;
+        }
 
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         float timeOfDay = mc.level.getTimeOfDay(partialTick);
@@ -69,7 +78,7 @@ public class JupiterSkyRenderer {
         mvStack.pushMatrix();
         mvStack.mul(event.getModelViewMatrix());
         mvStack.rotateY((float) Math.toRadians(-90.0f));
-        mvStack.rotateX((float) Math.toRadians(timeOfDay * 360.0f * ROTATION_SPEED));
+        mvStack.rotateX((float) Math.toRadians(timeOfDay * 360.0f));
         RenderSystem.applyModelViewMatrix();
 
         RenderSystem.depthMask(false);
@@ -82,65 +91,12 @@ public class JupiterSkyRenderer {
                 GlStateManager.DestFactor.ZERO
         );
 
-        // 太阳
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, SUN_TEXTURE);
-        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        renderStars("jupiter".hashCode());
+        renderSun();
 
-        Tesselator sunTess = Tesselator.getInstance();
-        BufferBuilder sunBuffer = sunTess.begin(
-                VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-
-        sunBuffer.addVertex(-SUN_SIZE, SUN_DISTANCE, -SUN_SIZE).setUv(0.0f, 0.0f);
-        sunBuffer.addVertex(-SUN_SIZE, SUN_DISTANCE,  SUN_SIZE).setUv(0.0f, 1.0f);
-        sunBuffer.addVertex( SUN_SIZE, SUN_DISTANCE,  SUN_SIZE).setUv(1.0f, 1.0f);
-        sunBuffer.addVertex( SUN_SIZE, SUN_DISTANCE, -SUN_SIZE).setUv(1.0f, 0.0f);
-
-        BufferUploader.drawWithShader(sunBuffer.buildOrThrow());
-
-        // Io
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, IO_TEXTURE);
-        RenderSystem.setShaderColor(1.0f, 0.85f, 0.5f, 1.0f);
-
-        Tesselator ioTess = Tesselator.getInstance();
-        BufferBuilder ioBuffer = ioTess.begin(
-                VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        drawCelestialQuad(ioBuffer, IO_DISTANCE, IO_SIZE, IO_OFFSET_X, IO_OFFSET_Y);
-        BufferUploader.drawWithShader(ioBuffer.buildOrThrow());
-
-        // Europa
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, EUROPA_TEXTURE);
-        RenderSystem.setShaderColor(0.95f, 0.95f, 0.9f, 1.0f);
-
-        Tesselator europaTess = Tesselator.getInstance();
-        BufferBuilder europaBuffer = europaTess.begin(
-                VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        drawCelestialQuad(europaBuffer, EUROPA_DISTANCE, EUROPA_SIZE, EUROPA_OFFSET_X, EUROPA_OFFSET_Y);
-        BufferUploader.drawWithShader(europaBuffer.buildOrThrow());
-
-        // Ganymede
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, GANYMEDE_TEXTURE);
-        RenderSystem.setShaderColor(0.85f, 0.85f, 0.85f, 1.0f);
-
-        Tesselator ganymedeTess = Tesselator.getInstance();
-        BufferBuilder ganymedeBuffer = ganymedeTess.begin(
-                VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        drawCelestialQuad(ganymedeBuffer, GANYMEDE_DISTANCE, GANYMEDE_SIZE, GANYMEDE_OFFSET_X, GANYMEDE_OFFSET_Y);
-        BufferUploader.drawWithShader(ganymedeBuffer.buildOrThrow());
-
-        // Callisto
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderTexture(0, CALLISTO_TEXTURE);
-        RenderSystem.setShaderColor(0.7f, 0.68f, 0.6f, 1.0f);
-
-        Tesselator callistoTess = Tesselator.getInstance();
-        BufferBuilder callistoBuffer = callistoTess.begin(
-                VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-        drawCelestialQuad(callistoBuffer, CALLISTO_DISTANCE, CALLISTO_SIZE, CALLISTO_OFFSET_X, CALLISTO_OFFSET_Y);
-        BufferUploader.drawWithShader(callistoBuffer.buildOrThrow());
+        for (int i = 0; i < NEARBY.size(); i++) {
+            renderBody(NEARBY.get(i), i);
+        }
 
         mvStack.popMatrix();
         RenderSystem.applyModelViewMatrix();
@@ -151,27 +107,112 @@ public class JupiterSkyRenderer {
         RenderSystem.defaultBlendFunc();
     }
 
-    private static void drawCelestialQuad(BufferBuilder buffer,
-                                          float distance,
-                                          float size,
-                                          float offsetX,
-                                          float offsetY) {
-        Vector3f topLeft     = rotateOffset(-size, distance, -size, offsetX, offsetY);
-        Vector3f bottomLeft  = rotateOffset(-size, distance,  size, offsetX, offsetY);
-        Vector3f bottomRight = rotateOffset( size, distance,  size, offsetX, offsetY);
-        Vector3f topRight    = rotateOffset( size, distance, -size, offsetX, offsetY);
+    private static void renderStars(int seed) {
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-        buffer.addVertex(topLeft.x,     topLeft.y,     topLeft.z).setUv(0.0f, 0.0f);
-        buffer.addVertex(bottomLeft.x,  bottomLeft.y,  bottomLeft.z).setUv(0.0f, 1.0f);
-        buffer.addVertex(bottomRight.x, bottomRight.y, bottomRight.z).setUv(1.0f, 1.0f);
-        buffer.addVertex(topRight.x,    topRight.y,    topRight.z).setUv(1.0f, 0.0f);
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder buffer = tessellator.begin(
+                VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        RandomSource random = RandomSource.create(seed ^ 0x51A7C0DEL);
+
+        for (int i = 0; i < STAR_COUNT; i++) {
+            float cosTheta = random.nextFloat() * 2.0f - 1.0f;
+            float sinTheta = Mth.sqrt(1.0f - cosTheta * cosTheta);
+            float phi = random.nextFloat() * Mth.TWO_PI;
+            Vector3f pos = new Vector3f(
+                    sinTheta * Mth.cos(phi), cosTheta, sinTheta * Mth.sin(phi)
+            ).mul(SKY_DISTANCE);
+
+            Quaternionf rotation = new Quaternionf()
+                    .rotateTo(new Vector3f(0.0f, 0.0f, -1.0f), pos);
+            float size = 0.05f + random.nextFloat() * 0.055f;
+            Vector3f right = new Vector3f(1.0f, 0.0f, 0.0f).rotate(rotation).mul(size);
+            Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f).rotate(rotation).mul(size);
+            float brightness = 0.15f + random.nextFloat() * 0.55f;
+
+            buffer.addVertex(pos.x - right.x - up.x, pos.y - right.y - up.y, pos.z - right.z - up.z)
+                    .setColor(brightness, brightness, brightness, 1.0f);
+            buffer.addVertex(pos.x + right.x - up.x, pos.y + right.y - up.y, pos.z + right.z - up.z)
+                    .setColor(brightness, brightness, brightness, 1.0f);
+            buffer.addVertex(pos.x + right.x + up.x, pos.y + right.y + up.y, pos.z + right.z + up.z)
+                    .setColor(brightness, brightness, brightness, 1.0f);
+            buffer.addVertex(pos.x - right.x + up.x, pos.y - right.y + up.y, pos.z - right.z + up.z)
+                    .setColor(brightness, brightness, brightness, 1.0f);
+        }
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
 
-    private static Vector3f rotateOffset(float x, float y, float z,
-                                         float offsetX, float offsetY) {
-        Vector3f v = new Vector3f(x, y, z);
-        if (offsetY != 0) v.rotateZ(offsetY);
-        if (offsetX != 0) v.rotateX(offsetX);
-        return v;
+    private static void renderSun() {
+        double angularDegrees = Mth.clamp(
+                0.53 * 8.0 / Math.max(0.15, ORBITAL_AU), 0.10, 12.0);
+        float size = sizeFromAngular(angularDegrees);
+
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderTexture(0, SUN_TEXTURE);
+        RenderSystem.setShaderColor(1.0f, 0.94f, 0.78f, 1.0f);
+
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder buffer = tessellator.begin(
+                VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        addQuad(buffer, size, 180.0f, 65.0f);
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
     }
+
+    private static void renderBody(Nearby body, int index) {
+        double angularDegrees = Math.toDegrees(
+                2.0 * Math.atan(body.radius() * 0.002 / Math.max(0.0001, body.separation())));
+        float size = sizeFromAngular(Mth.clamp(angularDegrees, 0.2, 40.0));
+        size = Mth.clamp(size, 0.6f, 18.0f);
+
+        int hash = body.texture().hashCode();
+        float azimuth = Math.floorMod(hash, 360);
+        float altitude = 18.0f + Math.floorMod(hash / 360, 48);
+        if (index % 2 == 1) azimuth = (azimuth + 180.0f) % 360.0f;
+
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderTexture(0, body.texture());
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+        Tesselator tessellator = Tesselator.getInstance();
+        BufferBuilder buffer = tessellator.begin(
+                VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        addQuad(buffer, size, azimuth, altitude);
+        BufferUploader.drawWithShader(buffer.buildOrThrow());
+    }
+
+    private static float sizeFromAngular(double angularDegrees) {
+        double radius = Math.toRadians(angularDegrees) * 0.5;
+        return (float) (SKY_DISTANCE * Math.tan(radius));
+    }
+
+    private static void addQuad(BufferBuilder buffer, float size,
+                                float azimuthDeg, float altitudeDeg) {
+        float az = (float) Math.toRadians(azimuthDeg);
+        float alt = (float) Math.toRadians(altitudeDeg);
+        float cosAlt = (float) Math.cos(alt);
+        Vector3f center = new Vector3f(
+                SKY_DISTANCE * (float) Math.sin(az) * cosAlt,
+                SKY_DISTANCE * (float) Math.sin(alt),
+                SKY_DISTANCE * (float) Math.cos(az) * cosAlt
+        );
+
+        Vector3f dir = new Vector3f(center).normalize();
+        Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+        if (Math.abs(dir.y) > 0.99f) up.set(0.0f, 0.0f, 1.0f);
+        Vector3f right = new Vector3f(dir).cross(up).normalize().mul(size);
+        Vector3f localUp = new Vector3f(dir).cross(right).normalize().mul(size);
+
+        Vector3f tl = new Vector3f(center).sub(right).add(localUp);
+        Vector3f bl = new Vector3f(center).sub(right).sub(localUp);
+        Vector3f br = new Vector3f(center).add(right).sub(localUp);
+        Vector3f tr = new Vector3f(center).add(right).add(localUp);
+
+        buffer.addVertex(tl.x, tl.y, tl.z).setUv(0.0f, 0.0f);
+        buffer.addVertex(bl.x, bl.y, bl.z).setUv(0.0f, 1.0f);
+        buffer.addVertex(br.x, br.y, br.z).setUv(1.0f, 1.0f);
+        buffer.addVertex(tr.x, tr.y, tr.z).setUv(1.0f, 0.0f);
+    }
+
+
 }

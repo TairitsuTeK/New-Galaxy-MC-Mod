@@ -1,5 +1,5 @@
 {
-  "temperature": 5.0,
+  "temperature": 4.0,
   "downfall": 0.0,
   "has_precipitation": false,
   "effects": {
@@ -22,18 +22,18 @@
   "carvers": {},
   "features": [
     [],
-    [
-      "newgc:venus_lava_lake",
-      "newgc:venus_acid_lake"
-    ],
+    [],
     [],
     [],
     [],
     [],
     [
       "newgc:venus_ore_iron",
-      "newgc:venus_ore_copper"
+      "newgc:venus_ore_copper",
+      "newgc:venus_acid_lake",
+      "newgc:venus_lava_lake"
     ],
+    [],
     [],
     [],
     []

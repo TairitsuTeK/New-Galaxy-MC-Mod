@@ -1,0 +1,11 @@
+{
+  "type": "newgc:ganymede_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:ganymede_plains"
+    },
+    "settings": "newgc:ganymede_overworld"
+  }
+}

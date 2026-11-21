@@ -1,0 +1,11 @@
+{
+  "type": "newgc:uranus_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:uranus_plains"
+    },
+    "settings": "newgc:uranus_overworld"
+  }
+}

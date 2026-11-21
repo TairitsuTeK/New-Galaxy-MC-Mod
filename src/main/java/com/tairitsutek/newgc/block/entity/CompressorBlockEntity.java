@@ -1,5 +1,6 @@
 package com.tairitsutek.newgc.block.entity;
 
+import com.tairitsutek.newgc.energy.ExternalEnergyStorage;
 import com.tairitsutek.newgc.energy.SimpleEnergyStorage;
 import com.tairitsutek.newgc.menu.CompressorMenu;
 import com.tairitsutek.newgc.recipe.CompressorRecipe;
@@ -43,6 +44,10 @@ public class CompressorBlockEntity extends BlockEntity implements MenuProvider {
 
     private final SimpleEnergyStorage energy =
             new SimpleEnergyStorage(ENERGY_CAPACITY, ENERGY_RECEIVE, ENERGY_EXTRACT);
+
+    /** 对外只允许输入，防止电线把机器里的电反向抽走；内部 tick 仍可直接使用 energy。 */
+    private final IEnergyStorage externalEnergy =
+            new ExternalEnergyStorage(energy, ExternalEnergyStorage.Mode.RECEIVE_ONLY);
 
     private final ItemStackHandler items = new ItemStackHandler(2) {
         @Override
@@ -93,7 +98,7 @@ public class CompressorBlockEntity extends BlockEntity implements MenuProvider {
 
     // ==================== 公共方法 ====================
     public ItemStackHandler getItems() { return items; }
-    public IEnergyStorage getEnergyStorage() { return energy; }
+    public IEnergyStorage getEnergyStorage() { return externalEnergy; }
     public ContainerData getData() { return data; }
     public int getProgress() { return progress; }
     public int getMaxProgress() { return COMPRESS_TICKS; }

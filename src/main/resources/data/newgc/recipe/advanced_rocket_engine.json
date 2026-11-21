@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SPS",
+    "PCP",
+    "SPS"
+  ],
+  "key": {
+    "S": { "item": "newgc:steel_plate" },
+    "P": { "item": "newgc:platinum_plate" },
+    "C": { "item": "newgc:circuit_core_diamond" }
+  },
+  "result": {
+    "id": "newgc:advanced_rocket_engine",
+    "count": 1
+  }
+}

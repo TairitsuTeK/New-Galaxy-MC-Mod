@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "newgc:electrum_block"
+    }
+  ],
+  "result": {
+    "id": "newgc:electrum_ingot",
+    "count": 9
+  }
+}

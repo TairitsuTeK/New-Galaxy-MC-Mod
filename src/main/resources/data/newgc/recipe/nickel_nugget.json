@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "newgc:nickel_ingot"
+    }
+  ],
+  "result": {
+    "id": "newgc:nickel_nugget",
+    "count": 9
+  }
+}

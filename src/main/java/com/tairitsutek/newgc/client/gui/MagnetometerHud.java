@@ -6,6 +6,7 @@ import com.tairitsutek.newgc.client.magnetometer.MagnetometerData;
 import com.tairitsutek.newgc.item.ToolsItem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -66,23 +67,15 @@ public class MagnetometerHud {
         g.pose().pushPose();
         g.pose().last().pose().identity();
 
-        // 外发光
-        g.fill(x0 - 2, y0 - 2, x1 + 2, y1 + 2, COLOR_GLOW);
-
-        // 背景
-        g.fill(x0, y0, x1, y1, COLOR_BG);
-
-        // 边框
-        drawRect2(g, x0, y0, x1, y1, COLOR_BORDER);
-
-        // 四角装饰
-        drawCornerBrackets(g, x0, y0, x1, y1, COLOR_ACCENT);
+        UiTheme.panel(g, x0, y0, WIDTH, HEIGHT);
 
         // ===== 标题行（0~12）=====
-        g.fill(x0 + 1, y0 + 1, x1 - 1, y0 + 12, COLOR_TITLE_BG);
+        g.fillGradient(x0 + 1, y0 + 1, x1 - 1, y0 + 12,
+                0x301D4560, 0x001D4560);
         g.fill(x0 + 1, y0 + 11, x1 - 1, y0 + 12, COLOR_SEPARATOR);
 
-        g.drawString(mc.font, "⧗ 磁场计", x0 + 6, y0 + 3, COLOR_TITLE, false);
+        g.drawString(mc.font, Component.translatable("gui.newgc.magnetometer.title").getString(),
+                x0 + 6, y0 + 3, UiTheme.TEXT, false);
 
         float strength = MagnetometerClientCache.getStrength();
 
@@ -146,17 +139,22 @@ public class MagnetometerHud {
         float angle = MagnetometerClientCache.getAngle();
         String arrow = angleToArrow(angle);
         String angleStr = String.format("%s %d°", arrow, (int) angle);
-        drawRow(g, mc, infoX, infoY, infoRight, "朝向", angleStr, COLOR_VALUE);
+        drawRow(g, mc, infoX, infoY, infoRight,
+                Component.translatable("gui.newgc.magnetometer.heading").getString(),
+                angleStr, COLOR_VALUE);
         infoY += 11;
 
         // 状态
-        drawRow(g, mc, infoX, infoY, infoRight, "状态",
+        drawRow(g, mc, infoX, infoY, infoRight,
+                Component.translatable("gui.newgc.magnetometer.status").getString(),
                 MagnetometerClientCache.getStatus(),
                 MagnetometerClientCache.getStatusColor());
 
         // 矿脉提示（如果检测到，放最下方一行）
         if (MagnetometerClientCache.isIronNearby()) {
-            g.drawString(mc.font, "🜨 铁矿", infoX, infoY + 12, 0xFFC89650, false);
+            g.drawString(mc.font, Component.translatable(
+                            "gui.newgc.magnetometer.iron_nearby").getString(),
+                    infoX, infoY + 12, 0xFFC89650, false);
         }
 
         g.pose().popPose();
@@ -194,15 +192,19 @@ public class MagnetometerHud {
     private static void drawRow(GuiGraphics g, Minecraft mc, int x, int y, int rightEdge,
                                 String label, String value, int valueColor) {
         g.drawString(mc.font, label, x, y, COLOR_LABEL, false);
-        int vW = mc.font.width(value);
-        g.drawString(mc.font, value, rightEdge - vW, y, valueColor, false);
+        int maxValueW = Math.max(12, rightEdge - x - mc.font.width(label) - 4);
+        String shown = mc.font.width(value) <= maxValueW
+                ? value
+                : mc.font.plainSubstrByWidth(value, Math.max(0, maxValueW - 4)) + "…";
+        int vW = mc.font.width(shown);
+        g.drawString(mc.font, shown, rightEdge - vW, y, valueColor, false);
     }
 
     private static void drawRect2(GuiGraphics g, int x1, int y1, int x2, int y2, int color) {
-        g.fill(x1, y1, x2, y1 + 2, color);
-        g.fill(x1, y2 - 2, x2, y2, color);
-        g.fill(x1, y1, x1 + 2, y2, color);
-        g.fill(x2 - 2, y1, x2, y2, color);
+        g.fill(x1, y1, x2, y1 + 1, color);
+        g.fill(x1, y2 - 1, x2, y2, color);
+        g.fill(x1, y1, x1 + 1, y2, color);
+        g.fill(x2 - 1, y1, x2, y2, color);
     }
 
     private static void drawCornerBrackets(GuiGraphics g, int x1, int y1, int x2, int y2, int color) {

@@ -1,0 +1,9 @@
+{
+  "type": "newgc:compressing",
+  "ingredient": { "item": "newgc:heavy_alloy" },
+  "inputCount": 5,
+  "result": {
+    "id": "newgc:heavy_alloy_plate",
+    "count": 1
+  }
+}

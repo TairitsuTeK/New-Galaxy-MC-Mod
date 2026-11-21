@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "newgc:block/proxima_b_sub_surface"
+  }
+}

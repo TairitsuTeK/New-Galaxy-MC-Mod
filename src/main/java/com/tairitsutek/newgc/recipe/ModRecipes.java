@@ -24,6 +24,21 @@ public class ModRecipes {
     public static final DeferredHolder<RecipeSerializer<?>, CompressorRecipeSerializer> COMPRESSING_SERIALIZER =
             RECIPE_SERIALIZERS.register("compressing", CompressorRecipeSerializer::new);
 
+    public static final DeferredHolder<RecipeType<?>, RecipeType<AlloySmeltingRecipe>> ALLOY_SMELTING =
+            RECIPE_TYPES.register("alloy_smelting",
+                    () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "alloy_smelting")));
+
+    public static final DeferredHolder<RecipeSerializer<?>, AlloySmeltingRecipeSerializer> ALLOY_SMELTING_SERIALIZER =
+            RECIPE_SERIALIZERS.register("alloy_smelting", AlloySmeltingRecipeSerializer::new);
+
+    public static final DeferredHolder<RecipeType<?>, RecipeType<RocketAssemblyRecipe>> ROCKET_ASSEMBLY =
+            RECIPE_TYPES.register("rocket_assembly",
+                    () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(
+                            NewGalaxyMain.MODID, "rocket_assembly")));
+
+    public static final DeferredHolder<RecipeSerializer<?>, RocketAssemblyRecipeSerializer> ROCKET_ASSEMBLY_SERIALIZER =
+            RECIPE_SERIALIZERS.register("rocket_assembly", RocketAssemblyRecipeSerializer::new);
+
     public static void register(IEventBus bus) {
         RECIPE_TYPES.register(bus);
         RECIPE_SERIALIZERS.register(bus);

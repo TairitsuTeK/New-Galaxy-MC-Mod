@@ -15,6 +15,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 @EventBusSubscriber(modid = NewGalaxyMain.MODID)
 public class JupiterEnvironmentHandler {
 
@@ -37,22 +41,27 @@ public class JupiterEnvironmentHandler {
     private static final int MESSAGE_INTERVAL = 20;
     private static final float SMOOTH_FACTOR = 0.01f;
 
-    private static float smoothedStrength = 1.0f;
+    private static final Map<UUID, Float> SMOOTHED_STRENGTH = new ConcurrentHashMap<>();
 
     @SubscribeEvent
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        if (!player.level().dimension().equals(ModDimensions.JUPITER_LEVEL_KEY)) return;
+        if (!player.level().dimension().equals(ModDimensions.JUPITER_LEVEL_KEY)) {
+            SMOOTHED_STRENGTH.remove(player.getUUID());
+            return;
+        }
         if (player.isCreative() || player.isSpectator()) return;
 
         // 目标强度（不再强制下限 0.5）
         float targetStrength = JupiterStormManager.getStormStrength();
         targetStrength = Math.max(0f, Math.min(2.5f, targetStrength));
 
-        // 平滑跟随
+        // 平滑跟随，每个玩家独立保存；首次进入木星从 0 开始，而不是从 1.0 开始。
+        float smoothedStrength = SMOOTHED_STRENGTH.getOrDefault(player.getUUID(), 0.0f);
         smoothedStrength += (targetStrength - smoothedStrength) * SMOOTH_FACTOR;
         if (Float.isNaN(smoothedStrength)) smoothedStrength = 0f;
         smoothedStrength = Math.max(0f, Math.min(2.5f, smoothedStrength));
+        SMOOTHED_STRENGTH.put(player.getUUID(), smoothedStrength);
 
         // ===== 归一化：0 = 平静，1 = 暴烈顶点 =====
         float t = smoothedStrength / 2.5f;

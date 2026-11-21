@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "NNN",
+    "NNN",
+    "NNN"
+  ],
+  "key": {
+    "N": {
+      "item": "newgc:steel_nugget"
+    }
+  },
+  "result": {
+    "id": "newgc:steel_ingot",
+    "count": 1
+  }
+}

@@ -16,7 +16,10 @@ import com.tairitsutek.newgc.block.entity.ModBlockEntities;
 import com.tairitsutek.newgc.config.NewGalaxyConfig;
 import com.tairitsutek.newgc.item.material.Material;
 import com.tairitsutek.newgc.block.MachinesBlock;
+import com.tairitsutek.newgc.entity.ModEntities;
 import com.tairitsutek.newgc.menu.ModMenus;
+import com.tairitsutek.newgc.network.RocketLaunchPacket;
+import com.tairitsutek.newgc.network.RocketOrbitPacket;
 import com.tairitsutek.newgc.event.oxygen.ModAttachments;
 import com.tairitsutek.newgc.event.oxygen.OxygenSyncPacket;
 import com.tairitsutek.newgc.event.oxygen.ResetTankPacket;
@@ -55,6 +58,7 @@ public class NewGalaxyMain {
         MachinesBlock.register(modEventBus);
         Material.register(modEventBus);
         ModRecipes.register(modEventBus);
+        ModEntities.register(modEventBus);
     }
 
     private void registerPayloads(final RegisterPayloadHandlersEvent event) {
@@ -96,12 +100,22 @@ public class NewGalaxyMain {
                 IoVolcanoPayload.STREAM_CODEC,
                 IoVolcanoPayload::handle
         );
+        registrar.playToClient(
+                RocketOrbitPacket.TYPE,
+                RocketOrbitPacket.STREAM_CODEC,
+                RocketOrbitPacket::handle
+        );
 
         // ========== C2S ==========
         registrar.playToServer(
                 ResetTankPacket.TYPE,
                 ResetTankPacket.STREAM_CODEC,
                 ResetTankPacket::handle
+        );
+        registrar.playToServer(
+                RocketLaunchPacket.TYPE,
+                RocketLaunchPacket.STREAM_CODEC,
+                RocketLaunchPacket::handle
         );
         registrar.playToServer(
                 MarsVolcanoDebugPayload.TYPE,

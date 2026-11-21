@@ -1,0 +1,15 @@
+{
+  "type": "newgc:alloy_smelting",
+  "ingredients": [
+    {
+      "item": "minecraft:gold_ingot"
+    },
+    {
+      "item": "newgc:silver_ingot"
+    }
+  ],
+  "result": {
+    "id": "newgc:electrum_ingot",
+    "count": 2
+  }
+}

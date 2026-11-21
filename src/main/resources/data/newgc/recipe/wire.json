@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "CCC"
+  ],
+  "key": {
+    "C": {
+      "item": "newgc:copper_plate"
+    }
+  },
+  "result": {
+    "id": "newgc:wire",
+    "count": 6
+  }
+}

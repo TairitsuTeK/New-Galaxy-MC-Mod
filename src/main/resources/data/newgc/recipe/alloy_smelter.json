@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "IPI",
+    "CMC",
+    "IFI"
+  ],
+  "key": {
+    "I": {
+      "item": "newgc:iron_plate"
+    },
+    "P": {
+      "item": "newgc:circuit_core_copper"
+    },
+    "C": {
+      "item": "newgc:copper_plate"
+    },
+    "M": {
+      "item": "newgc:mechanical_casing"
+    },
+    "F": {
+      "item": "minecraft:furnace"
+    }
+  },
+  "result": {
+    "id": "newgc:alloy_smelter",
+    "count": 1
+  }
+}

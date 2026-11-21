@@ -1,0 +1,15 @@
+{
+  "type": "newgc:alloy_smelting",
+  "ingredients": [
+    {
+      "item": "minecraft:iron_ingot"
+    },
+    {
+      "tag": "minecraft:coals"
+    }
+  ],
+  "result": {
+    "id": "newgc:steel_ingot",
+    "count": 1
+  }
+}

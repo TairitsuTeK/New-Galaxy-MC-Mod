@@ -1,0 +1,11 @@
+{
+  "type": "newgc:haumea_type",
+  "generator": {
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "newgc:haumea_plains"
+    },
+    "settings": "newgc:haumea_overworld"
+  }
+}

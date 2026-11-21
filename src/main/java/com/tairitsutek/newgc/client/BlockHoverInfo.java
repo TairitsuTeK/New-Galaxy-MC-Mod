@@ -67,12 +67,14 @@ public class BlockHoverInfo {
         drawBar(g, centerX - 40, centerY + 26, 80, 6, stored, max, 0xFFFFB300);
 
         if (burn > 0) {
-            Component burnText = Component.literal("🔥 燃烧中 " + burn + " tick")
-                    .withStyle(ChatFormatting.RED);
+            Component burnText = Component.translatable(
+                            "gui.newgc.machine.burning", burn)
+                    .withStyle(ChatFormatting.AQUA);
             g.drawCenteredString(mc.font, burnText, centerX, centerY + 40, 0xFFFFFFFF);
-            drawBar(g, centerX - 40, centerY + 52, 80, 4, burn, maxBurn, 0xFFFF5500);
+            drawBar(g, centerX - 40, centerY + 52, 80, 4, burn, maxBurn, 0xFF78D8F0);
         } else {
-            Component idle = Component.literal("○ 待机").withStyle(ChatFormatting.GRAY);
+            Component idle = Component.translatable("gui.newgc.machine.idle")
+                    .withStyle(ChatFormatting.GRAY);
             g.drawCenteredString(mc.font, idle, centerX, centerY + 40, 0xFFFFFFFF);
         }
     }
@@ -101,15 +103,18 @@ public class BlockHoverInfo {
 
         drawBar(g, centerX - 40, centerY + 26, 80, 6, stored, max, 0xFF00FF88);
 
-        Component plantText = Component.literal("🌿 倍数 ×" + mult + "  |  速度 +" + rate + "/tick")
-                .withStyle(ChatFormatting.GREEN);
+        Component plantText = Component.translatable(
+                        "gui.newgc.machine.oxygen_rate", mult, rate)
+                .withStyle(ChatFormatting.AQUA);
         g.drawCenteredString(mc.font, plantText, centerX, centerY + 40, 0xFFFFFFFF);
 
         if (stored < rate * OxygenExtractorBlockEntity.FE_PER_OXYGEN) {
-            Component warning = Component.literal("⚠ 能量不足").withStyle(ChatFormatting.RED);
+            Component warning = Component.translatable("gui.newgc.machine.no_energy")
+                    .withStyle(ChatFormatting.RED);
             g.drawCenteredString(mc.font, warning, centerX, centerY + 54, 0xFFFFFFFF);
         } else {
-            Component ok = Component.literal("● 运行中").withStyle(ChatFormatting.GREEN);
+            Component ok = Component.translatable("gui.newgc.machine.running")
+                    .withStyle(ChatFormatting.AQUA);
             g.drawCenteredString(mc.font, ok, centerX, centerY + 54, 0xFFFFFFFF);
         }
     }
@@ -138,12 +143,14 @@ public class BlockHoverInfo {
         drawBar(g, centerX - 40, centerY + 26, 80, 6, stored, max, 0xFFFF8C00);
 
         if (progress > 0) {
-            Component progressText = Component.literal("⇉ 压缩中 " + progress + " / "
-                            + compressor.getMaxProgress())
-                    .withStyle(ChatFormatting.GOLD);
+            Component progressText = Component.translatable(
+                            "gui.newgc.machine.compressing", progress,
+                            compressor.getMaxProgress())
+                    .withStyle(ChatFormatting.AQUA);
             g.drawCenteredString(mc.font, progressText, centerX, centerY + 40, 0xFFFFFFFF);
         } else {
-            Component idle = Component.literal("○ 待机").withStyle(ChatFormatting.GRAY);
+            Component idle = Component.translatable("gui.newgc.machine.idle")
+                    .withStyle(ChatFormatting.GRAY);
             g.drawCenteredString(mc.font, idle, centerX, centerY + 40, 0xFFFFFFFF);
         }
     }

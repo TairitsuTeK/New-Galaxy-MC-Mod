@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "III",
+    "III",
+    "III"
+  ],
+  "key": {
+    "I": {
+      "item": "newgc:bronze_ingot"
+    }
+  },
+  "result": {
+    "id": "newgc:bronze_block",
+    "count": 1
+  }
+}

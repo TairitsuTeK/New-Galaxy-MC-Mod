@@ -34,7 +34,7 @@ public class VenusSkyEffects extends DimensionSpecialEffects {
 
     @Override
     public float[] getSunriseColor(float timeOfDay, float partialTick) {
-        // 柔和的黄褐日落
-        return new float[]{0.88f, 0.62f, 0.28f, 0.40f};
+        // 统一关闭原版日出/日落色带，避免面向东西方向出现黄昏效果。
+        return null;
     }
 }

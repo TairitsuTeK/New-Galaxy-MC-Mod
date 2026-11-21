@@ -1,5 +1,6 @@
 package com.tairitsutek.newgc.block.entity;
 
+import com.tairitsutek.newgc.energy.ExternalEnergyStorage;
 import com.tairitsutek.newgc.energy.SimpleEnergyStorage;
 import com.tairitsutek.newgc.menu.SolidFuelGeneratorMenu;
 import net.minecraft.core.BlockPos;
@@ -40,6 +41,10 @@ public class SolidFuelGeneratorBlockEntity extends BlockEntity implements MenuPr
 
     private final SimpleEnergyStorage energy =
             new SimpleEnergyStorage(CAPACITY, CAPACITY, EXTRACT_PER_TICK);
+
+    /** 对外只允许抽取，防止电线/其他机器把能量倒灌回发电机。 */
+    private final IEnergyStorage externalEnergy =
+            new ExternalEnergyStorage(energy, ExternalEnergyStorage.Mode.EXTRACT_ONLY);
 
     private final ItemStackHandler items = new ItemStackHandler(1) {
         @Override
@@ -87,7 +92,7 @@ public class SolidFuelGeneratorBlockEntity extends BlockEntity implements MenuPr
         super(ModBlockEntities.SOLID_FUEL_GENERATOR.get(), pos, state);
     }
 
-    public IEnergyStorage getEnergyStorage() { return energy; }
+    public IEnergyStorage getEnergyStorage() { return externalEnergy; }
     public ItemStackHandler getItems() { return items; }
     public ContainerData getData() { return data; }
     public int getEnergyStored() { return energy.getEnergyStored(); }

@@ -1,0 +1,15 @@
+{
+  "type": "newgc:alloy_smelting",
+  "ingredients": [
+    {
+      "item": "minecraft:copper_ingot"
+    },
+    {
+      "item": "newgc:tin_ingot"
+    }
+  ],
+  "result": {
+    "id": "newgc:bronze_ingot",
+    "count": 2
+  }
+}
