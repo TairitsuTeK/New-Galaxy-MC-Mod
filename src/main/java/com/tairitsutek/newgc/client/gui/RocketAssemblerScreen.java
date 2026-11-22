@@ -45,10 +45,7 @@ public class RocketAssemblerScreen extends StyledContainerScreen<RocketAssembler
                                         ? ChatFormatting.GREEN : ChatFormatting.GRAY)),
                         null),
                 new StatusArea(x + 140, y + 106, 54, 16,
-                        () -> List.of(
-                                Component.translatable("gui.newgc.machine.rocket_recipes")
-                                        .withStyle(ChatFormatting.AQUA),
-                                JeiRecipeOpener.recipeHint()),
+                        () -> List.of(JeiRecipeOpener.recipeHint()),
                         openRecipes));
     }
 

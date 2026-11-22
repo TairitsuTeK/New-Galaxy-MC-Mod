@@ -88,19 +88,17 @@ public abstract class StyledContainerScreen<T extends AbstractContainerMenu>
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (super.mouseClicked(mouseX, mouseY, button)) {
-            return true;
-        }
-        if (button != 0) {
-            return false;
-        }
-        for (StatusArea area : statusAreas()) {
-            if (!area.contains(mouseX, mouseY) || area.onClick() == null) {
-                continue;
+        // 先处理状态条点击：AbstractContainerScreen 会把 GUI 内任意左键
+        // 都交给槽位逻辑并返回 true，放在 super 之后会导致进度条永远点不动。
+        if (button == 0) {
+            for (StatusArea area : statusAreas()) {
+                if (!area.contains(mouseX, mouseY) || area.onClick() == null) {
+                    continue;
+                }
+                area.onClick().run();
+                return true;
             }
-            area.onClick().run();
-            return true;
         }
-        return false;
+        return super.mouseClicked(mouseX, mouseY, button);
     }
 }

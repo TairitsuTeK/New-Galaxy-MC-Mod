@@ -42,7 +42,8 @@ public final class SpaceSky {
 
     private static final int STAR_COUNT = 2400;
     private static final float SKY_DISTANCE = 100.0f;
-    private static final ResourceLocation SUN_TEXTURE = SpaceLocations.SUN.icon();
+    private static final ResourceLocation SUN_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath("minecraft", "textures/environment/sun.png");
 
     private SpaceSky() {
     }

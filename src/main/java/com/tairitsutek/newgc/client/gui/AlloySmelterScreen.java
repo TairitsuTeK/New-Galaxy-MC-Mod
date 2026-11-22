@@ -31,8 +31,7 @@ public class AlloySmelterScreen extends StyledContainerScreen<AlloySmelterMenu> 
                         () -> SolidFuelGeneratorScreen.energyTooltip(
                                 menu.getEnergyStored(), menu.getMaxEnergyStored()), null),
                 new StatusArea(x + 70, y + 35, 40, 14,
-                        () -> CompressorScreen.progressTooltip(
-                                menu.getProgress(), menu.getMaxProgress()),
+                        CompressorScreen::recipeTooltip,
                         openRecipes)
         );
     }

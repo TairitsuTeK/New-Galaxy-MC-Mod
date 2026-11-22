@@ -31,8 +31,7 @@ public class ElectricFurnaceScreen extends StyledContainerScreen<ElectricFurnace
                         () -> SolidFuelGeneratorScreen.energyTooltip(
                                 menu.getEnergyStored(), menu.getMaxEnergyStored()), null),
                 new StatusArea(x + 76, y + 35, 38, 14,
-                        () -> CompressorScreen.progressTooltip(
-                                menu.getProgress(), menu.getMaxProgress()),
+                        CompressorScreen::recipeTooltip,
                         openRecipes)
         );
     }

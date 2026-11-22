@@ -41,32 +41,27 @@ public enum MachineStatusProvider implements IBlockComponentProvider {
                               @NotNull IPluginConfig config) {
         BlockEntity be = accessor.getBlockEntity();
         if (be instanceof SolidFuelGeneratorBlockEntity generator) {
-            addEnergy(tooltip, generator.getEnergyStored(), generator.getMaxEnergyStored());
             addBar(tooltip, generator.getBurnTime(), generator.getMaxBurnTime(),
                     "gui.newgc.machine.burn", 0xFF6B3A22, 0xFFF0B45A);
         } else if (be instanceof OxygenExtractorBlockEntity extractor) {
-            addEnergy(tooltip, extractor.getEnergyStorage().getEnergyStored(),
-                    extractor.getEnergyStorage().getMaxEnergyStored());
             addBar(tooltip, extractor.getOxygenBuffer(), extractor.getOxygenBufferMax(),
                     "gui.newgc.machine.oxygen", 0xFF1D626A, 0xFF9BF4E4);
             tooltip.add(Component.translatable("gui.newgc.machine.rate_value",
                             extractor.getCurrentRate(), extractor.getPlantMultiplier())
                     .withStyle(ChatFormatting.AQUA));
         } else if (be instanceof CompressorBlockEntity compressor) {
-            addEnergy(tooltip, compressor.getEnergyStorage().getEnergyStored(),
-                    compressor.getEnergyStorage().getMaxEnergyStored());
             addBar(tooltip, compressor.getProgress(), compressor.getMaxProgress(),
                     "gui.newgc.machine.compressing", 0xFF5B4B2A, 0xFFEBC27A);
         } else if (be instanceof ElectricFurnaceBlockEntity furnace) {
-            addEnergy(tooltip, furnace.getEnergyStored(), furnace.getMaxEnergyStored());
             addBar(tooltip, furnace.getProgress(), furnace.getMaxProgress(),
                     "gui.newgc.machine.smelting", 0xFF6A412A, 0xFFF0B97A);
         } else if (be instanceof AlloySmelterBlockEntity smelter) {
-            addEnergy(tooltip, smelter.getEnergyStored(), smelter.getMaxEnergyStored());
             addBar(tooltip, smelter.getProgress(), smelter.getMaxProgress(),
                     "gui.newgc.machine.alloying", 0xFF5B4B2A, 0xFFEBC27A);
         } else if (be instanceof EnergyCellBlockEntity cell) {
-            addEnergy(tooltip, cell.getEnergyStored(), cell.getMaxEnergyStored());
+            tooltip.add(Component.translatable("gui.newgc.machine.energy_value",
+                            cell.getEnergyStored(), cell.getMaxEnergyStored())
+                    .withStyle(ChatFormatting.GOLD));
         } else if (be instanceof RocketAssemblerBlockEntity assembler) {
             boolean ready = assembler.canAssembleNow();
             tooltip.add(Component.translatable(ready
@@ -74,12 +69,6 @@ public enum MachineStatusProvider implements IBlockComponentProvider {
                             : "gui.newgc.machine.assembler_waiting")
                     .withStyle(ready ? ChatFormatting.GREEN : ChatFormatting.GRAY));
         }
-    }
-
-    private static void addEnergy(ITooltip tooltip, int stored, int max) {
-        tooltip.add(Component.translatable("gui.newgc.machine.energy")
-                .withStyle(ChatFormatting.GOLD));
-        addBar(tooltip, stored, max, null, 0xFF1C5A78, 0xFF82E6FF);
     }
 
     private static void addBar(ITooltip tooltip, int value, int max, String labelKey,

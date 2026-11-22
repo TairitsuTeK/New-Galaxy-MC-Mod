@@ -59,18 +59,18 @@ public class RocketEntity extends Entity {
 
     /** 点火到升空的倒计时（tick）：10 秒。 */
     public static final int COUNTDOWN_TICKS = 200;
-    /** 一阶火箭上升到轨道的总时长（tick）：400 tick = 20 秒。 */
-    public static final int ASCENT_TICKS_TIER1 = 400;
-    /** 二阶火箭上升到轨道的总时长（tick）：340 tick = 17 秒。 */
-    public static final int ASCENT_TICKS_TIER2 = 340;
-    /** 三阶火箭上升到轨道的总时长（tick）：280 tick = 14 秒。 */
-    public static final int ASCENT_TICKS_TIER3 = 280;
+    /** 一阶火箭上升到轨道的总时长（tick）：3600 tick = 180 秒。 */
+    public static final int ASCENT_TICKS_TIER1 = 3600;
+    /** 二阶火箭上升到轨道的总时长（tick）：3000 tick = 150 秒。 */
+    public static final int ASCENT_TICKS_TIER2 = 3000;
+    /** 三阶火箭上升到轨道的总时长（tick）：2400 tick = 120 秒。 */
+    public static final int ASCENT_TICKS_TIER3 = 2400;
     /** 兼容旧调用；默认按一阶火箭计算。 */
     public static final int ASCENT_TICKS = ASCENT_TICKS_TIER1;
     /** 没有可用目标时，星图保留的倒计时；结束后自动进入漂流。 */
     public static final int NO_TARGET_GRACE_TICKS = 100;
     /** 相对发射高度需要爬升的距离（格）。 */
-    private static final double ORBIT_CLIMB = 420.0D;
+    private static final double ORBIT_CLIMB = 1800.0D;
     /** 倒计时烟雾向外扩散时使用的喷口半径。 */
     private static final double COUNTDOWN_SMOKE_RADIUS = 0.42D;
     /** 漂流维度内的起点；X 由发射星系决定，沿 Y 轴向下漂移。 */

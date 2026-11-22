@@ -8,6 +8,7 @@ import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -190,28 +191,66 @@ public final class RocketDestinations {
     }
 
     /**
+     * 高空天空使用的附近天体列表：优先当前行星的卫星/母行星，再补充最近的其他行星。
+     * <p>
+     * 仅返回存在星图图标的维度，客户端会把维度路径映射成 {@code textures/gui/<path>_icon.png}。
+     */
+    public static List<ResourceKey<Level>> skyNeighbours(ResourceKey<Level> from) {
+        Location location = locate(from);
+        if (location == null) {
+            return List.of();
+        }
+        Planet planet = location.planet();
+        List<ResourceKey<Level>> result = new ArrayList<>(5);
+        if (location.moonIndex() >= 0) {
+            result.add(planet.dimension());
+        }
+        for (int i = 0; i < planet.moons().size() && result.size() < 5; i++) {
+            if (i == location.moonIndex()) {
+                continue;
+            }
+            ResourceKey<Level> dimension = planet.moons().get(i).dimension();
+            if (!result.contains(dimension)) {
+                result.add(dimension);
+            }
+        }
+        for (Planet candidate : nearestOtherPlanets(planet, 2)) {
+            if (result.size() >= 5) {
+                break;
+            }
+            if (!result.contains(candidate.dimension())) {
+                result.add(candidate.dimension());
+            }
+        }
+        return List.copyOf(result);
+    }
+
+    /**
      * 按星图轨道半径寻找最近的其他行星。
      * <p>
      * Proxima b 位于另一个恒星系，不能通过太阳系内部航线抵达，因此不参与比较。
      */
     @Nullable
     private static Planet nearestOtherPlanet(Planet from) {
+        List<Planet> nearest = nearestOtherPlanets(from, 1);
+        return nearest.isEmpty() ? null : nearest.get(0);
+    }
+
+    private static List<Planet> nearestOtherPlanets(Planet from, int limit) {
         if (from.orbitRadius() <= 0.0F) {
-            return null;
+            return List.of();
         }
-        Planet nearest = null;
-        float bestDistance = Float.MAX_VALUE;
+        List<Planet> candidates = new ArrayList<>();
         for (Planet candidate : PLANETS) {
             if (candidate == from || candidate.orbitRadius() <= 0.0F) {
                 continue;
             }
-            float distance = Math.abs(candidate.orbitRadius() - from.orbitRadius());
-            if (distance < bestDistance) {
-                bestDistance = distance;
-                nearest = candidate;
-            }
+            candidates.add(candidate);
         }
-        return nearest;
+        candidates.sort(Comparator.comparingDouble(
+                candidate -> Math.abs(candidate.orbitRadius() - from.orbitRadius())));
+        return List.copyOf(candidates.subList(0,
+                Math.min(Math.max(0, limit), candidates.size())));
     }
 
     /** 火箭等级对应的名称翻译键。 */

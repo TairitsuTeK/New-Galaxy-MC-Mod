@@ -1,7 +1,7 @@
 {
   "textures": {
     "particle": "newgc:block/wire",
-    "wire": "newgc:block/wire"
+    "wire": "newgc:block/wire_core"
   },
   "elements": [
     {

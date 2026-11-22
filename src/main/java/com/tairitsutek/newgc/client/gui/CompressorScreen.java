@@ -2,13 +2,11 @@ package com.tairitsutek.newgc.client.gui;
 
 import com.tairitsutek.newgc.client.jei.JeiRecipeOpener;
 import com.tairitsutek.newgc.menu.CompressorMenu;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /** 压缩机界面：无文字标签，只有输入/输出槽、能量条和进度条。 */
@@ -33,20 +31,13 @@ public class CompressorScreen extends StyledContainerScreen<CompressorMenu> {
                         () -> SolidFuelGeneratorScreen.energyTooltip(
                                 menu.getEnergyStored(), menu.getMaxEnergyStored()), null),
                 new StatusArea(x + 76, y + 35, 38, 14,
-                        () -> progressTooltip(menu.getProgress(), menu.getMaxProgress()),
+                        CompressorScreen::recipeTooltip,
                         openRecipes)
         );
     }
 
-    static List<Component> progressTooltip(int progress, int max) {
-        int percent = max <= 0 ? 0 : Math.round(progress * 100.0F / max);
-        List<Component> lines = new ArrayList<>(List.of(
-                Component.translatable("gui.newgc.machine.progress")
-                        .withStyle(ChatFormatting.AQUA),
-                Component.translatable("gui.newgc.machine.tick_value", progress, max),
-                Component.translatable("gui.newgc.machine.percent", percent),
-                JeiRecipeOpener.recipeHint()));
-        return lines;
+    static List<Component> recipeTooltip() {
+        return List.of(JeiRecipeOpener.recipeHint());
     }
 
     @Override

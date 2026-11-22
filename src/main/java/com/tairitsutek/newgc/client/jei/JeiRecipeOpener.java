@@ -72,10 +72,8 @@ public final class JeiRecipeOpener {
         }
     }
 
-    /** 进度条悬停提示：已安装 JEI 时显示可点击，否则提示安装。 */
+    /** 进度条悬停提示：只显示“查看配方”。 */
     public static Component recipeHint() {
-        return Component.translatable(isAvailable()
-                ? "gui.newgc.machine.click_recipes"
-                : "gui.newgc.machine.jei_missing");
+        return Component.translatable("gui.newgc.machine.view_recipe");
     }
 }

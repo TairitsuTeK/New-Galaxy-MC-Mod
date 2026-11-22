@@ -12,7 +12,6 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -101,14 +100,5 @@ public class RocketAssemblyRecipeCategory implements IRecipeCategory<RocketAssem
         UiTheme.slot(guiGraphics,
                 RocketAssemblerLayout.slotX(RocketAssemblerLayout.OUTPUT_SLOT),
                 RocketAssemblerLayout.slotY(RocketAssemblerLayout.OUTPUT_SLOT));
-
-        var font = Minecraft.getInstance().font;
-        guiGraphics.drawString(font, getTitle(), 8, 5, UiTheme.TEXT, false);
-        guiGraphics.drawString(font,
-                Component.translatable("gui.newgc.jei.rocket_hint"),
-                8, 16, UiTheme.MUTED, false);
-        guiGraphics.drawString(font,
-                Component.translatable("gui.newgc.jei.rocket_info"),
-                8, 134, UiTheme.TEXT, false);
     }
 }

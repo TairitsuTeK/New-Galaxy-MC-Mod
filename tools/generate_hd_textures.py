@@ -266,15 +266,56 @@ def machine_texture(name: str) -> Image.Image:
 
 
 def wire_texture() -> Image.Image:
+    """黑色电缆方块贴图：两端为白色网格接头。"""
+    img = Image.new("RGBA", (SIZE, SIZE), (12, 12, 14, 255))
+    d = ImageDraw.Draw(img)
+
+    # 黑色金属电缆主体，保留非常克制的亮度变化，避免整块纯黑。
+    for y in range(SIZE):
+        shade = 12 + (y % 4) * 2
+        d.line([(0, y), (SIZE - 1, y)], fill=(shade, shade, shade + 2, 255))
+    d.line([(6, 15), (25, 15)], fill=(54, 54, 60, 255))
+    d.line([(6, 16), (25, 16)], fill=(30, 30, 35, 255))
+
+    def grid_end(x0: int, x1: int) -> None:
+        d.rectangle([x0, 0, x1, SIZE - 1], fill=(20, 20, 24, 255))
+        for x in range(x0, x1 + 1, 4):
+            d.line([(x, 0), (x, SIZE - 1)], fill=(224, 229, 235, 255))
+        for y in range(0, SIZE, 4):
+            d.line([(x0, y), (x1, y)], fill=(224, 229, 235, 255))
+        d.rectangle([x0, 0, x1, SIZE - 1], outline=(248, 250, 252, 255))
+
+    grid_end(0, 6)
+    grid_end(25, 31)
+    return img
+
+
+def wire_item_texture() -> Image.Image:
+    """物品栏只显示一条横向电缆，两端是白色网格接头。"""
     img = Image.new("RGBA", (SIZE, SIZE), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    d.rectangle([0, 0, SIZE - 1, SIZE - 1], fill=(73, 47, 30, 255))
-    for i in range(0, SIZE, 6):
-        d.line([(0, i), (SIZE, i - 3)], fill=(164, 91, 47, 255), width=2)
-        d.line([(0, i + 1), (SIZE, i - 2)], fill=(222, 139, 75, 255))
-    for i in range(0, SIZE, 8):
-        d.line([(i, 0), (i + 4, SIZE)], fill=(112, 62, 36, 255))
-        d.point((i + 1, i % SIZE), fill=(255, 192, 112, 255))
+    d.rectangle([4, 14, 27, 17], fill=(18, 18, 22, 255))
+    d.line([(4, 15), (27, 15)], fill=(72, 72, 80, 255))
+    for x0, x1 in ((0, 5), (26, 31)):
+        d.rectangle([x0, 10, x1, 21], fill=(20, 20, 24, 255),
+                    outline=(246, 248, 250, 255))
+        for x in range(x0 + 1, x1, 3):
+            d.line([(x, 11), (x, 20)], fill=(232, 236, 242, 255))
+        d.line([(x0 + 1, 14), (x1 - 1, 14)], fill=(232, 236, 242, 255))
+        d.line([(x0 + 1, 17), (x1 - 1, 17)], fill=(232, 236, 242, 255))
+    d.point((15, 16), fill=(185, 190, 198, 255))
+    return img
+
+
+def wire_core_texture() -> Image.Image:
+    """中心接线块：纯黑金属，不与两端的白色网格混在一起。"""
+    img = Image.new("RGBA", (SIZE, SIZE), (10, 10, 12, 255))
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, 0, SIZE - 1, SIZE - 1], outline=(44, 44, 50, 255))
+    d.rectangle([8, 8, 23, 23], fill=(17, 17, 20, 255),
+                outline=(62, 62, 70, 255))
+    d.line([(12, 14), (19, 14)], fill=(94, 94, 104, 255))
+    d.point((15, 17), fill=(170, 174, 182, 255))
     return img
 
 
@@ -318,7 +359,9 @@ def main() -> None:
         machine_texture(name).save(BLOCK_DIR / f"{name}.png", optimize=True)
         print(f"wrote HD machine block {name}.png")
     wire_texture().save(BLOCK_DIR / "wire.png", optimize=True)
-    print("wrote HD wire.png")
+    wire_core_texture().save(BLOCK_DIR / "wire_core.png", optimize=True)
+    wire_item_texture().save(ITEM_DIR / "wire.png", optimize=True)
+    print("wrote HD wire block, core and item textures")
 
     for name in ("launch_pad_top", "launch_pad_side"):
         path = BLOCK_DIR / f"{name}.png"

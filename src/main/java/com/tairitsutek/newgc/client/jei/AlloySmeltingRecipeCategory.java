@@ -11,7 +11,6 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -85,19 +84,5 @@ public class AlloySmeltingRecipeCategory implements IRecipeCategory<AlloySmeltin
         UiTheme.slot(guiGraphics, 132, 42);
         UiTheme.progressBar(guiGraphics, 52, 46, 56, 8,
                 1, 1, 0xFF5B4B2A, 0xFFEBC27A);
-
-        var font = Minecraft.getInstance().font;
-        guiGraphics.drawString(font, getTitle(), 8, 5, UiTheme.TEXT, false);
-        guiGraphics.drawString(font,
-                Component.translatable("gui.newgc.jei.machine_subtitle"),
-                8, 16, UiTheme.MUTED, false);
-        guiGraphics.fill(8, 27, getWidth() - 8, 28, UiTheme.ACCENT_DIM);
-        guiGraphics.drawString(font,
-                Component.translatable("gui.newgc.jei.alloy_info",
-                        recipe.getInputCount()),
-                8, 76, UiTheme.TEXT, false);
-        guiGraphics.drawString(font, "5,000 FE  ·  10s",
-                8, 86, UiTheme.MUTED, false);
-        guiGraphics.drawString(font, "→", 108, 44, UiTheme.ACCENT, false);
     }
 }

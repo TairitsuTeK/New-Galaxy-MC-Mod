@@ -11,7 +11,6 @@ import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
 import mezz.jei.api.recipe.RecipeType;
 import mezz.jei.api.recipe.category.IRecipeCategory;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -77,19 +76,5 @@ public class CompressorRecipeCategory implements IRecipeCategory<CompressorRecip
         UiTheme.slot(guiGraphics, 118, 32);
         UiTheme.progressBar(guiGraphics, 48, 37, 54, 8,
                 1, 1, 0xFF6B3A22, 0xFFF0B45A);
-
-        var font = Minecraft.getInstance().font;
-        guiGraphics.drawString(font, getTitle(), 8, 5, UiTheme.TEXT, false);
-        guiGraphics.drawString(font,
-                Component.translatable("gui.newgc.jei.machine_subtitle"),
-                8, 16, UiTheme.MUTED, false);
-        guiGraphics.fill(8, 27, getWidth() - 8, 28, UiTheme.ACCENT_DIM);
-        guiGraphics.drawString(font,
-                Component.translatable("gui.newgc.jei.compressor_info",
-                        recipe.getInputCount()),
-                8, 56, UiTheme.TEXT, false);
-        guiGraphics.drawString(font, "FE 100  ·  10s",
-                8, 66, UiTheme.MUTED, false);
-        guiGraphics.drawString(font, "→", 74, 38, UiTheme.ACCENT, false);
     }
 }

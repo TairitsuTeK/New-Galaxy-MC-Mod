@@ -1,3 +1,6 @@
 {
-  "parent": "newgc:block/wire"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "newgc:item/wire"
+  }
 }

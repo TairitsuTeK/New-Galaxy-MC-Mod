@@ -517,6 +517,7 @@
   "gui.newgc.machine.assembler_ready": "组装条件已满足",
   "gui.newgc.machine.assembler_waiting": "等待零件",
   "gui.newgc.machine.assembler_hint": "放入鼻锥、8 块合金板、引擎和 4 个助推器",
+  "gui.newgc.machine.view_recipe": "查看配方",
   "gui.newgc.machine.click_recipes": "点击在 JEI 中查看该机器的全部配方",
   "gui.newgc.machine.jei_missing": "安装 JEI 后可点击查看配方",
   "gui.newgc.machine.recipe_button": "配方",

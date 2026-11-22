@@ -517,6 +517,7 @@
   "gui.newgc.machine.assembler_ready": "Assembly ready",
   "gui.newgc.machine.assembler_waiting": "Waiting for parts",
   "gui.newgc.machine.assembler_hint": "Place nose cone, 8 plates, engine and 4 boosters",
+  "gui.newgc.machine.view_recipe": "View Recipe",
   "gui.newgc.machine.click_recipes": "Click to view all recipes in JEI",
   "gui.newgc.machine.jei_missing": "Install JEI to view recipes by clicking",
   "gui.newgc.machine.recipe_button": "RECIPES",
