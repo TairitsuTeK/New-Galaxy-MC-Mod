@@ -101,6 +101,10 @@ public class ElectricFurnaceBlockEntity extends BlockEntity implements MenuProvi
     public ItemStackHandler getItems() { return items; }
     public IEnergyStorage getEnergyStorage() { return externalEnergy; }
     public ContainerData getData() { return data; }
+    public int getProgress() { return progress; }
+    public int getMaxProgress() { return SMELT_TICKS; }
+    public int getEnergyStored() { return energy.getEnergyStored(); }
+    public int getMaxEnergyStored() { return energy.getMaxEnergyStored(); }
 
     private static SmeltingRecipe findRecipe(Level level, ItemStack stack) {
         if (stack.isEmpty()) return null;

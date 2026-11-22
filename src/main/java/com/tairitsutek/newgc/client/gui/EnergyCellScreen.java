@@ -6,6 +6,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
 /** 能量电池界面：只有一个大号能量显示条。 */
 public class EnergyCellScreen extends StyledContainerScreen<EnergyCellMenu> {
 
@@ -14,6 +16,15 @@ public class EnergyCellScreen extends StyledContainerScreen<EnergyCellMenu> {
         this.imageWidth = 176;
         this.imageHeight = 166;
         this.inventoryLabelY = 72;
+    }
+
+    @Override
+    protected List<StatusArea> statusAreas() {
+        int x = this.leftPos;
+        int y = this.topPos;
+        return List.of(new StatusArea(x + 62, y + 16, 52, 52,
+                () -> SolidFuelGeneratorScreen.energyTooltip(
+                        menu.getEnergyStored(), menu.getMaxEnergyStored()), null));
     }
 
     @Override

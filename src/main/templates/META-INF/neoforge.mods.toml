@@ -24,3 +24,18 @@ type = "required"
 versionRange = "[1.21.1,1.22)"
 ordering = "NONE"
 side = "BOTH"
+
+# 可选兼容：安装后启用 Jade 状态 HUD 与 JEI 进度条配方跳转。
+[[dependencies.newgc]]
+modId = "jei"
+type = "optional"
+versionRange = "[19.21.0,)"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.newgc]]
+modId = "jade"
+type = "optional"
+versionRange = "[15.10.0,)"
+ordering = "AFTER"
+side = "CLIENT"

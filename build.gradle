@@ -26,6 +26,14 @@ repositories {
 
     mavenCentral()
     maven { url = "https://maven.neoforged.net/releases" }
+    // Jade 的官方 Modrinth Maven；仅编译期使用，运行时由玩家可选安装。
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+        content {
+            includeGroup "maven.modrinth"
+        }
+    }
 }
 
 base {
@@ -77,6 +85,9 @@ configurations {
 dependencies {
     compileOnly "mezz.jei:jei-1.21.1-neoforge-api:19.21.0.247"
     localRuntime "mezz.jei:jei-1.21.1-neoforge:19.21.0.247"
+
+    // Jade API 仅用于编译兼容层；不打包、不强制玩家安装。
+    compileOnly "maven.modrinth:jade:15.10.6+neoforge"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {

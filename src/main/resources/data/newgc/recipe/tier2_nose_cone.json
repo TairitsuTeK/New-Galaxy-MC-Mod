@@ -8,7 +8,7 @@
   ],
   "key": {
     "T": { "item": "newgc:titanium_plate" },
-    "H": { "item": "newgc:heavy_alloy_plate" },
+    "H": { "item": "newgc:reinforced_heavy_alloy_plate" },
     "D": { "item": "newgc:diamond_plate" }
   },
   "result": {

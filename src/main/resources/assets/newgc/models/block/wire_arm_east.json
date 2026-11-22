@@ -1,0 +1,17 @@
+{
+  "textures": { "particle": "newgc:block/wire", "wire": "newgc:block/wire" },
+  "elements": [
+    {
+      "from": [9, 7, 7],
+      "to": [16, 9, 9],
+      "faces": {
+        "down": { "texture": "#wire", "uv": [0, 0, 16, 16] },
+        "up": { "texture": "#wire", "uv": [0, 0, 16, 16] },
+        "north": { "texture": "#wire", "uv": [0, 0, 16, 16] },
+        "south": { "texture": "#wire", "uv": [0, 0, 16, 16] },
+        "west": { "texture": "#wire", "uv": [0, 0, 16, 16] },
+        "east": { "texture": "#wire", "uv": [0, 0, 16, 16] }
+      }
+    }
+  ]
+}

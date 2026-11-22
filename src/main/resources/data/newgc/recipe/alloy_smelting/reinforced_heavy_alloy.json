@@ -1,0 +1,11 @@
+{
+  "type": "newgc:alloy_smelting",
+  "ingredients": [
+    { "item": "newgc:heavy_alloy" },
+    { "item": "newgc:platinum_ingot" }
+  ],
+  "result": {
+    "id": "newgc:reinforced_heavy_alloy",
+    "count": 2
+  }
+}

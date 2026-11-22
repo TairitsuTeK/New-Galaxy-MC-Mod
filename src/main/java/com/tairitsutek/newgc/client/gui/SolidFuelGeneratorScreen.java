@@ -1,10 +1,13 @@
 package com.tairitsutek.newgc.client.gui;
 
 import com.tairitsutek.newgc.menu.SolidFuelGeneratorMenu;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /** 固体燃料发电机界面：只保留可视化能量条和燃烧条。 */
 public class SolidFuelGeneratorScreen extends StyledContainerScreen<SolidFuelGeneratorMenu> {
@@ -14,6 +17,33 @@ public class SolidFuelGeneratorScreen extends StyledContainerScreen<SolidFuelGen
         this.imageWidth = 176;
         this.imageHeight = 166;
         this.inventoryLabelY = 72;
+    }
+
+    @Override
+    protected List<StatusArea> statusAreas() {
+        int x = this.leftPos;
+        int y = this.topPos;
+        return List.of(
+                new StatusArea(x + 8, y + 18, 18, 50,
+                        () -> energyTooltip(menu.getEnergyStored(), menu.getMaxEnergyStored()),
+                        null),
+                new StatusArea(x + 60, y + 58, 56, 9,
+                        () -> List.of(
+                                Component.translatable("gui.newgc.machine.burn")
+                                        .withStyle(ChatFormatting.GOLD),
+                                Component.translatable("gui.newgc.machine.tick_value",
+                                        menu.getBurnTime(), menu.getMaxBurnTime())),
+                        null)
+        );
+    }
+
+    static List<Component> energyTooltip(int stored, int max) {
+        int percent = max <= 0 ? 0 : Math.round(stored * 100.0F / max);
+        return List.of(
+                Component.translatable("gui.newgc.machine.energy")
+                        .withStyle(ChatFormatting.GOLD),
+                Component.translatable("gui.newgc.machine.energy_value", stored, max),
+                Component.translatable("gui.newgc.machine.percent", percent));
     }
 
     @Override

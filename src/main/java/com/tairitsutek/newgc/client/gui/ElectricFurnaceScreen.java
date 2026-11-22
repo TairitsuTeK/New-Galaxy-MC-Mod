@@ -1,10 +1,13 @@
 package com.tairitsutek.newgc.client.gui;
 
+import com.tairitsutek.newgc.client.jei.JeiRecipeOpener;
 import com.tairitsutek.newgc.menu.ElectricFurnaceMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /** 电力熔炉界面。 */
 public class ElectricFurnaceScreen extends StyledContainerScreen<ElectricFurnaceMenu> {
@@ -14,6 +17,24 @@ public class ElectricFurnaceScreen extends StyledContainerScreen<ElectricFurnace
         this.imageWidth = 176;
         this.imageHeight = 166;
         this.inventoryLabelY = 72;
+    }
+
+    @Override
+    protected List<StatusArea> statusAreas() {
+        int x = this.leftPos;
+        int y = this.topPos;
+        Runnable openRecipes = JeiRecipeOpener.isAvailable()
+                ? () -> JeiRecipeOpener.open(JeiRecipeOpener.Kind.SMELTING)
+                : null;
+        return List.of(
+                new StatusArea(x + 8, y + 18, 18, 50,
+                        () -> SolidFuelGeneratorScreen.energyTooltip(
+                                menu.getEnergyStored(), menu.getMaxEnergyStored()), null),
+                new StatusArea(x + 76, y + 35, 38, 14,
+                        () -> CompressorScreen.progressTooltip(
+                                menu.getProgress(), menu.getMaxProgress()),
+                        openRecipes)
+        );
     }
 
     @Override

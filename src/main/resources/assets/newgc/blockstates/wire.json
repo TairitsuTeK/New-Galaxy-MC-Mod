@@ -1,5 +1,31 @@
 {
-  "variants": {
-    "": { "model": "newgc:block/wire" }
-  }
+  "multipart": [
+    {
+      "apply": { "model": "newgc:block/wire_core" }
+    },
+    {
+      "when": { "north": "true" },
+      "apply": { "model": "newgc:block/wire_arm" }
+    },
+    {
+      "when": { "south": "true" },
+      "apply": { "model": "newgc:block/wire_arm_south" }
+    },
+    {
+      "when": { "west": "true" },
+      "apply": { "model": "newgc:block/wire_arm_west" }
+    },
+    {
+      "when": { "east": "true" },
+      "apply": { "model": "newgc:block/wire_arm_east" }
+    },
+    {
+      "when": { "up": "true" },
+      "apply": { "model": "newgc:block/wire_arm_up" }
+    },
+    {
+      "when": { "down": "true" },
+      "apply": { "model": "newgc:block/wire_arm_down" }
+    }
+  ]
 }

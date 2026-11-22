@@ -1,10 +1,13 @@
 package com.tairitsutek.newgc.client.gui;
 
 import com.tairitsutek.newgc.menu.OxygenExtractorMenu;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /** 氧气制造机界面：仅显示能量和氧气储量。 */
 public class OxygenExtractorScreen extends StyledContainerScreen<OxygenExtractorMenu> {
@@ -14,6 +17,26 @@ public class OxygenExtractorScreen extends StyledContainerScreen<OxygenExtractor
         this.imageWidth = 176;
         this.imageHeight = 166;
         this.inventoryLabelY = 72;
+    }
+
+    @Override
+    protected List<StatusArea> statusAreas() {
+        int x = this.leftPos;
+        int y = this.topPos;
+        return List.of(
+                new StatusArea(x + 8, y + 18, 18, 50,
+                        () -> SolidFuelGeneratorScreen.energyTooltip(
+                                menu.getEnergyStored(), menu.getMaxEnergyStored()), null),
+                new StatusArea(x + 148, y + 18, 18, 50,
+                        () -> List.of(
+                                Component.translatable("gui.newgc.machine.oxygen")
+                                        .withStyle(ChatFormatting.AQUA),
+                                Component.translatable("gui.newgc.machine.oxygen_value",
+                                        menu.getOxygenBuffer(), menu.getOxygenBufferMax()),
+                                Component.translatable("gui.newgc.machine.rate_value",
+                                        menu.getCurrentRate(), menu.getPlantMultiplier())),
+                        null)
+        );
     }
 
     @Override

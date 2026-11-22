@@ -8,7 +8,7 @@
   ],
   "key": {
     "G": {
-      "item": "minecraft:gold_ingot"
+      "item": "newgc:electrum_plate"
     },
     "I": {
       "item": "newgc:circuit_core_iron"

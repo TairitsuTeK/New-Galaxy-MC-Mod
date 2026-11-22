@@ -104,6 +104,10 @@ public class AlloySmelterBlockEntity extends BlockEntity implements MenuProvider
     public ItemStackHandler getItems() { return items; }
     public IEnergyStorage getEnergyStorage() { return externalEnergy; }
     public ContainerData getData() { return data; }
+    public int getProgress() { return progress; }
+    public int getMaxProgress() { return ALLOY_TICKS; }
+    public int getEnergyStored() { return energy.getEnergyStored(); }
+    public int getMaxEnergyStored() { return energy.getMaxEnergyStored(); }
 
     private static AlloySmeltingRecipe findRecipe(Level level, ItemStack first, ItemStack second) {
         if (first.isEmpty() || second.isEmpty()) return null;

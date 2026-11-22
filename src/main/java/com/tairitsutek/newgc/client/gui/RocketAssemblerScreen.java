@@ -1,14 +1,18 @@
 package com.tairitsutek.newgc.client.gui;
 
+import com.tairitsutek.newgc.client.jei.JeiRecipeOpener;
 import com.tairitsutek.newgc.menu.RocketAssemblerLayout;
 import com.tairitsutek.newgc.menu.RocketAssemblerMenu;
 import com.tairitsutek.newgc.network.RocketAssemblePacket;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /**
  * TBMK 工作台界面。槽位直接按一阶/二阶火箭外形排列：
@@ -23,6 +27,29 @@ public class RocketAssemblerScreen extends StyledContainerScreen<RocketAssembler
         this.imageWidth = RocketAssemblerLayout.GUI_WIDTH;
         this.imageHeight = RocketAssemblerLayout.GUI_HEIGHT;
         this.inventoryLabelY = 146;
+    }
+
+    @Override
+    protected List<StatusArea> statusAreas() {
+        int x = this.leftPos;
+        int y = this.topPos;
+        Runnable openRecipes = JeiRecipeOpener.isAvailable()
+                ? () -> JeiRecipeOpener.open(JeiRecipeOpener.Kind.ROCKET_ASSEMBLY)
+                : null;
+        return List.of(
+                new StatusArea(x + 140, y + 34, 54, 20,
+                        () -> List.of(Component.translatable(menu.getCanAssemble()
+                                        ? "gui.newgc.machine.assembler_ready"
+                                        : "gui.newgc.machine.assembler_waiting")
+                                .withStyle(menu.getCanAssemble()
+                                        ? ChatFormatting.GREEN : ChatFormatting.GRAY)),
+                        null),
+                new StatusArea(x + 140, y + 106, 54, 16,
+                        () -> List.of(
+                                Component.translatable("gui.newgc.machine.rocket_recipes")
+                                        .withStyle(ChatFormatting.AQUA),
+                                JeiRecipeOpener.recipeHint()),
+                        openRecipes));
     }
 
     @Override
@@ -57,6 +84,21 @@ public class RocketAssemblerScreen extends StyledContainerScreen<RocketAssembler
         UiTheme.slot(g,
                 x + RocketAssemblerLayout.slotX(RocketAssemblerLayout.OUTPUT_SLOT),
                 y + RocketAssemblerLayout.slotY(RocketAssemblerLayout.OUTPUT_SLOT));
+
+        // 组装状态 + JEI 配方按钮，二者都是可悬停的状态区域。
+        boolean ready = this.menu.getCanAssemble();
+        g.fill(x + 140, y + 34, x + 194, y + 54, ready ? 0x4020644A : 0x40112735);
+        g.drawCenteredString(this.font,
+                Component.translatable(ready
+                        ? "gui.newgc.machine.assembler_ready"
+                        : "gui.newgc.machine.assembler_waiting"),
+                x + 167, y + 40, ready ? UiTheme.GOOD : UiTheme.MUTED);
+
+        g.fill(x + 140, y + 106, x + 194, y + 122, 0x40112735);
+        g.fill(x + 140, y + 106, x + 194, y + 107, UiTheme.ACCENT_DIM);
+        g.drawCenteredString(this.font,
+                Component.translatable("gui.newgc.machine.recipe_button"),
+                x + 167, y + 110, UiTheme.ACCENT);
 
         // 玩家背包
         for (int row = 0; row < 3; row++) {

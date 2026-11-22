@@ -57,13 +57,18 @@ public final class UiTheme {
 
     private static final int MIN_HEADER_H = 24;
 
+    /**
+     * 绘制原版 18x18 槽位底框。
+     * <p>{@code sx/sy} 是物品图标的左上角，和 {@code Slot} 的坐标完全一致；
+     * 底框必须从 {@code sx-1/sy-1} 开始，否则会和真实槽位错开 1 像素。
+     */
     public static void slot(GuiGraphics g, int sx, int sy) {
-        g.fill(sx - 1, sy - 1, sx + 19, sy + 19, 0x302A4558);
-        g.fill(sx, sy, sx + 18, sy + 18, SLOT_BG);
-        g.fill(sx, sy, sx + 18, sy + 1, SLOT_HIGHLIGHT);
-        g.fill(sx, sy, sx + 1, sy + 18, SLOT_HIGHLIGHT);
-        g.fill(sx, sy + 17, sx + 18, sy + 18, SLOT_BORDER);
-        g.fill(sx + 17, sy, sx + 18, sy + 18, SLOT_BORDER);
+        g.fill(sx - 2, sy - 2, sx + 18, sy + 18, 0x302A4558);
+        g.fill(sx - 1, sy - 1, sx + 17, sy + 17, SLOT_BG);
+        g.fill(sx - 1, sy - 1, sx + 17, sy, SLOT_HIGHLIGHT);
+        g.fill(sx - 1, sy - 1, sx, sy + 17, SLOT_HIGHLIGHT);
+        g.fill(sx - 1, sy + 16, sx + 17, sy + 17, SLOT_BORDER);
+        g.fill(sx + 16, sy - 1, sx + 17, sy + 17, SLOT_BORDER);
     }
 
     /** 竖直能量/流体条，数值只通过填充高度表现，不绘制文字。 */

@@ -2,6 +2,7 @@ package com.tairitsutek.newgc.client.jei;
 
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.block.MachinesBlock;
+import com.tairitsutek.newgc.client.gui.UiTheme;
 import com.tairitsutek.newgc.recipe.AlloySmeltingRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -16,7 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-/** JEI 展示合金熔炉配方，同时支持重型合金的 5+5 输入数量。 */
+/** JEI 展示合金熔炉配方，同时支持配方自定义的每槽输入数量。 */
 public class AlloySmeltingRecipeCategory implements IRecipeCategory<AlloySmeltingRecipe> {
 
     public static final RecipeType<AlloySmeltingRecipe> TYPE = RecipeType.create(
@@ -44,12 +45,18 @@ public class AlloySmeltingRecipeCategory implements IRecipeCategory<AlloySmeltin
 
     @Override
     public int getWidth() {
-        return 120;
+        return 160;
     }
 
     @Override
     public int getHeight() {
-        return 50;
+        return 96;
+    }
+
+    @Override
+    public boolean needsRecipeBorder() {
+        // 分类自身已经绘制完整的深空面板与描边，不再叠加 JEI 默认边框。
+        return false;
     }
 
     @Override
@@ -60,23 +67,37 @@ public class AlloySmeltingRecipeCategory implements IRecipeCategory<AlloySmeltin
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, AlloySmeltingRecipe recipe,
                           @NotNull IFocusGroup focuses) {
-        if (recipe.ingredients().size() > 0) {
-            builder.addInputSlot(1, 15).addIngredients(recipe.ingredients().get(0));
+        if (!recipe.ingredients().isEmpty()) {
+            builder.addInputSlot(20, 28).addIngredients(recipe.ingredients().get(0));
         }
         if (recipe.ingredients().size() > 1) {
-            builder.addInputSlot(41, 15).addIngredients(recipe.ingredients().get(1));
+            builder.addInputSlot(20, 56).addIngredients(recipe.ingredients().get(1));
         }
-        builder.addOutputSlot(101, 15).addItemStack(recipe.getResult());
+        builder.addOutputSlot(132, 42).addItemStack(recipe.getResult());
     }
 
     @Override
     public void draw(AlloySmeltingRecipe recipe, @NotNull IRecipeSlotsView recipeSlotsView,
                      GuiGraphics guiGraphics, double mouseX, double mouseY) {
-        guiGraphics.drawString(Minecraft.getInstance().font, "→", 64, 18,
-                0xFFFFFFFF, false);
-        if (recipe.getInputCount() > 1) {
-            guiGraphics.drawString(Minecraft.getInstance().font,
-                    "×" + recipe.getInputCount(), 4, 38, 0xFFFFC878, false);
-        }
+        UiTheme.screen(guiGraphics, 0, 0, getWidth(), getHeight());
+        UiTheme.slot(guiGraphics, 20, 28);
+        UiTheme.slot(guiGraphics, 20, 56);
+        UiTheme.slot(guiGraphics, 132, 42);
+        UiTheme.progressBar(guiGraphics, 52, 46, 56, 8,
+                1, 1, 0xFF5B4B2A, 0xFFEBC27A);
+
+        var font = Minecraft.getInstance().font;
+        guiGraphics.drawString(font, getTitle(), 8, 5, UiTheme.TEXT, false);
+        guiGraphics.drawString(font,
+                Component.translatable("gui.newgc.jei.machine_subtitle"),
+                8, 16, UiTheme.MUTED, false);
+        guiGraphics.fill(8, 27, getWidth() - 8, 28, UiTheme.ACCENT_DIM);
+        guiGraphics.drawString(font,
+                Component.translatable("gui.newgc.jei.alloy_info",
+                        recipe.getInputCount()),
+                8, 76, UiTheme.TEXT, false);
+        guiGraphics.drawString(font, "5,000 FE  ·  10s",
+                8, 86, UiTheme.MUTED, false);
+        guiGraphics.drawString(font, "→", 108, 44, UiTheme.ACCENT, false);
     }
 }

@@ -2,13 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "III",
-    "IHI",
-    "III"
+    "IZI",
+    "ZHZ",
+    "IZI"
   ],
   "key": {
     "I": {
       "item": "newgc:iron_plate"
+    },
+    "Z": {
+      "item": "newgc:zinc_plate"
     },
     "H": {
       "item": "newgc:iron_hammer"

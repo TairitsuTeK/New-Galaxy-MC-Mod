@@ -2,16 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "STS",
+    "BSB",
     "SCS",
     "III"
   ],
   "key": {
+    "B": {
+      "item": "newgc:bronze_plate"
+    },
     "S": {
       "item": "newgc:steel_plate"
-    },
-    "T": {
-      "item": "newgc:titanium_plate"
     },
     "C": {
       "item": "newgc:circuit_core_iron"

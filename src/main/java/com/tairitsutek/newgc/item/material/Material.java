@@ -142,7 +142,11 @@ public class Material {
 
     //region 火箭材料与部件
     public static final DeferredItem<Item> HEAVY_ALLOY = registerItem("heavy_alloy");
+    public static final DeferredItem<Item> REINFORCED_HEAVY_ALLOY = registerItem("reinforced_heavy_alloy");
+    public static final DeferredItem<Item> ELITE_HEAVY_ALLOY = registerItem("elite_heavy_alloy");
     public static final DeferredItem<Item> HEAVY_ALLOY_PLATE = registerItem("heavy_alloy_plate");
+    public static final DeferredItem<Item> REINFORCED_HEAVY_ALLOY_PLATE = registerItem("reinforced_heavy_alloy_plate");
+    public static final DeferredItem<Item> ELITE_HEAVY_ALLOY_PLATE = registerItem("elite_heavy_alloy_plate");
     public static final DeferredItem<Item> TIER1_NOSE_CONE = registerItem("tier1_nose_cone");
     public static final DeferredItem<Item> ROCKET_ENGINE = registerItem("rocket_engine");
     public static final DeferredItem<Item> BOOSTER = registerItem("booster");
@@ -223,7 +227,11 @@ public class Material {
 
                         // 重型合金与 TBMK 工作台零件
                         output.accept(HEAVY_ALLOY.get());
+                        output.accept(REINFORCED_HEAVY_ALLOY.get());
+                        output.accept(ELITE_HEAVY_ALLOY.get());
                         output.accept(HEAVY_ALLOY_PLATE.get());
+                        output.accept(REINFORCED_HEAVY_ALLOY_PLATE.get());
+                        output.accept(ELITE_HEAVY_ALLOY_PLATE.get());
                         output.accept(TIER1_NOSE_CONE.get());
                         output.accept(ROCKET_ENGINE.get());
                         output.accept(BOOSTER.get());

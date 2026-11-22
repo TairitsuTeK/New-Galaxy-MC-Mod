@@ -100,6 +100,8 @@ public class OxygenExtractorBlockEntity extends BlockEntity implements MenuProvi
     // 公共访问器
     public ItemStackHandler getItems() { return items; }
     public IEnergyStorage getEnergyStorage() { return externalEnergy; }
+    public int getOxygenBuffer() { return oxygenBuffer; }
+    public int getOxygenBufferMax() { return OXYGEN_BUFFER_MAX; }
 
     // 静态判定
     public static boolean isPlant(ItemStack stack) {

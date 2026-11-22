@@ -3,12 +3,15 @@
   "category": "misc",
   "pattern": [
     "MTM",
-    "TCT",
-    "III"
+    "ICI",
+    "FFF"
   ],
   "key": {
     "M": {
       "item": "newgc:mechanical_casing"
+    },
+    "I": {
+      "item": "newgc:invar_plate"
     },
     "T": {
       "item": "newgc:titanium_plate"
@@ -16,7 +19,7 @@
     "C": {
       "item": "newgc:circuit_core_golden"
     },
-    "I": {
+    "F": {
       "item": "newgc:iron_plate"
     }
   },

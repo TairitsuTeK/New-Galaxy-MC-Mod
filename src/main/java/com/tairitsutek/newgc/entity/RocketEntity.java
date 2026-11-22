@@ -57,20 +57,22 @@ public class RocketEntity extends Entity {
     public static final int STATE_ORBIT = 4;
     public static final int STATE_DRIFT = 5;
 
-    /** 点火到升空的倒计时（tick）。 */
-    public static final int COUNTDOWN_TICKS = 60;
-    /** 一阶火箭上升到轨道的总时长（tick）：240 tick = 12 秒。 */
-    public static final int ASCENT_TICKS_TIER1 = 240;
-    /** 二阶火箭上升到轨道的总时长（tick）：170 tick = 8.5 秒。 */
-    public static final int ASCENT_TICKS_TIER2 = 170;
-    /** 三阶火箭上升到轨道的总时长（tick）：140 tick = 7 秒。 */
-    public static final int ASCENT_TICKS_TIER3 = 140;
+    /** 点火到升空的倒计时（tick）：10 秒。 */
+    public static final int COUNTDOWN_TICKS = 200;
+    /** 一阶火箭上升到轨道的总时长（tick）：400 tick = 20 秒。 */
+    public static final int ASCENT_TICKS_TIER1 = 400;
+    /** 二阶火箭上升到轨道的总时长（tick）：340 tick = 17 秒。 */
+    public static final int ASCENT_TICKS_TIER2 = 340;
+    /** 三阶火箭上升到轨道的总时长（tick）：280 tick = 14 秒。 */
+    public static final int ASCENT_TICKS_TIER3 = 280;
     /** 兼容旧调用；默认按一阶火箭计算。 */
     public static final int ASCENT_TICKS = ASCENT_TICKS_TIER1;
     /** 没有可用目标时，星图保留的倒计时；结束后自动进入漂流。 */
     public static final int NO_TARGET_GRACE_TICKS = 100;
     /** 相对发射高度需要爬升的距离（格）。 */
-    private static final double ORBIT_CLIMB = 280.0D;
+    private static final double ORBIT_CLIMB = 420.0D;
+    /** 倒计时烟雾向外扩散时使用的喷口半径。 */
+    private static final double COUNTDOWN_SMOKE_RADIUS = 0.42D;
     /** 漂流维度内的起点；X 由发射星系决定，沿 Y 轴向下漂移。 */
     private static final double SPACE_DRIFT_START_Y = 128.0D;
     private static final double SPACE_DRIFT_START_Z = 0.0D;
@@ -251,11 +253,14 @@ public class RocketEntity extends Entity {
         this.entityData.set(DATA_START_Y, (float) y);
     }
 
-    /** 轨道高度（客户端与服务端使用同一公式，保证两侧位置一致）。 */
+    /**
+     * 轨道高度（客户端与服务端使用同一公式，保证两侧位置一致）。
+     * <p>
+     * 不再被原版建筑高度上限截断：火箭是实体，可以飞到建筑高度之上。
+     * 这样低海拔发射时也能获得完整的爬升距离，而不是很快“到顶”。
+     */
     private double orbitY() {
-        return Mth.clamp(this.getStartY() + ORBIT_CLIMB,
-                this.level().getMinBuildHeight() + 120.0D,
-                this.level().getMaxBuildHeight() - 20.0D);
+        return this.getStartY() + ORBIT_CLIMB;
     }
 
     /**
@@ -436,15 +441,24 @@ public class RocketEntity extends Entity {
         this.setTimer(timer);
 
         if (this.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
-                    this.getX(), this.getY() + 0.15D, this.getZ(),
-                    3, 0.25D, 0.1D, 0.25D, 0.01D);
+            // 发动机从倒计时第一 tick 就开始排气：四个喷口同时向外喷烟。
+            for (int i = 0; i < 4; i++) {
+                double angle = Math.PI * 0.5D * i + this.tickCount * 0.07D;
+                double dx = Math.cos(angle) * COUNTDOWN_SMOKE_RADIUS;
+                double dz = Math.sin(angle) * COUNTDOWN_SMOKE_RADIUS;
+                serverLevel.sendParticles(ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                        this.getX() + dx, this.getY() + 0.12D, this.getZ() + dz,
+                        2, 0.18D, 0.08D, 0.18D, 0.012D);
+                serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE,
+                        this.getX() + dx * 0.72D, this.getY() + 0.08D, this.getZ() + dz * 0.72D,
+                        1, 0.12D, 0.04D, 0.12D, 0.008D);
+            }
         }
 
         if (timer > 0 && timer % 20 == 0) {
             this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                     SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.NEUTRAL,
-                    1.0F, 1.0F + (COUNTDOWN_TICKS - timer) * 0.08F);
+                    1.0F, 1.0F + (COUNTDOWN_TICKS - timer) / (float) COUNTDOWN_TICKS);
         }
 
         if (timer <= 0) {
@@ -778,11 +792,23 @@ public class RocketEntity extends Entity {
             return;
         }
 
+        if (state == STATE_COUNTDOWN) {
+            // 本地也生成一圈向外扩散的烟，避免网络延迟时看不到发动机预燃。
+            for (int i = 0; i < 4; i++) {
+                double angle = Math.PI * 0.5D * i + this.tickCount * 0.07D;
+                double dx = Math.cos(angle) * COUNTDOWN_SMOKE_RADIUS;
+                double dz = Math.sin(angle) * COUNTDOWN_SMOKE_RADIUS;
+                this.level().addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                        this.getX() + dx, this.getY() + 0.12D, this.getZ() + dz,
+                        dx * 0.045D, 0.018D, dz * 0.045D);
+            }
+        }
+
         for (int i = 0; i < 2; i++) {
             double dx = (this.random.nextDouble() - 0.5D) * 0.25D;
             double dz = (this.random.nextDouble() - 0.5D) * 0.25D;
             this.level().addParticle(
-                    state == STATE_ASCENT ? ParticleTypes.FLAME : ParticleTypes.CAMPFIRE_COSY_SMOKE,
+                    state == STATE_ASCENT ? ParticleTypes.FLAME : ParticleTypes.SMOKE,
                     this.getX() + dx, this.getY() + 0.1D, this.getZ() + dz,
                     0.0D, state == STATE_ASCENT ? -0.05D : 0.02D, 0.0D);
         }

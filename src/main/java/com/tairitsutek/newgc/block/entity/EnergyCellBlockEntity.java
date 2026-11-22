@@ -28,6 +28,9 @@ public class EnergyCellBlockEntity extends BlockEntity implements MenuProvider {
     public static final int CAPACITY = 1_000_000;
     public static final int MAX_IO = 20_000;
 
+    private int lastSyncedEnergy = -1;
+    private int syncCooldown;
+
     private final SimpleEnergyStorage energy =
             new SimpleEnergyStorage(CAPACITY, MAX_IO, MAX_IO);
 
@@ -99,6 +102,28 @@ public class EnergyCellBlockEntity extends BlockEntity implements MenuProvider {
     public ContainerData getData() { return data; }
     public int getEnergyStored() { return energy.getEnergyStored(); }
     public int getMaxEnergyStored() { return energy.getMaxEnergyStored(); }
+
+    /**
+     * 能量电池没有物品槽，此前客户端只能拿到打开界面时的初始电量。
+     * 这里每 20 tick 把变化后的电量同步给客户端，供 Jade / 准星 HUD 使用。
+     */
+    public void tick() {
+        if (level == null || level.isClientSide()) {
+            return;
+        }
+        if (syncCooldown > 0) {
+            syncCooldown--;
+            return;
+        }
+        int stored = energy.getEnergyStored();
+        if (stored == lastSyncedEnergy) {
+            return;
+        }
+        lastSyncedEnergy = stored;
+        syncCooldown = 20;
+        setChanged();
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+    }
 
     @Override
     public @NotNull Component getDisplayName() {

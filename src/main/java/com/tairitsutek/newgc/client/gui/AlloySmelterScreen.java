@@ -1,10 +1,13 @@
 package com.tairitsutek.newgc.client.gui;
 
+import com.tairitsutek.newgc.client.jei.JeiRecipeOpener;
 import com.tairitsutek.newgc.menu.AlloySmelterMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /** 合金熔炉界面：双输入槽无标签，避免文字与槽位重叠。 */
 public class AlloySmelterScreen extends StyledContainerScreen<AlloySmelterMenu> {
@@ -14,6 +17,24 @@ public class AlloySmelterScreen extends StyledContainerScreen<AlloySmelterMenu> 
         this.imageWidth = 176;
         this.imageHeight = 166;
         this.inventoryLabelY = 72;
+    }
+
+    @Override
+    protected List<StatusArea> statusAreas() {
+        int x = this.leftPos;
+        int y = this.topPos;
+        Runnable openRecipes = JeiRecipeOpener.isAvailable()
+                ? () -> JeiRecipeOpener.open(JeiRecipeOpener.Kind.ALLOY_SMELTING)
+                : null;
+        return List.of(
+                new StatusArea(x + 8, y + 18, 18, 50,
+                        () -> SolidFuelGeneratorScreen.energyTooltip(
+                                menu.getEnergyStored(), menu.getMaxEnergyStored()), null),
+                new StatusArea(x + 70, y + 35, 40, 14,
+                        () -> CompressorScreen.progressTooltip(
+                                menu.getProgress(), menu.getMaxProgress()),
+                        openRecipes)
+        );
     }
 
     @Override

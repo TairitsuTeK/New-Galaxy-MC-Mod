@@ -13,7 +13,7 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 /**
  * 火箭发射倒计时 HUD。
  * <p>
- * 骑乘处于倒计时状态的火箭时，在屏幕正中绘制一个**红色大号数字**（3 → 2 → 1），
+ * 骑乘处于倒计时状态的火箭时，在屏幕正中绘制一个**红色大号数字**（10 → 1），
  * 每过一秒做一次弹跳放大，并在下方显示「点火倒计时」标签。
  */
 @EventBusSubscriber(modid = NewGalaxyMain.MODID, value = Dist.CLIENT)
@@ -47,7 +47,7 @@ public final class RocketCountdownHud {
         if (timer <= 0) {
             return;
         }
-        // 剩余秒数：59..40 → 3，39..20 → 2，19..1 → 1
+        // 剩余秒数：200..181 → 10，180..161 → 9，……，19..1 → 1
         String text = Integer.toString((timer + 19) / 20);
 
         GuiGraphics graphics = event.getGuiGraphics();

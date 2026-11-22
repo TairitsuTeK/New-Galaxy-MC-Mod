@@ -11,6 +11,7 @@ import mezz.jei.api.JeiPlugin;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.runtime.IJeiRuntime;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +28,24 @@ public class NewgcJeiPlugin implements IModPlugin {
     @Override
     public @NotNull ResourceLocation getPluginUid() {
         return ResourceLocation.fromNamespaceAndPath(NewGalaxyMain.MODID, "jei_plugin");
+    }
+
+    @Override
+    public void onRuntimeAvailable(@NotNull IJeiRuntime jeiRuntime) {
+        JeiRecipeOpener.setRuntime(jeiRuntime);
+        JeiRecipeOpener.setRecipeType(JeiRecipeOpener.Kind.COMPRESSOR,
+                CompressorRecipeCategory.TYPE);
+        JeiRecipeOpener.setRecipeType(JeiRecipeOpener.Kind.ALLOY_SMELTING,
+                AlloySmeltingRecipeCategory.TYPE);
+        JeiRecipeOpener.setRecipeType(JeiRecipeOpener.Kind.SMELTING,
+                mezz.jei.api.constants.RecipeTypes.SMELTING);
+        JeiRecipeOpener.setRecipeType(JeiRecipeOpener.Kind.ROCKET_ASSEMBLY,
+                RocketAssemblyRecipeCategory.TYPE);
+    }
+
+    @Override
+    public void onRuntimeUnavailable() {
+        JeiRecipeOpener.setRuntime(null);
     }
 
     @Override

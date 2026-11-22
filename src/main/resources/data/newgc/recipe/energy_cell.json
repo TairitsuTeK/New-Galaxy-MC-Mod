@@ -2,13 +2,13 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "IPI",
+    "LPL",
     "CMC",
-    "IRI"
+    "LRL"
   ],
   "key": {
-    "I": {
-      "item": "newgc:tin_plate"
+    "L": {
+      "item": "newgc:lead_plate"
     },
     "P": {
       "item": "newgc:circuit_core_golden"

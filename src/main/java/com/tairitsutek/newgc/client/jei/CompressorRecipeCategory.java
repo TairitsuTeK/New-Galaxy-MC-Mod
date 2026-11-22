@@ -2,6 +2,7 @@ package com.tairitsutek.newgc.client.jei;
 
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.block.MachinesBlock;
+import com.tairitsutek.newgc.client.gui.UiTheme;
 import com.tairitsutek.newgc.recipe.CompressorRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -43,12 +44,18 @@ public class CompressorRecipeCategory implements IRecipeCategory<CompressorRecip
 
     @Override
     public int getWidth() {
-        return 120;
+        return 150;
     }
 
     @Override
     public int getHeight() {
-        return 40;
+        return 76;
+    }
+
+    @Override
+    public boolean needsRecipeBorder() {
+        // 分类自身已经绘制完整的深空面板与描边，不再叠加 JEI 默认边框。
+        return false;
     }
 
     @Override
@@ -58,18 +65,31 @@ public class CompressorRecipeCategory implements IRecipeCategory<CompressorRecip
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, CompressorRecipe recipe, @NotNull IFocusGroup focuses) {
-        builder.addInputSlot(1, 11).addIngredients(recipe.getIngredient());
-        builder.addOutputSlot(101, 11).addItemStack(recipe.getResult());
+        builder.addInputSlot(16, 32).addIngredients(recipe.getIngredient());
+        builder.addOutputSlot(118, 32).addItemStack(recipe.getResult());
     }
 
     @Override
     public void draw(CompressorRecipe recipe, @NotNull IRecipeSlotsView recipeSlotsView,
                      GuiGraphics guiGraphics, double mouseX, double mouseY) {
-        guiGraphics.drawString(Minecraft.getInstance().font, "→", 58, 15, 0xFFFFFFFF, false);
+        UiTheme.screen(guiGraphics, 0, 0, getWidth(), getHeight());
+        UiTheme.slot(guiGraphics, 16, 32);
+        UiTheme.slot(guiGraphics, 118, 32);
+        UiTheme.progressBar(guiGraphics, 48, 37, 54, 8,
+                1, 1, 0xFF6B3A22, 0xFFF0B45A);
 
-        if (recipe.getInputCount() > 1) {
-            guiGraphics.drawString(Minecraft.getInstance().font, "×" + recipe.getInputCount(),
-                    4, 30, 0xFFFFFFFF, false);
-        }
+        var font = Minecraft.getInstance().font;
+        guiGraphics.drawString(font, getTitle(), 8, 5, UiTheme.TEXT, false);
+        guiGraphics.drawString(font,
+                Component.translatable("gui.newgc.jei.machine_subtitle"),
+                8, 16, UiTheme.MUTED, false);
+        guiGraphics.fill(8, 27, getWidth() - 8, 28, UiTheme.ACCENT_DIM);
+        guiGraphics.drawString(font,
+                Component.translatable("gui.newgc.jei.compressor_info",
+                        recipe.getInputCount()),
+                8, 56, UiTheme.TEXT, false);
+        guiGraphics.drawString(font, "FE 100  ·  10s",
+                8, 66, UiTheme.MUTED, false);
+        guiGraphics.drawString(font, "→", 74, 38, UiTheme.ACCENT, false);
     }
 }

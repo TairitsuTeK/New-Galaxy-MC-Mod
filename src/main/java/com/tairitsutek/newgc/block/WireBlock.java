@@ -66,9 +66,13 @@ public class WireBlock extends BaseEntityBlock {
 
         if (block instanceof WireBlock) return true;
 
-        // 如果是 Level，则检测对方是否有能量 Capability
+        // 只有真正能输入或输出 FE 的方块才接线；单纯注册了空能力、
+        // 既不接收也不抽取的方块不会让电线长出多余的分支。
         if (level instanceof Level actualLevel) {
-            return actualLevel.getCapability(Capabilities.EnergyStorage.BLOCK, neighborPos, dir.getOpposite()) != null;
+            net.neoforged.neoforge.energy.IEnergyStorage storage =
+                    actualLevel.getCapability(Capabilities.EnergyStorage.BLOCK,
+                            neighborPos, dir.getOpposite());
+            return storage != null && (storage.canReceive() || storage.canExtract());
         }
 
         return false;

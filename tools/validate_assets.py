@@ -73,8 +73,8 @@ def main() -> None:
             bad.append(f"missing item texture {name}.png")
         else:
             with Image.open(path) as image:
-                if image.size != (16, 16):
-                    bad.append(f"item {name}.png: {image.size}, expected (16, 16)")
+                if image.size != (32, 32):
+                    bad.append(f"item {name}.png: {image.size}, expected (32, 32)")
         if not model.exists():
             bad.append(f"missing item model {name}.json")
 

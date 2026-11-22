@@ -2,6 +2,7 @@ package com.tairitsutek.newgc.client.jei;
 
 import com.tairitsutek.newgc.NewGalaxyMain;
 import com.tairitsutek.newgc.block.MachinesBlock;
+import com.tairitsutek.newgc.client.gui.UiTheme;
 import com.tairitsutek.newgc.menu.RocketAssemblerLayout;
 import com.tairitsutek.newgc.recipe.RocketAssemblyRecipe;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
@@ -52,7 +53,13 @@ public class RocketAssemblyRecipeCategory implements IRecipeCategory<RocketAssem
 
     @Override
     public int getHeight() {
-        return 132;
+        return 146;
+    }
+
+    @Override
+    public boolean needsRecipeBorder() {
+        // 分类自身已经绘制完整的深空面板与描边，不再叠加 JEI 默认边框。
+        return false;
     }
 
     @Override
@@ -77,8 +84,31 @@ public class RocketAssemblyRecipeCategory implements IRecipeCategory<RocketAssem
     @Override
     public void draw(RocketAssemblyRecipe recipe, @NotNull IRecipeSlotsView recipeSlotsView,
                      GuiGraphics guiGraphics, double mouseX, double mouseY) {
-        guiGraphics.drawString(Minecraft.getInstance().font,
-                Component.translatable("gui.newgc.rocket_assembler.recipe_hint"),
-                4, 4, 0xFF8FA8B8, false);
+        UiTheme.screen(guiGraphics, 0, 0, getWidth(), getHeight());
+
+        // 与 TBMK 工作台一致的火箭轮廓，让 JEI 里也能直观看出部件位置。
+        guiGraphics.fill(66, 36, 110, 130, 0x142B647A);
+        guiGraphics.fill(44, 54, 66, 94, 0x0C2B647A);
+        guiGraphics.fill(110, 54, 132, 94, 0x0C2B647A);
+        guiGraphics.fill(77, 36, 99, 38, 0x305A9CB8);
+        guiGraphics.fill(69, 108, 107, 110, 0x305A9CB8);
+
+        for (int slot = 0; slot < RocketAssemblerLayout.INPUT_SLOTS; slot++) {
+            UiTheme.slot(guiGraphics,
+                    RocketAssemblerLayout.slotX(slot),
+                    RocketAssemblerLayout.slotY(slot));
+        }
+        UiTheme.slot(guiGraphics,
+                RocketAssemblerLayout.slotX(RocketAssemblerLayout.OUTPUT_SLOT),
+                RocketAssemblerLayout.slotY(RocketAssemblerLayout.OUTPUT_SLOT));
+
+        var font = Minecraft.getInstance().font;
+        guiGraphics.drawString(font, getTitle(), 8, 5, UiTheme.TEXT, false);
+        guiGraphics.drawString(font,
+                Component.translatable("gui.newgc.jei.rocket_hint"),
+                8, 16, UiTheme.MUTED, false);
+        guiGraphics.drawString(font,
+                Component.translatable("gui.newgc.jei.rocket_info"),
+                8, 134, UiTheme.TEXT, false);
     }
 }

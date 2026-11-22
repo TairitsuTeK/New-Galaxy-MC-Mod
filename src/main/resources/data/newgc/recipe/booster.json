@@ -2,9 +2,9 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "ALA",
+    " A ",
     "LGL",
-    "ALA"
+    " A "
   ],
   "key": {
     "A": { "item": "newgc:aluminum_plate" },

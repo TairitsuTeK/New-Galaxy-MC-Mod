@@ -2,6 +2,7 @@ package com.tairitsutek.newgc.block;
 
 import com.mojang.serialization.MapCodec;
 import com.tairitsutek.newgc.block.entity.EnergyCellBlockEntity;
+import com.tairitsutek.newgc.block.entity.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -9,6 +10,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
@@ -36,6 +39,15 @@ public class EnergyCellBlock extends BaseEntityBlock {
     @Override
     public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new EnergyCellBlockEntity(pos, state);
+    }
+
+    @Nullable
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, @NotNull BlockState state,
+                                                                  @NotNull BlockEntityType<T> type) {
+        return level.isClientSide() ? null
+                : createTickerHelper(type, ModBlockEntities.ENERGY_CELL.get(),
+                (lvl, pos, st, be) -> be.tick());
     }
 
     @Override

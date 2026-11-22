@@ -1,8 +1,12 @@
 package com.tairitsutek.newgc.client;
 
 import com.tairitsutek.newgc.NewGalaxyMain;
+import com.tairitsutek.newgc.block.entity.AlloySmelterBlockEntity;
 import com.tairitsutek.newgc.block.entity.CompressorBlockEntity;
+import com.tairitsutek.newgc.block.entity.ElectricFurnaceBlockEntity;
+import com.tairitsutek.newgc.block.entity.EnergyCellBlockEntity;
 import com.tairitsutek.newgc.block.entity.OxygenExtractorBlockEntity;
+import com.tairitsutek.newgc.block.entity.RocketAssemblerBlockEntity;
 import com.tairitsutek.newgc.block.entity.SolidFuelGeneratorBlockEntity;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -39,6 +43,22 @@ public class BlockHoverInfo {
             renderExtractorInfo(event, mc, extractor);
         } else if (be instanceof CompressorBlockEntity compressor) {
             renderCompressorInfo(event, mc, compressor);
+        } else if (be instanceof ElectricFurnaceBlockEntity furnace) {
+            renderEnergyProgressInfo(event, mc, "block.newgc.electric_furnace",
+                    0xFFFF9F68, furnace.getEnergyStored(), furnace.getMaxEnergyStored(),
+                    furnace.getProgress(), furnace.getMaxProgress(),
+                    "gui.newgc.machine.smelting");
+        } else if (be instanceof AlloySmelterBlockEntity smelter) {
+            renderEnergyProgressInfo(event, mc, "block.newgc.alloy_smelter",
+                    0xFF8DEBFF, smelter.getEnergyStored(), smelter.getMaxEnergyStored(),
+                    smelter.getProgress(), smelter.getMaxProgress(),
+                    "gui.newgc.machine.alloying");
+        } else if (be instanceof EnergyCellBlockEntity cell) {
+            renderEnergyProgressInfo(event, mc, "block.newgc.energy_cell",
+                    0xFF82E6FF, cell.getEnergyStored(), cell.getMaxEnergyStored(),
+                    0, 0, null);
+        } else if (be instanceof RocketAssemblerBlockEntity assembler) {
+            renderAssemblerInfo(event, mc, assembler);
         }
     }
 
@@ -153,6 +173,58 @@ public class BlockHoverInfo {
                     .withStyle(ChatFormatting.GRAY);
             g.drawCenteredString(mc.font, idle, centerX, centerY + 40, 0xFFFFFFFF);
         }
+    }
+
+    private static void renderEnergyProgressInfo(RenderGuiEvent.Post event, Minecraft mc,
+                                                 String titleKey, int accent,
+                                                 int stored, int max, int progress, int maxProgress,
+                                                 String progressKey) {
+        GuiGraphics g = event.getGuiGraphics();
+        int centerX = mc.getWindow().getGuiScaledWidth() / 2;
+        int centerY = mc.getWindow().getGuiScaledHeight() / 2 + 20;
+
+        g.drawCenteredString(mc.font,
+                Component.translatable(titleKey).withStyle(ChatFormatting.AQUA),
+                centerX, centerY, 0xFFFFFFFF);
+        g.drawCenteredString(mc.font,
+                Component.translatable("gui.newgc.machine.energy_value", stored, max)
+                        .withStyle(ChatFormatting.GOLD),
+                centerX, centerY + 12, 0xFFFFFFFF);
+        drawBar(g, centerX - 40, centerY + 26, 80, 6, stored, max, accent);
+
+        if (progressKey != null && maxProgress > 0) {
+            g.drawCenteredString(mc.font,
+                    Component.translatable(progressKey).withStyle(ChatFormatting.AQUA),
+                    centerX, centerY + 40, 0xFFFFFFFF);
+            drawBar(g, centerX - 40, centerY + 52, 80, 4, progress, maxProgress, 0xFF78D8F0);
+        } else {
+            g.drawCenteredString(mc.font,
+                    Component.translatable("gui.newgc.machine.energy_cell_hint")
+                            .withStyle(ChatFormatting.GRAY),
+                    centerX, centerY + 40, 0xFFFFFFFF);
+        }
+    }
+
+    private static void renderAssemblerInfo(RenderGuiEvent.Post event, Minecraft mc,
+                                           RocketAssemblerBlockEntity assembler) {
+        GuiGraphics g = event.getGuiGraphics();
+        int centerX = mc.getWindow().getGuiScaledWidth() / 2;
+        int centerY = mc.getWindow().getGuiScaledHeight() / 2 + 20;
+        boolean ready = assembler.canAssembleNow();
+        g.drawCenteredString(mc.font,
+                Component.translatable("block.newgc.rocket_assembler")
+                        .withStyle(ChatFormatting.AQUA),
+                centerX, centerY, 0xFFFFFFFF);
+        g.drawCenteredString(mc.font,
+                Component.translatable(ready
+                                ? "gui.newgc.machine.assembler_ready"
+                                : "gui.newgc.machine.assembler_waiting")
+                        .withStyle(ready ? ChatFormatting.GREEN : ChatFormatting.GRAY),
+                centerX, centerY + 14, 0xFFFFFFFF);
+        g.drawCenteredString(mc.font,
+                Component.translatable("gui.newgc.machine.assembler_hint")
+                        .withStyle(ChatFormatting.DARK_AQUA),
+                centerX, centerY + 30, 0xFFFFFFFF);
     }
 
     private static void drawBar(GuiGraphics g, int x, int y, int w, int h, int stored, int max, int fillColor) {
