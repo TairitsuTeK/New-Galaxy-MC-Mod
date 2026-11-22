@@ -70,7 +70,7 @@ public class RocketEntity extends Entity {
     /** 没有可用目标时，星图保留的倒计时；结束后自动进入漂流。 */
     public static final int NO_TARGET_GRACE_TICKS = 100;
     /** 相对发射高度需要爬升的距离（格）。 */
-    private static final double ORBIT_CLIMB = 1800.0D;
+    private static final double ORBIT_CLIMB = 4500.0D;
     /** 倒计时烟雾向外扩散时使用的喷口半径。 */
     private static final double COUNTDOWN_SMOKE_RADIUS = 0.42D;
     /** 漂流维度内的起点；X 由发射星系决定，沿 Y 轴向下漂移。 */
@@ -84,8 +84,8 @@ public class RocketEntity extends Entity {
     /** 未成功创建太空维度时的旧版原维度下降兜底速度。 */
     private static final double LEGACY_DRIFT_FALL_SPEED = 0.6D;
     private static final double LEGACY_DRIFT_DAMAGE_ALTITUDE = 120.0D;
-    /** 上升曲线指数：起步慢、后段明显加速。 */
-    private static final double ASCENT_CURVE = 1.8D;
+    /** 上升曲线指数：保留加速感，但避免前段长时间过慢。 */
+    private static final double ASCENT_CURVE = 1.4D;
     /** 储物舱容量。 */
     public static final int CARGO_SIZE = 9;
     /** 落点需要预留的空方块高度（保证玩家头部不会卡进地形）。 */
